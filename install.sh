@@ -224,10 +224,13 @@ cp .env.example .env
 php artisan key:generate --force
 
 # Configure .env with user inputs
-cat > .env << EOF
+echo "🔧 Creating .env file with collected API keys..."
+
+# Create clean .env file from template
+cat > .env << 'ENVEOF'
 APP_NAME=SentinentX
 APP_ENV=production
-APP_KEY=$(php artisan --no-ansi key:generate --show)
+APP_KEY=
 APP_DEBUG=false
 APP_TIMEZONE=Europe/Istanbul
 APP_URL=http://localhost
@@ -253,25 +256,49 @@ REDIS_HOST=127.0.0.1
 REDIS_PASSWORD=null
 REDIS_PORT=6379
 
-# Bybit Testnet Configuration
 BYBIT_TESTNET=true
-BYBIT_API_KEY=${BYBIT_API_KEY}
-BYBIT_API_SECRET=${BYBIT_API_SECRET}
+BYBIT_BASE_URL=https://api-testnet.bybit.com
+BYBIT_API_KEY=
+BYBIT_API_SECRET=
 
-# AI Providers Configuration
-OPENAI_API_KEY=${OPENAI_API_KEY}
-GEMINI_API_KEY=${GEMINI_API_KEY}
-GROK_API_KEY=${GROK_API_KEY}
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4o-mini
 
-# Telegram Bot Configuration
-TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.0-flash-exp
+GEMINI_BASE_URL=https://generativelanguage.googleapis.com
 
-# Trading Configuration
+GROK_API_KEY=
+GROK_MODEL=grok-2-1212
+GROK_BASE_URL=https://api.x.ai/v1
+
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+
 TRADING_MAX_LEVERAGE=75
 TRADING_MODE_ONE_WAY=true
 TRADING_MARGIN_MODE=cross
-EOF
+
+COINGECKO_BASE_URL=https://api.coingecko.com/api/v3
+COINGECKO_TIMEOUT=15
+ENVEOF
+
+# Generate Laravel application key
+php artisan key:generate --force
+
+# Update .env with collected API keys using echo append method
+echo "" >> .env
+echo "# Generated API Keys" >> .env
+echo "BYBIT_API_KEY=${BYBIT_API_KEY}" >> .env
+echo "BYBIT_API_SECRET=${BYBIT_API_SECRET}" >> .env
+echo "OPENAI_API_KEY=${OPENAI_API_KEY}" >> .env  
+echo "GEMINI_API_KEY=${GEMINI_API_KEY}" >> .env
+echo "GROK_API_KEY=${GROK_API_KEY}" >> .env
+echo "TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}" >> .env
+echo "TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}" >> .env
+
+# Clean up duplicate entries by using proper key=value parsing
+awk -F'=' '!seen[$1]++ {print}' .env > .env.tmp && mv .env.tmp .env
 
 echo -e "${GREEN}✅ Laravel configured${NC}"
 
