@@ -267,6 +267,49 @@ echo -e "${GREEN}✅ Dependencies installed${NC}"
 
 # Configure Laravel
 echo -e "${CYAN}🔧 STEP 11/12: Configuring Laravel${NC}"
+
+# Create .env.example if it doesn't exist
+if [ ! -f .env.example ]; then
+    echo -e "${YELLOW}⚠️ Creating missing .env.example...${NC}"
+    cat > .env.example << 'ENVEXAMPLE'
+APP_NAME=SentinentX
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+APP_TIMEZONE=Europe/Istanbul
+APP_URL=http://localhost
+
+LOG_CHANNEL=stack
+LOG_LEVEL=debug
+
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=sentinentx
+DB_USERNAME=postgres
+DB_PASSWORD=
+
+CACHE_DRIVER=redis
+QUEUE_CONNECTION=redis
+SESSION_DRIVER=redis
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+BYBIT_API_KEY=
+BYBIT_API_SECRET=
+BYBIT_TESTNET=true
+
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+ENVEXAMPLE
+    echo -e "${GREEN}✅ .env.example created${NC}"
+fi
+
 cp .env.example .env
 php artisan key:generate --force
 
