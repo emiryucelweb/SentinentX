@@ -25,12 +25,20 @@ fi
 
 echo -e "${YELLOW}⚠️  UYARI: Bu script VDS'teki TÜM SentinentX kalıntılarını silecek!${NC}"
 echo -e "${YELLOW}⚠️  Bu işlem GERİ ALINAMAZ!${NC}"
-echo -e "${YELLOW}⚠️  Devam etmek istediğinden EMİN MİSİN?${NC}"
-echo ""
-read -p "Devam etmek için 'DELETE-ALL' yaz: " confirm
 
-if [[ $confirm != "DELETE-ALL" ]]; then
-    echo -e "${RED}❌ İşlem iptal edildi.${NC}"
+# Check if running via pipe (no stdin available)
+if [ -t 0 ]; then
+    echo -e "${YELLOW}⚠️  Devam etmek istediğinden EMİN MİSİN?${NC}"
+    echo ""
+    read -p "Devam etmek için 'DELETE-ALL' yaz: " confirm
+    if [[ $confirm != "DELETE-ALL" ]]; then
+        echo -e "${RED}❌ İşlem iptal edildi.${NC}"
+        exit 1
+    fi
+else
+    echo -e "${YELLOW}⚠️  PIPE İLE ÇALIŞIYOR - OTOMATIK ONAY VERİLEMEZ!${NC}"
+    echo -e "${RED}❌ Güvenlik için bu script pipe ile çalışmaz!${NC}"
+    echo -e "${CYAN}💡 Manuel çalıştır: wget script && chmod +x script && ./script${NC}"
     exit 1
 fi
 

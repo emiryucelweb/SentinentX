@@ -24,12 +24,19 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 echo -e "${YELLOW}⚠️  Bu script VDS'teki tüm SentinentX kalıntılarını temizleyecek!${NC}"
-echo -e "${YELLOW}⚠️  Devam etmek istediğinden emin misin?${NC}"
-read -p "Devam etmek için 'yes' yaz: " confirm
 
-if [[ $confirm != "yes" ]]; then
-    echo -e "${RED}❌ İşlem iptal edildi.${NC}"
-    exit 1
+# Check if running via pipe (no stdin available)
+if [ -t 0 ]; then
+    echo -e "${YELLOW}⚠️  Devam etmek istediğinden emin misin?${NC}"
+    read -p "Devam etmek için 'yes' yaz: " confirm
+    if [[ $confirm != "yes" ]]; then
+        echo -e "${RED}❌ İşlem iptal edildi.${NC}"
+        exit 1
+    fi
+else
+    echo -e "${YELLOW}⚠️  Pipe ile çalışıyor, otomatik devam ediyor...${NC}"
+    echo -e "${GREEN}✅ Auto-confirmed via pipe${NC}"
+    sleep 2
 fi
 
 echo ""
