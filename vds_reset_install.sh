@@ -239,8 +239,8 @@ if fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
 fi
 
 apt install -y redis-server
-systemctl start redis
-systemctl enable redis
+systemctl start redis-server
+systemctl enable redis-server
 echo -e "${GREEN}✅ Redis installed${NC}"
 
 # Clone project
