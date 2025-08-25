@@ -420,9 +420,9 @@ HMAC_KEY=$(openssl rand -hex 32)
 BYBIT_HMAC_KEY=$(openssl rand -hex 32)
 
 # Replace placeholders with actual keys
-sed -i "s/placeholder_encryption_key/${ENCRYPTION_KEY}/" /var/www/sentinentx/.env
-sed -i "s/placeholder_hmac_key/${HMAC_KEY}/" /var/www/sentinentx/.env
-sed -i "s/placeholder_bybit_hmac/${BYBIT_HMAC_KEY}/" /var/www/sentinentx/.env
+sed -i "s|placeholder_encryption_key|${ENCRYPTION_KEY}|" /var/www/sentinentx/.env
+sed -i "s|placeholder_hmac_key|${HMAC_KEY}|" /var/www/sentinentx/.env
+sed -i "s|placeholder_bybit_hmac|${BYBIT_HMAC_KEY}|" /var/www/sentinentx/.env
 
 echo -e "${GREEN}✅ Security keys generated${NC}"
 
