@@ -262,6 +262,10 @@ echo -e "${GREEN}✅ Permissions set${NC}"
 # Install dependencies
 echo -e "${CYAN}📦 STEP 10/12: Installing Dependencies${NC}"
 cd /var/www/sentinentx
+
+# Fix git ownership issue
+git config --global --add safe.directory /var/www/sentinentx
+
 composer install --no-dev --optimize-autoloader --no-interaction
 echo -e "${GREEN}✅ Dependencies installed${NC}"
 
@@ -311,9 +315,25 @@ ENVEXAMPLE
 fi
 
 cp .env.example .env
-php artisan key:generate --force
 
-# Update .env with basic config
+# Prompt for API keys
+echo -e "${CYAN}🔐 API KEYS CONFIGURATION${NC}"
+echo -e "${YELLOW}Please provide your API keys:${NC}"
+echo ""
+
+read -p "🚀 Bybit Testnet API Key: " BYBIT_API_KEY
+read -s -p "🔐 Bybit Testnet Secret: " BYBIT_API_SECRET
+echo ""
+read -p "🤖 Telegram Bot Token: " TELEGRAM_BOT_TOKEN
+read -p "💬 Telegram Chat ID: " TELEGRAM_CHAT_ID
+read -p "🧠 OpenAI API Key (sk-...): " OPENAI_API_KEY
+read -p "⚡ Anthropic API Key (sk-ant-...): " ANTHROPIC_API_KEY
+read -p "🌟 Gemini API Key (AIza...): " GEMINI_API_KEY
+read -p "🔥 Grok API Key: " GROK_API_KEY
+echo ""
+echo -e "${GREEN}✅ API keys collected${NC}"
+
+# Update .env with complete config
 cat > .env << 'EOF'
 APP_NAME=SentinentX
 APP_ENV=production
@@ -344,22 +364,27 @@ REDIS_PORT=6379
 
 BYBIT_TESTNET=true
 BYBIT_BASE_URL=https://api-testnet.bybit.com
-BYBIT_API_KEY=
-BYBIT_API_SECRET=
+BYBIT_API_KEY=${BYBIT_API_KEY}
+BYBIT_API_SECRET=${BYBIT_API_SECRET}
 
-OPENAI_API_KEY=
+OPENAI_API_KEY=${OPENAI_API_KEY}
+OPENAI_ENABLED=true
 OPENAI_MODEL=gpt-4o-mini
 
-GEMINI_API_KEY=
+ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+
+GEMINI_API_KEY=${GEMINI_API_KEY}
+GEMINI_ENABLED=true
 GEMINI_MODEL=gemini-2.0-flash-exp
 GEMINI_BASE_URL=https://generativelanguage.googleapis.com
 
-GROK_API_KEY=
+GROK_API_KEY=${GROK_API_KEY}
+GROK_ENABLED=true
 GROK_MODEL=grok-2-1212
 GROK_BASE_URL=https://api.x.ai/v1
 
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_CHAT_ID=
+TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
 
 TRADING_MAX_LEVERAGE=75
 TRADING_MODE_ONE_WAY=true
@@ -367,6 +392,25 @@ TRADING_MARGIN_MODE=cross
 
 COINGECKO_BASE_URL=https://api.coingecko.com/api/v3
 COINGECKO_TIMEOUT=15
+
+# Lab Configuration
+LAB_ENVIRONMENT=testnet
+LAB_INITIAL_BALANCE=1000
+LAB_MAX_POSITION_SIZE=100
+LAB_RISK_PER_TRADE=2
+LAB_MAX_DRAWDOWN=10
+LAB_STOP_LOSS_PCT=2
+LAB_TAKE_PROFIT_PCT=4
+
+# Security
+SECURITY_ENCRYPTION_KEY=base64:\$(openssl rand -base64 32)
+HMAC_SECRET_KEY=\$(openssl rand -hex 32)
+BYBIT_HMAC_SECRET=\$(openssl rand -hex 32)
+
+# Monitoring
+LOGGING_LEVEL=info
+MONITORING_ENABLED=true
+METRICS_ENABLED=true
 EOF
 
 # Generate new key
