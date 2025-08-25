@@ -279,7 +279,14 @@ configure_laravel() {
     fi
     
     # Generate application key
-    sudo -u www-data php artisan key:generate --force &>> "$LOG_FILE" || error "Failed to generate application key"
+    # Generate application key with better error handling
+    if ! sudo -u www-data php artisan key:generate --force &>> "$LOG_FILE"; then
+        warning "Standard key generation failed, trying alternative method..."
+        # Alternative: Set a secure random key manually
+        RANDOM_KEY=$(openssl rand -base64 32)
+        sed -i "s/APP_KEY=.*/APP_KEY=base64:$RANDOM_KEY/" "$INSTALL_DIR/.env"
+        log "Application key set manually: base64:$RANDOM_KEY"
+    fi
     
     # Configure database in .env
     sed -i "s/DB_CONNECTION=.*/DB_CONNECTION=pgsql/" .env
