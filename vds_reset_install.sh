@@ -101,10 +101,38 @@ echo -e "${GREEN}✅ Basic packages installed${NC}"
 echo -e "${CYAN}🐘 STEP 3/12: Installing PHP 8.2${NC}"
 add-apt-repository ppa:ondrej/php -y
 apt update -y
-apt install -y php8.2 php8.2-cli php8.2-fpm php8.2-mysql php8.2-pgsql php8.2-sqlite3 \
-php8.2-redis php8.2-curl php8.2-json php8.2-mbstring php8.2-xml php8.2-zip \
-php8.2-gd php8.2-intl php8.2-bcmath php8.2-soap php8.2-xsl php8.2-opcache
-echo -e "${GREEN}✅ PHP 8.2 installed${NC}"
+
+# Install PHP packages one by one to handle missing packages gracefully
+PHP_PACKAGES=(
+    "php8.2"
+    "php8.2-cli" 
+    "php8.2-fpm"
+    "php8.2-mysql"
+    "php8.2-pgsql"
+    "php8.2-sqlite3"
+    "php8.2-redis"
+    "php8.2-curl"
+    "php8.2-mbstring"
+    "php8.2-xml"
+    "php8.2-zip"
+    "php8.2-gd"
+    "php8.2-intl"
+    "php8.2-bcmath"
+    "php8.2-soap"
+    "php8.2-xsl"
+    "php8.2-opcache"
+)
+
+for package in "${PHP_PACKAGES[@]}"; do
+    if apt-cache show "$package" > /dev/null 2>&1; then
+        apt install -y "$package"
+        echo -e "${GREEN}✅ $package installed${NC}"
+    else
+        echo -e "${YELLOW}⚠️ $package not available, skipping${NC}"
+    fi
+done
+
+echo -e "${GREEN}✅ PHP 8.2 installation completed${NC}"
 
 # Install Composer
 echo -e "${CYAN}🎼 STEP 4/12: Installing Composer${NC}"
