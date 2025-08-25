@@ -223,9 +223,19 @@ echo -e "${GREEN}✅ PostgreSQL installed${NC}"
 
 # Create database
 echo -e "${CYAN}🗄️  STEP 6/12: Creating Database${NC}"
-sudo -u postgres psql -c "CREATE USER sentx WITH PASSWORD 'sentx123';"
-sudo -u postgres psql -c "CREATE DATABASE sentx OWNER sentx;"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE sentx TO sentx;"
+
+# Fix PostgreSQL PATH and working directory issues
+export PATH="/usr/lib/postgresql/*/bin:$PATH"
+cd /tmp
+
+# Drop existing and create fresh
+sudo -u postgres dropdb --if-exists sentx 2>/dev/null || true
+sudo -u postgres dropuser --if-exists sentx 2>/dev/null || true
+
+# Create new user and database
+sudo -u postgres createuser -s sentx
+sudo -u postgres psql -c "ALTER USER sentx PASSWORD 'sentx123';"
+sudo -u postgres createdb sentx -O sentx
 echo -e "${GREEN}✅ Database created${NC}"
 
 # Install Redis
