@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SentinentX VDS Reset & Install Script - FIXED VERSION
+# SentinentX VDS Reset & Install Script
 # Bu script VDS'i temizler ve fresh kurulum yapar
 
 set -e
@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-echo -e "${CYAN}🚀 SENTINENTX VDS RESET & INSTALL (FIXED)${NC}"
+echo -e "${CYAN}🚀 SENTINENTX VDS RESET & INSTALL${NC}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 # Root check
@@ -23,7 +23,7 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# Auto-confirm for pipe mode
+# Auto-confirm for pipe mode, ask for interactive mode
 if [ -t 0 ]; then
     echo -e "${YELLOW}⚠️  Bu script VDS'teki tüm SentinentX kalıntılarını silip yeniden kuracak!${NC}"
     read -p "Devam etmek için 'yes' yazın: " confirm
@@ -33,6 +33,7 @@ if [ -t 0 ]; then
     fi
 else
     echo -e "${GREEN}✅ Pipe mode - otomatik devam${NC}"
+    sleep 1
 fi
 
 echo ""
@@ -50,21 +51,20 @@ echo -e "${GREEN}✅ Processes stopped${NC}"
 
 # Remove directories
 echo -e "${YELLOW}📁 Removing directories...${NC}"
-rm -rf /var/www/sentinentx
-rm -rf /tmp/sentinentx*
-rm -rf /home/*/sentinentx
+rm -rf /var/www/sentinentx 2>/dev/null || true
+rm -rf /var/www/SentinentX 2>/dev/null || true
 echo -e "${GREEN}✅ Directories removed${NC}"
 
 # Remove services
 echo -e "${YELLOW}⚙️  Removing services...${NC}"
-rm -f /etc/systemd/system/sentx-*.service
+rm -f /etc/systemd/system/sentx-*.service 2>/dev/null || true
 systemctl daemon-reload
 echo -e "${GREEN}✅ Services removed${NC}"
 
 # Clean database
 echo -e "${YELLOW}🗄️  Cleaning database...${NC}"
-sudo -u postgres dropdb --if-exists sentx 2>/dev/null || true
-sudo -u postgres dropuser --if-exists sentx 2>/dev/null || true
+sudo -u postgres psql -c "DROP DATABASE IF EXISTS sentx;" 2>/dev/null || true
+sudo -u postgres psql -c "DROP USER IF EXISTS sentx;" 2>/dev/null || true
 echo -e "${GREEN}✅ Database cleaned${NC}"
 
 # Clean Redis
@@ -72,64 +72,108 @@ echo -e "${YELLOW}🧽 Cleaning Redis...${NC}"
 redis-cli FLUSHALL 2>/dev/null || true
 echo -e "${GREEN}✅ Redis cleaned${NC}"
 
+# Clean logs and temp
+echo -e "${YELLOW}📝 Cleaning logs and temp files...${NC}"
+rm -rf /var/log/sentx* 2>/dev/null || true
+rm -rf /tmp/composer-* 2>/dev/null || true
+rm -rf /tmp/php* 2>/dev/null || true
+echo -e "${GREEN}✅ Logs and temp files cleaned${NC}"
+
 echo ""
 echo -e "${GREEN}🎉 VDS CLEANED SUCCESSFULLY!${NC}"
+sleep 2
+
 echo ""
+echo -e "${BLUE}🚀 PHASE 2: FRESH INSTALLATION${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-echo -e "${CYAN}🚀 PHASE 2: FRESH INSTALLATION${NC}"
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+# Aggressive apt lock cleanup
+echo -e "${CYAN}🔐 Cleaning apt locks and processes...${NC}"
 
-# Function for aggressive apt lock cleanup
-cleanup_apt_locks() {
-    echo -e "${CYAN}🔐 Cleaning apt locks and processes...${NC}"
-    
-    # Kill all apt/dpkg processes
-    echo -e "${YELLOW}🔪 Killing apt/dpkg processes...${NC}"
-    pkill -9 apt 2>/dev/null || true
-    pkill -9 dpkg 2>/dev/null || true
-    pkill -9 unattended-upgrade 2>/dev/null || true
-    killall -9 apt 2>/dev/null || true
-    killall -9 dpkg 2>/dev/null || true
-    killall -9 unattended-upgrades 2>/dev/null || true
-    
-    # Remove lock files
-    echo -e "${YELLOW}🗑️ Removing lock files...${NC}"
-    rm -f /var/lib/dpkg/lock-frontend
-    rm -f /var/lib/dpkg/lock
-    rm -f /var/cache/apt/archives/lock
-    rm -f /var/lib/apt/lists/lock
-    
-    # Configure dpkg
-    echo -e "${YELLOW}⚙️ Configuring dpkg...${NC}"
-    dpkg --configure -a 2>/dev/null || true
-    
-    echo -e "${GREEN}✅ Lock cleanup completed${NC}"
-}
+# Kill all apt/dpkg processes immediately
+echo -e "${YELLOW}🔪 Killing apt/dpkg processes...${NC}"
+pkill -9 -f "apt|dpkg|unattended-upgrade" 2>/dev/null || true
+killall -9 apt apt-get dpkg 2>/dev/null || true
 
-# Initial cleanup
-cleanup_apt_locks
+# Wait a moment for processes to die
+sleep 3
 
-# STEP 1: System Update
+# Remove all lock files
+echo -e "${YELLOW}🗑️ Removing lock files...${NC}"
+rm -f /var/lib/dpkg/lock-frontend 2>/dev/null || true
+rm -f /var/lib/dpkg/lock 2>/dev/null || true
+rm -f /var/cache/apt/archives/lock 2>/dev/null || true
+rm -f /var/lib/apt/lists/lock 2>/dev/null || true
+
+# Configure dpkg
+echo -e "${YELLOW}⚙️ Configuring dpkg...${NC}"
+dpkg --configure -a 2>/dev/null || true
+
+# Final check with timeout
+echo -e "${CYAN}🔍 Final lock check with timeout...${NC}"
+timeout=0
+while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 && [ $timeout -lt 6 ]; do
+    echo -e "${YELLOW}⏳ Waiting... (${timeout}/5)${NC}"
+    sleep 5
+    timeout=$((timeout + 1))
+done
+
+# If still locked after timeout, force remove and continue
+if fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+    echo -e "${RED}⚠️ Force removing persistent locks...${NC}"
+    fuser -k /var/lib/dpkg/lock-frontend 2>/dev/null || true
+    rm -f /var/lib/dpkg/lock-frontend 2>/dev/null || true
+    sleep 2
+fi
+
+echo -e "${GREEN}✅ Lock cleanup completed${NC}"
+
+# Update system
 echo -e "${CYAN}📦 STEP 1/12: System Update${NC}"
-apt update
-apt upgrade -y
+apt update -y
 echo -e "${GREEN}✅ System updated${NC}"
 
-# STEP 2: Install Basic Packages
+# Install basic packages
 echo -e "${CYAN}📦 STEP 2/12: Installing Basic Packages${NC}"
-apt install -y curl git unzip wget software-properties-common
+apt install -y curl wget git unzip software-properties-common
 echo -e "${GREEN}✅ Basic packages installed${NC}"
 
-# STEP 3: Install PHP 8.2
+# Install PHP 8.2
 echo -e "${CYAN}🐘 STEP 3/12: Installing PHP 8.2${NC}"
-add-apt-repository ppa:ondrej/php -y
-apt update
 
-# PHP packages to install
+# Quick lock check before adding repository
+timeout=0
+while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 && [ $timeout -lt 3 ]; do
+    echo -e "${YELLOW}⏳ Quick check before PHP repository... (${timeout}/2)${NC}"
+    sleep 2
+    timeout=$((timeout + 1))
+done
+if fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+    echo -e "${RED}⚠️ Force proceeding with PHP repository...${NC}"
+    fuser -k /var/lib/dpkg/lock-frontend 2>/dev/null || true
+fi
+
+add-apt-repository ppa:ondrej/php -y
+
+# Quick lock check before update
+timeout=0
+while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 && [ $timeout -lt 2 ]; do
+    echo -e "${YELLOW}⏳ Quick check before update... (${timeout}/1)${NC}"
+    sleep 3
+    timeout=$((timeout + 1))
+done
+if fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+    echo -e "${RED}⚠️ Force proceeding with update...${NC}"
+    fuser -k /var/lib/dpkg/lock-frontend 2>/dev/null || true
+fi
+
+apt update -y
+
+# Install PHP packages one by one to handle missing packages gracefully
 PHP_PACKAGES=(
     "php8.2"
-    "php8.2-cli"
-    "php8.2-fpm" 
+    "php8.2-cli" 
+    "php8.2-fpm"
     "php8.2-mysql"
     "php8.2-pgsql"
     "php8.2-sqlite3"
@@ -147,74 +191,100 @@ PHP_PACKAGES=(
 )
 
 for package in "${PHP_PACKAGES[@]}"; do
-    if apt-cache show "$package" &>/dev/null; then
-        echo -e "${YELLOW}Installing $package...${NC}"
+    if apt-cache show "$package" > /dev/null 2>&1; then
         apt install -y "$package"
         echo -e "${GREEN}✅ $package installed${NC}"
     else
-        echo -e "${YELLOW}⚠️ Skipping $package (not available)${NC}"
+        echo -e "${YELLOW}⚠️ $package not available, skipping${NC}"
     fi
 done
 
 echo -e "${GREEN}✅ PHP 8.2 installation completed${NC}"
 
-# STEP 4: Install Composer
+# Install Composer
 echo -e "${CYAN}🎼 STEP 4/12: Installing Composer${NC}"
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 echo -e "${GREEN}✅ Composer installed${NC}"
 
-# STEP 5: Install PostgreSQL
+# Install PostgreSQL
 echo -e "${CYAN}🗄️  STEP 5/12: Installing PostgreSQL${NC}"
+
+# Quick lock check before PostgreSQL
+if fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+    echo -e "${RED}⚠️ Force proceeding with PostgreSQL...${NC}"
+    fuser -k /var/lib/dpkg/lock-frontend 2>/dev/null || true
+    sleep 1
+fi
+
 apt install -y postgresql postgresql-contrib
 systemctl start postgresql
 systemctl enable postgresql
 echo -e "${GREEN}✅ PostgreSQL installed${NC}"
 
-# STEP 6: Create Database
+# Create database
 echo -e "${CYAN}🗄️  STEP 6/12: Creating Database${NC}"
+
+# Fix PostgreSQL PATH and working directory issues
 export PATH="/usr/lib/postgresql/*/bin:$PATH"
 cd /tmp
 
-# Create user and database
-sudo -u postgres createuser -s sentx 2>/dev/null || true
-sudo -u postgres psql -c "ALTER USER sentx PASSWORD 'sentx123';" 2>/dev/null || true
-sudo -u postgres createdb sentx -O sentx 2>/dev/null || true
+# Drop existing and create fresh
+sudo -u postgres dropdb --if-exists sentx 2>/dev/null || true
+sudo -u postgres dropuser --if-exists sentx 2>/dev/null || true
+
+# Create new user and database
+sudo -u postgres createuser -s sentx
+sudo -u postgres psql -c "ALTER USER sentx PASSWORD 'sentx123';"
+sudo -u postgres createdb sentx -O sentx
 echo -e "${GREEN}✅ Database created${NC}"
 
-# STEP 7: Install Redis
+# Install Redis
 echo -e "${CYAN}🧽 STEP 7/12: Installing Redis${NC}"
+
+# Quick lock check before Redis
+if fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+    echo -e "${RED}⚠️ Force proceeding with Redis...${NC}"
+    fuser -k /var/lib/dpkg/lock-frontend 2>/dev/null || true
+    sleep 1
+fi
+
 apt install -y redis-server
 systemctl start redis-server
 systemctl enable redis-server
 echo -e "${GREEN}✅ Redis installed${NC}"
 
-# STEP 8: Clone Project
+# Clone project
 echo -e "${CYAN}📥 STEP 8/12: Cloning Project${NC}"
 mkdir -p /var/www/sentinentx
 cd /var/www/sentinentx
 git clone https://github.com/emiryucelweb/SentinentX.git .
-git config --global --add safe.directory /var/www/sentinentx
 echo -e "${GREEN}✅ Project cloned${NC}"
 
-# STEP 9: Set Permissions
+# Set permissions
 echo -e "${CYAN}🔐 STEP 9/12: Setting Permissions${NC}"
+useradd -r -s /bin/false www-data 2>/dev/null || true
 chown -R www-data:www-data /var/www/sentinentx
 chmod -R 755 /var/www/sentinentx
 chmod -R 775 /var/www/sentinentx/storage
 chmod -R 775 /var/www/sentinentx/bootstrap/cache
 echo -e "${GREEN}✅ Permissions set${NC}"
 
-# STEP 10: Install Dependencies
+# Install dependencies
 echo -e "${CYAN}📦 STEP 10/12: Installing Dependencies${NC}"
 cd /var/www/sentinentx
+
+# Fix git ownership issue
+git config --global --add safe.directory /var/www/sentinentx
+
 composer install --no-dev --optimize-autoloader --no-interaction
 echo -e "${GREEN}✅ Dependencies installed${NC}"
 
-# STEP 11: Configure Laravel
+# Configure Laravel
 echo -e "${CYAN}🔧 STEP 11/12: Configuring Laravel${NC}"
 
-# Create .env.example if missing
+# Create .env.example if it doesn't exist
 if [ ! -f .env.example ]; then
+    echo -e "${YELLOW}⚠️ Creating missing .env.example...${NC}"
     cat > .env.example << 'ENVEXAMPLE'
 APP_NAME=SentinentX
 APP_ENV=production
@@ -229,9 +299,9 @@ LOG_LEVEL=debug
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
 DB_PORT=5432
-DB_DATABASE=sentx
-DB_USERNAME=sentx
-DB_PASSWORD=sentx123
+DB_DATABASE=sentinentx
+DB_USERNAME=postgres
+DB_PASSWORD=
 
 CACHE_DRIVER=redis
 QUEUE_CONNECTION=redis
@@ -250,9 +320,8 @@ TELEGRAM_CHAT_ID=
 
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
-GEMINI_API_KEY=
-GROK_API_KEY=
 ENVEXAMPLE
+    echo -e "${GREEN}✅ .env.example created${NC}"
 fi
 
 cp .env.example .env
@@ -275,7 +344,7 @@ echo ""
 echo -e "${GREEN}✅ API keys collected${NC}"
 
 # Update .env with complete config
-cat > .env << ENVEOF
+cat > .env << 'EOF'
 APP_NAME=SentinentX
 APP_ENV=production
 APP_DEBUG=false
@@ -303,17 +372,11 @@ REDIS_HOST=127.0.0.1
 REDIS_PASSWORD=null
 REDIS_PORT=6379
 
-# Exchange API
-BYBIT_API_KEY=${BYBIT_API_KEY}
-BYBIT_API_SECRET=${BYBIT_API_SECRET}
 BYBIT_TESTNET=true
 BYBIT_BASE_URL=https://api-testnet.bybit.com
+BYBIT_API_KEY=${BYBIT_API_KEY}
+BYBIT_API_SECRET=${BYBIT_API_SECRET}
 
-# Telegram
-TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
-
-# AI Providers
 OPENAI_API_KEY=${OPENAI_API_KEY}
 OPENAI_ENABLED=true
 OPENAI_MODEL=gpt-4o-mini
@@ -330,10 +393,15 @@ GROK_ENABLED=true
 GROK_MODEL=grok-2-1212
 GROK_BASE_URL=https://api.x.ai/v1
 
-# Trading Configuration
+TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+
 TRADING_MAX_LEVERAGE=75
 TRADING_MODE_ONE_WAY=true
 TRADING_MARGIN_MODE=cross
+
+COINGECKO_BASE_URL=https://api.coingecko.com/api/v3
+COINGECKO_TIMEOUT=15
 
 # Lab Configuration
 LAB_ENVIRONMENT=testnet
@@ -344,7 +412,7 @@ LAB_MAX_DRAWDOWN=10
 LAB_STOP_LOSS_PCT=2
 LAB_TAKE_PROFIT_PCT=4
 
-# Security (placeholders)
+# Security
 SECURITY_ENCRYPTION_KEY=placeholder_encryption_key
 HMAC_SECRET_KEY=placeholder_hmac_key
 BYBIT_HMAC_SECRET=placeholder_bybit_hmac
@@ -353,17 +421,18 @@ BYBIT_HMAC_SECRET=placeholder_bybit_hmac
 LOGGING_LEVEL=info
 MONITORING_ENABLED=true
 METRICS_ENABLED=true
-ENVEOF
+EOF
 
-# Generate security keys and replace placeholders
+# Generate security keys and update .env
 echo -e "${CYAN}🔐 Generating security keys...${NC}"
 ENCRYPTION_KEY="base64:$(openssl rand -base64 32)"
 HMAC_KEY=$(openssl rand -hex 32)
 BYBIT_HMAC_KEY=$(openssl rand -hex 32)
 
-sed -i "s|placeholder_encryption_key|${ENCRYPTION_KEY}|" .env
-sed -i "s|placeholder_hmac_key|${HMAC_KEY}|" .env
-sed -i "s|placeholder_bybit_hmac|${BYBIT_HMAC_KEY}|" .env
+# Replace placeholders with actual keys
+sed -i "s|placeholder_encryption_key|${ENCRYPTION_KEY}|" /var/www/sentinentx/.env
+sed -i "s|placeholder_hmac_key|${HMAC_KEY}|" /var/www/sentinentx/.env
+sed -i "s|placeholder_bybit_hmac|${BYBIT_HMAC_KEY}|" /var/www/sentinentx/.env
 
 echo -e "${GREEN}✅ Security keys generated${NC}"
 
@@ -371,16 +440,16 @@ echo -e "${GREEN}✅ Security keys generated${NC}"
 php artisan key:generate --force
 echo -e "${GREEN}✅ Laravel configured${NC}"
 
-# STEP 12: Run Migrations
+# Run migrations
 echo -e "${CYAN}🗄️  STEP 12/12: Running Database Migration${NC}"
 php artisan migrate --force
 echo -e "${GREEN}✅ Database migrated${NC}"
 
-# Create System Services
+# Create services
 echo -e "${CYAN}🔄 Creating System Services${NC}"
 
 # Queue Worker Service
-cat > /etc/systemd/system/sentx-queue.service << SERVICEEOF
+cat > /etc/systemd/system/sentx-queue.service << 'EOF'
 [Unit]
 Description=SentinentX Queue Worker
 After=network.target
@@ -389,16 +458,16 @@ After=network.target
 Type=simple
 User=www-data
 WorkingDirectory=/var/www/sentinentx
-ExecStart=/usr/bin/php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+ExecStart=/usr/bin/php /var/www/sentinentx/artisan queue:work --sleep=3 --tries=3 --max-time=3600
 Restart=always
-RestartSec=5
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
-SERVICEEOF
+EOF
 
 # Telegram Bot Service
-cat > /etc/systemd/system/sentx-telegram.service << SERVICEEOF
+cat > /etc/systemd/system/sentx-telegram.service << 'EOF'
 [Unit]
 Description=SentinentX Telegram Bot
 After=network.target
@@ -407,13 +476,13 @@ After=network.target
 Type=simple
 User=www-data
 WorkingDirectory=/var/www/sentinentx
-ExecStart=/usr/bin/php artisan telegram:polling
+ExecStart=/usr/bin/php /var/www/sentinentx/artisan telegram:polling
 Restart=always
-RestartSec=5
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
-SERVICEEOF
+EOF
 
 # Enable services
 systemctl daemon-reload
@@ -424,18 +493,24 @@ echo -e "${GREEN}✅ Services created${NC}"
 
 echo ""
 echo -e "${GREEN}🎉 INSTALLATION COMPLETED!${NC}"
-echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo -e "${CYAN}📝 NEXT STEPS:${NC}"
-echo -e "${YELLOW}1. Start services:${NC}"
+echo -e "${YELLOW}📝 NEXT STEPS:${NC}"
+echo "1. Edit /var/www/sentinentx/.env and add your API keys:"
+echo "   - BYBIT_API_KEY=your_key"
+echo "   - BYBIT_API_SECRET=your_secret"
+echo "   - OPENAI_API_KEY=sk-your_key"
+echo "   - GEMINI_API_KEY=AIzaSy_your_key"
+echo "   - GROK_API_KEY=your_key"
+echo "   - TELEGRAM_BOT_TOKEN=your_token"
+echo "   - TELEGRAM_CHAT_ID=your_chat_id"
+echo ""
+echo "2. Start services:"
 echo "   systemctl start sentx-queue"
 echo "   systemctl start sentx-telegram"
 echo ""
-echo -e "${YELLOW}2. Check status:${NC}"
+echo "3. Check status:"
 echo "   systemctl status sentx-queue"
 echo "   systemctl status sentx-telegram"
-echo ""
-echo -e "${YELLOW}3. Test Telegram bot with:${NC}"
-echo "   /help"
 echo ""
 echo -e "${GREEN}🚀 SentinentX is ready for testnet trading!${NC}"
