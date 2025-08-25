@@ -72,7 +72,7 @@ final class GrokClient implements AiProvider
         }
 
         return new AiDecision(
-            action: $data['action'] ?? 'NONE',
+            action: $data['action'] ?? $data['decision'] ?? 'NO_TRADE',
             confidence: $data['confidence'] ?? 0,
             stopLoss: $data['stop_loss'] ?? 0.0,
             takeProfit: $data['take_profit'] ?? 0.0,

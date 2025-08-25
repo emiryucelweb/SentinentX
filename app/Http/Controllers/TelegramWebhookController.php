@@ -201,6 +201,7 @@ class TelegramWebhookController extends Controller
             
             // 2. Açık Pozisyon Durumu
             try {
+                $client = app('App\Services\Exchange\BybitClient');
                 $positions = $client->getPositions();
                 if ($positions['retCode'] === 0) {
                     $openPositions = array_filter($positions['result']['list'] ?? [], function($pos) {
