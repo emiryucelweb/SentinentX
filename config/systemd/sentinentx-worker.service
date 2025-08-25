@@ -1,0 +1,15 @@
+[Unit]
+Description=SentinentX Queue Worker
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/sentx
+ExecStart=/usr/bin/php artisan queue:work redis --queue=high,default --sleep=1 --tries=3 --max-time=3600
+Restart=always
+RestartSec=5
+User=www-data
+Environment=APP_ENV=production
+Environment=QUEUE_CONNECTION=redis
+
+[Install]
+WantedBy=multi-user.target

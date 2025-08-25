@@ -1,0 +1,144 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  COMPOSER_NO_INTERACTION: 1
+  COMPOSER_ALLOW_SUPERUSER: 1
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql, redis, gd, curl, zip
+        coverage: none
+
+    - name: Install dependencies
+      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+    - name: Run PHPStan
+      run: vendor/bin/phpstan analyse app --level=8 --no-progress
+
+    - name: Run PHP CS Fixer
+      run: vendor/bin/pint --test
+
+    - name: Run PHP CodeSniffer
+      run: vendor/bin/phpcs app --standard=PSR12 --extensions=php
+
+  test:
+    runs-on: ubuntu-latest
+    needs: code-quality
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: sentinentx_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql, redis, gd, curl, zip
+        coverage: xdebug
+
+    - name: Copy .env
+      run: cp .env.example .env
+
+    - name: Install dependencies
+      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+    - name: Generate key
+      run: php artisan key:generate
+
+    - name: Directory permissions
+      run: chmod -R 777 storage bootstrap/cache
+
+    - name: Create database
+      run: |
+        mkdir -p database
+        touch database/database.sqlite
+
+    - name: Run migrations
+      run: php artisan migrate --force
+
+    - name: Seed database
+      run: php artisan db:seed --force
+
+    - name: Execute tests with coverage
+      run: vendor/bin/phpunit --coverage-clover=coverage.xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
+
+    - name: Upload logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: logs
+        path: |
+          storage/logs/*.log
+          storage/logs/*.json
+        retention-days: 7
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          .phpunit.result.cache
+          coverage.xml
+        retention-days: 7
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to staging
+      run: echo "Deploy to staging environment"
+      # Burada gerçek deployment scriptleri eklenebilir
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to production
+      run: echo "Deploy to production environment"
+      # Burada gerçek deployment scriptleri eklenebilir

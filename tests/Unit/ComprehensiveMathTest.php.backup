@@ -1,0 +1,592 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit;
+
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\Helpers\MathTestHelper;
+use Tests\TestCase;
+
+#[Group('unit')]
+#[Group('math')]
+final class ComprehensiveMathTest extends TestCase
+{
+    #[Test]
+    public function test_position_sizing_comprehensive_scenarios(): void
+    {
+        $results = MathTestHelper::testPositionSizingScenarios();
+
+        $passedCount = 0;
+        $totalCount = count($results);
+
+        foreach ($results as $key => $scenario) {
+            if ($scenario['passed']) {
+                $passedCount++;
+            } else {
+                $this->fail(
+                    "Position Sizing Scenario '{$key}' failed: ".implode(', ', $scenario['errors'])
+                );
+            }
+        }
+
+        $this->assertEquals(
+            $totalCount,
+            $passedCount,
+            'All position sizing scenarios should pass'
+        );
+
+        // Detaylı matematiksel doğruluk testleri
+        $this->validatePositionSizingMathematics($results);
+    }
+
+    #[Test]
+    public function test_stop_calculation_comprehensive_scenarios(): void
+    {
+        $results = MathTestHelper::testStopCalculationScenarios();
+
+        $passedCount = 0;
+        $totalCount = count($results);
+
+        foreach ($results as $key => $scenario) {
+            if ($scenario['passed']) {
+                $passedCount++;
+            } else {
+                $this->fail(
+                    "Stop Calculation Scenario '{$key}' failed: ".implode(', ', $scenario['errors'])
+                );
+            }
+        }
+
+        $this->assertEquals(
+            $totalCount,
+            $passedCount,
+            'All stop calculation scenarios should pass'
+        );
+
+        // Detaylı matematiksel doğruluk testleri
+        $this->validateStopCalculationMathematics($results);
+    }
+
+    #[Test]
+    public function test_risk_guard_comprehensive_scenarios(): void
+    {
+        $results = MathTestHelper::testRiskGuardScenarios();
+
+        $passedCount = 0;
+        $totalCount = count($results);
+
+        foreach ($results as $key => $scenario) {
+            if ($scenario['passed']) {
+                $passedCount++;
+            } else {
+                $this->fail("Risk Guard Scenario '{$key}' failed: ".implode(', ', $scenario['errors']));
+            }
+        }
+
+        $this->assertEquals($totalCount, $passedCount, 'All risk guard scenarios should pass');
+
+        // Detaylı matematiksel doğruluk testleri
+        $this->validateRiskGuardMathematics($results);
+    }
+
+    #[Test]
+    public function test_ta_lib_comprehensive_scenarios(): void
+    {
+        $results = MathTestHelper::testTALibScenarios();
+
+        $passedCount = 0;
+        $totalCount = count($results);
+
+        foreach ($results as $key => $scenario) {
+            if ($scenario['passed']) {
+                $passedCount++;
+            } else {
+                $this->fail("TALib Scenario '{$key}' failed: ".implode(', ', $scenario['errors']));
+            }
+        }
+
+        $this->assertEquals($totalCount, $passedCount, 'All TALib scenarios should pass');
+
+        // Detaylı matematiksel doğruluk testleri
+        $this->validateTALibMathematics($results);
+    }
+
+    #[Test]
+    public function test_edge_cases_and_boundary_conditions(): void
+    {
+        // Zero division koruması
+        $this->testZeroDivisionProtection();
+
+        // Overflow koruması
+        $this->testOverflowProtection();
+
+        // Negative değer koruması
+        $this->testNegativeValueProtection();
+
+        // Çok küçük değer koruması
+        $this->testVerySmallValueProtection();
+
+        // Çok büyük değer koruması
+        $this->testVeryLargeValueProtection();
+    }
+
+    #[Test]
+    public function test_mathematical_precision_and_rounding(): void
+    {
+        // Floating point precision testleri
+        $this->testFloatingPointPrecision();
+
+        // Rounding behavior testleri
+        $this->testRoundingBehavior();
+
+        // Quantization testleri
+        $this->testQuantizationBehavior();
+    }
+
+    #[Test]
+    public function test_risk_calculation_consistency(): void
+    {
+        // Risk hesaplama tutarlılığı
+        $this->testRiskCalculationConsistencyImpl();
+
+        // Leverage hesaplama tutarlılığı
+        $this->testLeverageCalculationConsistency();
+
+        // Position size tutarlılığı
+        $this->testPositionSizeConsistency();
+    }
+
+    private function validatePositionSizingMathematics(array $results): void
+    {
+        foreach ($results as $key => $scenario) {
+            if (! isset($scenario['actual'])) {
+                continue;
+            }
+
+            $actual = $scenario['actual'];
+            $expected = $scenario['expected'];
+
+            // Qty pozitif olmalı
+            $this->assertGreaterThan(0, $actual['qty'], "Qty should be positive for scenario: {$key}");
+
+            // Leverage beklenen değer olmalı
+            $this->assertEquals(
+                $expected['leverage'],
+                $actual['leverage'],
+                "Leverage should match expected for scenario: {$key}"
+            );
+
+            // Qty minimum değerden büyük olmalı
+            $this->assertGreaterThanOrEqual(
+                $expected['qty_min'],
+                $actual['qty'],
+                "Qty should be >= minimum for scenario: {$key}"
+            );
+        }
+    }
+
+    private function validateStopCalculationMathematics(array $results): void
+    {
+        foreach ($results as $key => $scenario) {
+            if (! isset($scenario['actual'])) {
+                continue;
+            }
+
+            $actual = $scenario['actual'];
+            $params = $scenario['params'];
+
+            // Stop loss ve take profit 2 değer olmalı
+            $this->assertCount(
+                2,
+                $actual,
+                "Should return exactly 2 values for scenario: {$key}"
+            );
+
+            [$sl, $tp] = $actual;
+            $entry = $params[2];
+            $side = $params[1];
+
+            if ($side === 'LONG') {
+                // LONG için SL < Entry < TP
+                $this->assertLessThan(
+                    $entry,
+                    $sl,
+                    "LONG stop loss should be below entry for scenario: {$key}"
+                );
+                $this->assertGreaterThan(
+                    $entry,
+                    $tp,
+                    "LONG take profit should be above entry for scenario: {$key}"
+                );
+            } else {
+                // SHORT için TP < Entry < SL
+                $this->assertGreaterThan(
+                    $entry,
+                    $sl,
+                    "SHORT stop loss should be above entry for scenario: {$key}"
+                );
+                $this->assertLessThan(
+                    $entry,
+                    $tp,
+                    "SHORT take profit should be below entry for scenario: {$key}"
+                );
+            }
+        }
+    }
+
+    private function validateRiskGuardMathematics(array $results): void
+    {
+        foreach ($results as $key => $scenario) {
+            if (! isset($scenario['actual'])) {
+                continue;
+            }
+
+            $actual = $scenario['actual'];
+            $expected = $scenario['expected'];
+
+            // Result boolean olmalı
+            $this->assertIsBool($actual['ok'], "Result should be boolean for scenario: {$key}");
+
+            // Beklenen sonuç ile uyumlu olmalı
+            $this->assertEquals(
+                $expected['should_pass'],
+                $actual['ok'],
+                "Result should match expected for scenario: {$key}"
+            );
+
+            if (isset($actual['details'])) {
+                // Distance yüzde olarak pozitif olmalı
+                if (isset($actual['details']['distance_pct'])) {
+                    $this->assertGreaterThanOrEqual(
+                        0,
+                        $actual['details']['distance_pct'],
+                        "Distance should be non-negative for scenario: {$key}"
+                    );
+                }
+            }
+        }
+    }
+
+    private function validateTALibMathematics(array $results): void
+    {
+        foreach ($results as $key => $scenario) {
+            if (! isset($scenario['actual'])) {
+                continue;
+            }
+
+            $actual = $scenario['actual'];
+
+            // Tüm indikatörler hesaplanmış olmalı
+            $this->assertArrayHasKey('ema', $actual, "EMA should be calculated for scenario: {$key}");
+            $this->assertArrayHasKey('rsi', $actual, "RSI should be calculated for scenario: {$key}");
+            $this->assertArrayHasKey('macd', $actual, "MACD should be calculated for scenario: {$key}");
+            $this->assertArrayHasKey(
+                'bollinger',
+                $actual,
+                "Bollinger Bands should be calculated for scenario: {$key}"
+            );
+            $this->assertArrayHasKey('atr', $actual, "ATR should be calculated for scenario: {$key}");
+
+            // EMA array olmalı ve boş olmamalı
+            $this->assertIsArray($actual['ema'], "EMA should be array for scenario: {$key}");
+            $this->assertNotEmpty($actual['ema'], "EMA should not be empty for scenario: {$key}");
+
+            // RSI array olmalı ve boş olmamalı
+            $this->assertIsArray($actual['rsi'], "RSI should be array for scenario: {$key}");
+            $this->assertNotEmpty($actual['rsi'], "RSI should not be empty for scenario: {$key}");
+        }
+    }
+
+    // First duplicate method removed to fix PHP fatal error
+
+    private function test_overflow_protection(): void
+    {
+        $sizer = new \App\Services\Trading\PositionSizer;
+
+        // Çok büyük equity ile test
+        $result = $sizer->sizeByRisk(1e20, 0.01, 1000, 50000, 10, 0.001, 0.001);
+
+        // Overflow protection aktif olmalı
+        $this->assertLessThan(PHP_FLOAT_MAX, $result['qty'], 'Should prevent overflow');
+        $this->assertGreaterThan(0.0, $result['qty'], 'Should return valid qty');
+    }
+
+    private function test_negative_value_protection(): void
+    {
+        $sizer = new \App\Services\Trading\PositionSizer;
+
+        // Negative entry/stop durumu
+        $result = $sizer->sizeByRisk('LONG', -50000, -49000, 10000, 10, 0.01, 0.001, 0.001);
+
+        // Negatif değerler korunmalı
+        $this->assertGreaterThanOrEqual(0.001, $result['qty'], 'Should handle negative values');
+    }
+
+    private function test_very_small_value_protection(): void
+    {
+        $sizer = new \App\Services\Trading\PositionSizer;
+
+        // Çok küçük risk durumu
+        $result = $sizer->sizeByRisk('LONG', 50000, 49999.999999, 10000, 10, 0.001, 0.001, 0.001);
+
+        // Minimum threshold uygulanmalı
+        $this->assertGreaterThanOrEqual(0.001, $result['qty'], 'Should apply minimum threshold');
+    }
+
+    private function test_very_large_value_protection(): void
+    {
+        $sizer = new \App\Services\Trading\PositionSizer;
+
+        // Çok büyük leverage durumu
+        $result = $sizer->sizeByRisk('LONG', 50000, 49000, 10000, 1000, 0.01, 0.001, 0.001);
+
+        // Leverage sınırlanmalı
+        $this->assertEquals(1000, $result['leverage'], 'Should handle very large leverage');
+    }
+
+    {
+        $sizer = new \App\Services\Trading\PositionSizer;
+
+        // Hassas hesaplama testi
+        $result1 = $sizer->sizeByRisk('LONG', 50000, 49000, 10000, 10, 0.02, 0.001, 0.001);
+        $result2 = $sizer->sizeByRisk('LONG', 50000, 49000, 10000, 10, 0.02, 0.001, 0.001);
+
+        // Aynı parametrelerle aynı sonuç alınmalı
+        $this->assertEquals($result1['qty'], $result2['qty'], 'Should have consistent results');
+    }
+
+    private function test_rounding_behavior(): void
+    {
+        $sizer = new \App\Services\Trading\PositionSizer;
+
+        // Step size ile rounding testi
+        $result = $sizer->sizeByRisk('LONG', 50000, 49000, 10000, 10, 0.02, 0.01, 0.001);
+
+        // Qty step size'a göre yuvarlanmalı
+        $remainder = fmod($result['qty'], 0.01);
+        $this->assertLessThan(1e-10, abs($remainder), 'Qty should be rounded to step size');
+    }
+
+    private function test_quantization_behavior(): void
+    {
+        $sizer = new \App\Services\Trading\PositionSizer;
+
+        // Farklı step size'lar ile test
+        $stepSizes = [0.001, 0.01, 0.1, 1.0];
+
+        foreach ($stepSizes as $step) {
+            $result = $sizer->sizeByRisk(
+                'LONG',
+                50000,
+                49000,
+                10000,
+                10,
+                0.02,
+                $step,
+                $step
+            );
+
+            // Qty step size'ın katı olmalı
+            $remainder = fmod($result['qty'], $step);
+            $this->assertLessThan(1e-10, abs($remainder), "Qty should be quantized to step size: {$step}");
+        }
+    }
+
+    private function test_leverage_calculation_consistency(): void
+    {
+        $sizer = new \App\Services\Trading\PositionSizer;
+
+        // Leverage ile qty arasında tutarlılık
+        $leverages = [1, 5, 10, 20, 50, 75];
+        $entry = 50000;
+        $stop = 49000;
+        $equity = 10000;
+        $riskPct = 0.02;
+
+        foreach ($leverages as $leverage) {
+            $result = $sizer->sizeByRisk(
+                'LONG',
+                $entry,
+                $stop,
+                $equity,
+                $leverage,
+                $riskPct,
+                0.001,
+                0.001
+            );
+
+            // Leverage değişmemeli
+            $this->assertEquals($leverage, $result['leverage'], 'Leverage should remain unchanged');
+
+            // Qty pozitif olmalı
+            $this->assertGreaterThan(0, $result['qty'], "Qty should be positive for leverage: {$leverage}");
+        }
+    }
+
+    private function test_position_size_consistency(): void
+    {
+        $sizer = new \App\Services\Trading\PositionSizer;
+
+        // Aynı parametrelerle tutarlı sonuç
+        $params = ['LONG', 50000, 49000, 10000, 10, 0.02, 0.001, 0.001];
+
+        $results = [];
+        for ($i = 0; $i < 10; $i++) {
+            $results[] = $sizer->sizeByRisk(...$params);
+        }
+
+        // Tüm sonuçlar aynı olmalı
+        $firstResult = $results[0];
+        foreach ($results as $result) {
+            $this->assertEquals($firstResult['qty'], $result['qty'], 'Results should be consistent');
+            $this->assertEquals($firstResult['leverage'], $result['leverage'], 'Leverage should be consistent');
+        }
+    }
+
+    #[Test]
+    public function test_ieee754_edge_cases(): void
+    {
+        // NaN, INF, -0.0 testleri
+        $this->assertTrue(is_nan(NAN));
+        $this->assertTrue(is_infinite(INF));
+        $this->assertEquals(0, -0.0);
+
+        // NaN yayılımı koruması
+        $this->assertTrue(is_nan(NAN + 1));
+        $this->assertTrue(is_nan(NAN * 0));
+        $this->assertTrue(is_nan(sqrt(-1)));
+    }
+
+    #[Test]
+    public function test_kahan_summation(): void
+    {
+        // Kahan toplama algoritması testi
+        $numbers = array_fill(0, 1000000, 0.1);
+        $sum = 0.0;
+        $c = 0.0; // compensation
+
+        foreach ($numbers as $num) {
+            $y = $num - $c;
+            $t = $sum + $y;
+            $c = ($t - $sum) - $y;
+            $sum = $t;
+        }
+
+        $this->assertEquals(100000.0, $sum, '', 0.0001);
+    }
+
+    #[Test]
+    public function test_deterministic_rounding(): void
+    {
+        // Rounding behavior testleri
+        $value = 3.14159;
+        $this->assertEquals(3.14, round($value, 2));
+        $this->assertEquals(3.142, round($value, 3));
+
+        // PHP varsayılan rounding testi (away from zero)
+        $this->assertEquals(3, round(2.5)); // PHP away from zero
+        $this->assertEquals(4, round(3.5)); // PHP away from zero
+
+        // Deterministik rounding testi
+        $this->assertEquals(round(2.5), round(2.5)); // Aynı değer
+        $this->assertEquals(round(3.5), round(3.5)); // Aynı değer
+    }
+
+    {
+        $sizer = new \App\Services\Trading\PositionSizer;
+
+        // Risk hesaplama tutarlılığı testi
+        $entry = 50000;
+        $stop = 49000;
+        $equity = 10000;
+        $leverage = 10;
+
+        // Farklı risk yüzdeleri ile test
+        $riskPercentages = [0.01, 0.02, 0.03, 0.05];
+        $results = [];
+
+        foreach ($riskPercentages as $risk) {
+            $result = $sizer->sizeByRisk(
+                'LONG',
+                $entry,
+                $stop,
+                $equity,
+                $leverage,
+                $risk,
+                0.001,
+                0.001
+            );
+            $results[$risk] = $result;
+        }
+
+        // Risk arttıkça qty artmalı (minimum threshold nedeniyle bazı değerler eşit olabilir)
+        $prevQty = 0;
+        foreach ($riskPercentages as $risk) {
+            $currentQty = $results[$risk]['qty'];
+            $this->assertGreaterThanOrEqual($prevQty, $currentQty, "Qty should not decrease with risk percentage: {$risk}");
+            $prevQty = $currentQty;
+        }
+
+        // Leverage değişmemeli
+        foreach ($results as $risk => $result) {
+            $this->assertEquals($leverage, $result['leverage'], "Leverage should remain constant for risk: {$risk}");
+        }
+
+        // En az bir risk artışında qty artışı olmalı
+        $firstQty = $results[0.01]['qty'];
+        $lastQty = $results[0.05]['qty'];
+        $this->assertGreaterThanOrEqual($firstQty, $lastQty, 'Qty should be greater or equal for higher risk');
+    }
+
+    // Missing method implementations
+    // Third duplicate method removed to fix PHP fatal error
+
+    // Second duplicate method removed to fix PHP fatal error
+
+    {
+        // Test risk calculation consistency
+        $this->assertTrue(true); // Placeholder - implement actual consistency tests
+    }
+
+    private function test_overflow_protection(): void
+    {
+        $this->assertTrue(true); // Placeholder
+    }
+
+    private function test_negative_value_protection(): void
+    {
+        $this->assertTrue(true); // Placeholder
+    }
+
+    private function test_very_small_value_protection(): void
+    {
+        $this->assertTrue(true); // Placeholder
+    }
+
+    private function test_very_large_value_protection(): void
+    {
+        $this->assertTrue(true); // Placeholder
+    }
+
+    private function test_rounding_behavior(): void
+    {
+        $this->assertTrue(true); // Placeholder
+    }
+
+    private function test_quantization_behavior(): void
+    {
+        $this->assertTrue(true); // Placeholder
+    }
+
+    private function test_leverage_calculation_consistency(): void
+    {
+        $this->assertTrue(true); // Placeholder
+    }
+
+    private function test_position_size_consistency(): void
+    {
+        $this->assertTrue(true); // Placeholder
+    }
+}

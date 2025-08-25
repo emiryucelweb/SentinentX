@@ -1,0 +1,109 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Create tables needed for comprehensive testing
+     */
+    public function up(): void
+    {
+        // Skip in testing environment - tables are created manually in tests
+        if (app()->environment('testing')) {
+            return;
+        }
+
+        // AI Logs table for AI decision history
+        if (! Schema::hasTable('ai_logs')) {
+            Schema::create('ai_logs', function (Blueprint $table) {
+                $table->id();
+                $table->string('user_id')->nullable()->index();
+                $table->string('tenant_id')->nullable()->index();
+                $table->string('decision_id')->index();
+                $table->string('symbol');
+                $table->enum('action', ['LONG', 'SHORT', 'NONE']);
+                $table->integer('confidence');
+                $table->text('reasoning')->nullable();
+                $table->string('provider');
+                $table->json('meta')->nullable();
+                $table->timestamps();
+
+                $table->index(['symbol', 'created_at']);
+                $table->index(['provider', 'created_at']);
+            });
+        }
+
+        // Positions table for current positions
+        if (! Schema::hasTable('positions')) {
+            Schema::create('positions', function (Blueprint $table) {
+                $table->id();
+                $table->string('user_id')->nullable()->index();
+                $table->string('tenant_id')->nullable()->index();
+                $table->string('symbol');
+                $table->enum('side', ['LONG', 'SHORT']);
+                $table->decimal('size', 20, 8);
+                $table->decimal('entry_price', 20, 8);
+                $table->decimal('unrealized_pnl', 20, 8)->nullable();
+                $table->decimal('leverage', 8, 2)->default(1);
+                $table->decimal('liquidation_price', 20, 8)->nullable();
+                $table->decimal('margin_used', 20, 8)->nullable();
+                $table->json('meta')->nullable();
+                $table->timestamps();
+
+                $table->index(['symbol', 'side']);
+                $table->unique(['user_id', 'symbol', 'side']);
+            });
+        }
+
+        // Alerts table for notifications
+        if (! Schema::hasTable('alerts')) {
+            Schema::create('alerts', function (Blueprint $table) {
+                $table->id();
+                $table->string('user_id')->nullable()->index();
+                $table->string('tenant_id')->nullable()->index();
+                $table->string('symbol')->nullable();
+                $table->string('alert_type');
+                $table->text('message');
+                $table->boolean('read')->default(false);
+                $table->timestamp('triggered_at')->nullable();
+                $table->json('meta')->nullable();
+                $table->timestamps();
+
+                $table->index(['user_id', 'read']);
+                $table->index(['alert_type', 'triggered_at']);
+            });
+        }
+
+        // Data deletions table for GDPR compliance
+        if (! Schema::hasTable('data_deletions')) {
+            Schema::create('data_deletions', function (Blueprint $table) {
+                $table->string('id', 50)->primary();
+                $table->string('user_id')->index();
+                $table->text('reason');
+                $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending');
+                $table->timestamp('scheduled_for')->nullable();
+                $table->timestamp('completed_at')->nullable();
+                $table->timestamp('cancelled_at')->nullable();
+                $table->json('audit_trail')->nullable();
+                $table->json('meta')->nullable();
+                $table->timestamps();
+
+                $table->index(['status', 'scheduled_for']);
+            });
+        }
+    }
+
+    /**
+     * Reverse the migrations
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('data_deletions');
+        Schema::dropIfExists('alerts');
+        Schema::dropIfExists('positions');
+        Schema::dropIfExists('ai_logs');
+    }
+};

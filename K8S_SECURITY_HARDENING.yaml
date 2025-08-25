@@ -1,0 +1,527 @@
+# 🏗️ Kubernetes Security Hardening Implementation
+
+##############################################################################
+# 1. SECURE DEPLOYMENT WITH COMPREHENSIVE SECURITY CONTEXTS
+##############################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentinentx-app-secure
+  namespace: sentinentx
+  labels:
+    app: sentinentx
+    component: app
+    security-profile: hardened
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: sentinentx
+      component: app
+  template:
+    metadata:
+      labels:
+        app: sentinentx
+        component: app
+      annotations:
+        # Security annotations
+        container.apparmor.security.beta.kubernetes.io/php-fpm: runtime/default
+        container.apparmor.security.beta.kubernetes.io/nginx: runtime/default
+        # Prometheus monitoring
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9000"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Pod-level security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+        seLinuxOptions:
+          level: "s0:c123,c456"
+      
+      # Service account with minimal permissions
+      serviceAccountName: sentinentx-app-sa
+      automountServiceAccountToken: false
+      
+      containers:
+      ##########################################################################
+      # PHP-FPM Container - HARDENED
+      ##########################################################################
+      - name: php-fpm
+        image: sentinentx/app:v1.2.3  # ← NEVER use 'latest'
+        imagePullPolicy: Always
+        
+        # Container-level security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          capabilities:
+            drop:
+              - ALL
+            add: []  # No additional capabilities
+          seccompProfile:
+            type: RuntimeDefault
+        
+        ports:
+        - containerPort: 9000
+          name: php-fpm
+          protocol: TCP
+        
+        # Environment from secure sources only
+        envFrom:
+        - secretRef:
+            name: sentinentx-secrets
+        env:
+        - name: DB_HOST
+          value: "sentinentx-mysql.database.svc.cluster.local"
+        - name: REDIS_HOST  
+          value: "sentinentx-redis.cache.svc.cluster.local"
+        
+        # Comprehensive resource limits
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+            ephemeral-storage: "1Gi"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+            ephemeral-storage: "2Gi"
+        
+        # Enhanced health checks with security
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+        
+        # Secure volume mounts
+        volumeMounts:
+        - name: app-storage
+          mountPath: /var/www/html/storage
+          readOnly: false
+        - name: cache-volume
+          mountPath: /var/www/html/bootstrap/cache
+          readOnly: false
+        - name: tmp-volume
+          mountPath: /tmp
+          readOnly: false
+        - name: var-log
+          mountPath: /var/log
+          readOnly: false
+        
+      ##########################################################################
+      # NGINX Container - HARDENED  
+      ##########################################################################
+      - name: nginx
+        image: nginx:1.25.3-alpine  # ← Specific version, not 'latest'
+        imagePullPolicy: Always
+        
+        # Container-level security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 101  # nginx user in alpine
+          runAsGroup: 101
+          capabilities:
+            drop:
+              - ALL
+            add: []
+          seccompProfile:
+            type: RuntimeDefault
+        
+        ports:
+        - containerPort: 8080  # ← Non-privileged port
+          name: http
+          protocol: TCP
+        
+        # Comprehensive resource limits
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+            ephemeral-storage: "100Mi"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+            ephemeral-storage: "200Mi"
+        
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 3
+        
+        # Secure volume mounts
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+          readOnly: true
+        - name: nginx-tmp
+          mountPath: /tmp
+          readOnly: false
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
+          readOnly: false
+        - name: nginx-run
+          mountPath: /var/run
+          readOnly: false
+      
+      # Secure volumes
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: sentinentx-nginx-config-secure
+          defaultMode: 0444  # Read-only
+      - name: app-storage
+        emptyDir:
+          sizeLimit: 1Gi
+      - name: cache-volume
+        emptyDir:
+          sizeLimit: 500Mi
+      - name: tmp-volume
+        emptyDir:
+          sizeLimit: 100Mi
+      - name: var-log
+        emptyDir:
+          sizeLimit: 200Mi
+      - name: nginx-tmp
+        emptyDir:
+          sizeLimit: 50Mi
+      - name: nginx-cache
+        emptyDir:
+          sizeLimit: 100Mi
+      - name: nginx-run
+        emptyDir:
+          sizeLimit: 10Mi
+      
+      # Node affinity and scheduling
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        kubernetes.io/os: linux
+        node-security-profile: hardened
+      
+      # Pod disruption budget considerations
+      tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "trading-workload"
+        effect: "NoSchedule"
+      
+      # DNS policy for security
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+        - name: ndots
+          value: "2"
+        - name: edns0
+
+---
+##############################################################################
+# 2. SECURE SECRET MANAGEMENT (External Secret Operator)
+##############################################################################
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: sentinentx-secrets-vault
+  namespace: sentinentx
+spec:
+  secretStoreRef:
+    name: vault-backend
+    kind: SecretStore
+  target:
+    name: sentinentx-secrets
+    creationPolicy: Owner
+  data:
+  - secretKey: APP_KEY
+    remoteRef:
+      key: sentinentx/production
+      property: app_key
+  - secretKey: DB_PASSWORD
+    remoteRef:
+      key: sentinentx/production
+      property: db_password
+  - secretKey: BYBIT_API_KEY
+    remoteRef:
+      key: sentinentx/production
+      property: bybit_api_key
+  - secretKey: BYBIT_API_SECRET
+    remoteRef:
+      key: sentinentx/production
+      property: bybit_api_secret
+  - secretKey: OPENAI_API_KEY
+    remoteRef:
+      key: sentinentx/production
+      property: openai_api_key
+  - secretKey: HMAC_SECRET
+    remoteRef:
+      key: sentinentx/production
+      property: hmac_secret
+
+---
+##############################################################################
+# 3. STRICT NETWORK POLICY
+##############################################################################
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sentinentx-strict-netpol
+  namespace: sentinentx
+spec:
+  podSelector:
+    matchLabels:
+      app: sentinentx
+  policyTypes:
+  - Ingress
+  - Egress
+  
+  # Ingress rules - STRICT
+  ingress:
+  - from:
+    # Only ingress controller
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: ingress-nginx
+    # Only monitoring
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+      podSelector:
+        matchLabels:
+          app: prometheus
+    ports:
+    - protocol: TCP
+      port: 8080  # Nginx on non-privileged port
+    - protocol: TCP
+      port: 9000  # PHP-FPM
+  
+  # Egress rules - VERY STRICT
+  egress:
+  # DNS resolution only
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  
+  # Database access - specific pods only
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: database
+      podSelector:
+        matchLabels:
+          app: mysql
+    ports:
+    - protocol: TCP
+      port: 3306
+  
+  # Redis access - specific pods only  
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: cache
+      podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  
+  # External API access - WHITELIST SPECIFIC IPs
+  - to:
+    - ipBlock:
+        cidr: 52.84.230.0/24     # OpenAI API CIDR
+    - ipBlock:
+        cidr: 34.64.0.0/16       # Google AI CIDR
+    - ipBlock:
+        cidr: 199.232.0.0/16     # Bybit API CIDR
+    ports:
+    - protocol: TCP
+      port: 443
+
+---
+##############################################################################
+# 4. POD SECURITY POLICY / POD SECURITY STANDARDS
+##############################################################################
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sentinentx
+  labels:
+    # Pod Security Standards enforcement
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+    
+    # Additional security labels
+    security-profile: hardened
+    compliance: pci-dss
+    environment: production
+
+---
+##############################################################################
+# 5. RBAC - PRINCIPLE OF LEAST PRIVILEGE
+##############################################################################
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sentinentx-app-sa
+  namespace: sentinentx
+  labels:
+    app: sentinentx
+automountServiceAccountToken: false
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: sentinentx-app-role
+  namespace: sentinentx
+rules:
+# Minimal permissions - only what's absolutely necessary
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list"]
+  resourceNames: ["sentinentx-config"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+  resourceNames: ["sentinentx-secrets"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sentinentx-app-binding
+  namespace: sentinentx
+subjects:
+- kind: ServiceAccount
+  name: sentinentx-app-sa
+  namespace: sentinentx
+roleRef:
+  kind: Role
+  name: sentinentx-app-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+##############################################################################
+# 6. POD DISRUPTION BUDGET FOR AVAILABILITY
+##############################################################################
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: sentinentx-app-pdb
+  namespace: sentinentx
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: sentinentx
+      component: app
+
+---
+##############################################################################
+# 7. SECURE INGRESS WITH ADDITIONAL SECURITY HEADERS
+##############################################################################
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sentinentx-secure-ingress
+  namespace: sentinentx
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # SSL/TLS Security
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "HIGH:!aNULL:!MD5"
+    
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" always;
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    
+    # Rate limiting - STRICT
+    nginx.ingress.kubernetes.io/rate-limit: "10"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/rate-limit-connections: "5"
+    
+    # Request size limits
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/client-max-body-size: "10m"
+    
+    # Timeout settings
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    
+    # IP allowlist (if applicable)
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+spec:
+  tls:
+  - hosts:
+    - api.sentinentx.com
+    secretName: sentinentx-tls
+  rules:
+  - host: api.sentinentx.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sentinentx-app-secure-svc
+            port:
+              number: 80

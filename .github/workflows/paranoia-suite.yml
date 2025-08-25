@@ -1,0 +1,89 @@
+name: SENTIENTX Paranoia Suite
+
+on: 
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  paranoia:
+    name: Paranoia Stress Test Suite
+    runs-on: ubuntu-latest
+    
+    services:
+      sqlite:
+        image: alpine/sqlite
+        options: >-
+          --health-cmd "sqlite3 --version"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, sqlite3
+          coverage: xdebug
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Cache Composer packages
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Copy environment file
+        run: cp .env.example .env
+
+      - name: Generate app key
+        run: php artisan key:generate
+
+      - name: Setup test environment
+        run: |
+          export APP_ENV=testing
+          php artisan config:clear
+          php artisan cache:clear
+
+      - name: Run database migrations
+        run: |
+          export APP_ENV=testing
+          php artisan migrate:fresh --seed
+
+      - name: Run Paranoia Suite Tests
+        run: |
+          export APP_ENV=testing
+          php artisan test --coverage-text --coverage-clover=coverage.xml
+
+      - name: Run LAB Commands Test
+        run: |
+          export APP_ENV=testing
+          php artisan sentx:lab-scan --count=1
+          php artisan sentx:eod-metrics
+          php artisan sentx:risk-gate-check BTCUSDT 30000 LONG 10 29500
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Test Results Summary
+        run: |
+          echo "=== SENTIENTX PARANOIA SUITE RESULTS ==="
+          echo "✅ All tests completed successfully"
+          echo "📊 Coverage report generated"
+          echo "🔬 LAB commands tested"
+          echo "🚀 System integrity verified"

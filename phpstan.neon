@@ -1,0 +1,26 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - config/
+        - database/migrations/
+        - routes/
+
+    level: 8
+    
+    ignoreErrors:
+        # Ignore specific Laravel patterns that are safe
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder.*#'
+        - '#Property App\\Models\\.*::\$.*is never written, only read#'
+        
+
+    
+    excludePaths:
+        - vendor/
+        - bootstrap/cache/
+        - storage/
+        - node_modules (?)
+
+    reportUnmatchedIgnoredErrors: false

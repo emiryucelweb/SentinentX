@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         executionOrder="random"
+         failOnWarning="true"
+         failOnRisky="true"
+         failOnEmptyTestSuite="true"
+         beStrictAboutOutputDuringTests="true"
+         cacheDirectory=".phpunit.cache"
+         backupStaticProperties="false">
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+
+    </testsuites>
+
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:2fl+Ktvkfl+Fuz4Qp/A75G2RTiWVA/ZoKX87le4MBSo="/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="APP_TIMEZONE" value="Europe/Istanbul"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        
+        <!-- Testing-specific configuration -->
+        <env name="AI_PROVIDER" value="fake"/>
+        <env name="HTTP_CLIENT_FAKE" value="true"/>
+        <env name="TRADING_ENABLE_REAL_ORDERS" value="false"/>
+        <env name="ALERT_DEDUP_ENABLED" value="true"/>
+        <env name="ALERT_DEDUP_TTL_SECONDS" value="120"/>
+    </php>
+    <coverage>
+        <report>
+            <clover outputFile="coverage.xml"/>
+            <html outputDirectory="coverage-html"/>
+            <text outputFile="coverage.txt"/>
+        </report>
+    </coverage>
+    <source>
+        <include>
+            <directory suffix=".php">app</directory>
+        </include>
+        <exclude>
+            <directory>app/Console/Commands</directory>
+            <file>app/Providers/RouteServiceProvider.php</file>
+        </exclude>
+    </source>
+    <logging>
+        <junit outputFile="junit.xml"/>
+    </logging>
+</phpunit>

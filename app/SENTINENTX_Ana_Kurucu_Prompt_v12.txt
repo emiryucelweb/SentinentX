@@ -1,0 +1,283 @@
+
+SENTINENTX – ANA KURUCU PROMPT v12
+(ÖNCE REPO DENETİMİ & SCAFFOLD → sonra proje! Komutla açılan 4-coin bot, 5dk yönetim,
+3-AI **2 turlu** konsensüs, Telegram aktif / Slack+Mail hazır, CoinGecko verili, SaaS planlı,
+15 günlük testnet LAB modu, performans yönetişimi, IM-bazlı risk-bant boyutlandırma,
+SCALE-IN/OUT kuralları, korelasyon/beta eşiği, funding dikkati & zamanlaması, uzun-kesinti runbook’u,
+yetim pozisyon mutabakatı, One-Way zorunluluğu, komut önceliği/lock, risk-tier ile likidasyon,
+USDT de-peg guard, WS gap backfill, toz bakiye, gerçek ücretli PnL, stop-limit SL opsiyonu,
+güvenli secrets, 5× iç denetim, konuşma hafızası — netleştirilmiş IM/Notional, Weighted Median, %20 sapma, ATR(14,1H))
+
+ROLÜN
+- Elimde yalnız bir **dosya iskeleti** varmış gibi düşün; önce bu iskeleti **denetle & düzenle**, sonra Laravel 10+/PHP 8.2+ ile
+  üretim kalitesinde SaaS trading sistemi kur. Aşamalar sırasıyla ve kilitli:
+  **AŞAMA 0 → AŞAMA 1 → …**. AŞAMA 0 onaylanmadan kod üretimine geçme.
+- Yazacağın tüm kod **nihai** olsun: testli, PSR‑12, idempotent, kenar durumlarına karşı sert.
+- Tüm soruları tek mesajda sor (ÖN SORULAR); yanıtları ve konuşulan HER ŞEYİ docs/TRANSCRIPT.md ve settings tablosuna kaydet;
+  önemli kararları docs/DECISIONS.md’ye ekle; akış boyunca bu hafızayı kullan.
+
+───────────────────────────────────────────────────────────────────────────────
+AŞAMA 0) REPO DENETİMİ & SCAFFOLD (ÖNCE BU!)
+───────────────────────────────────────────────────────────────────────────────
+**Girdi**: Kullanıcı bir dosya yapısı paylaşır (örn. `dosya_yapisi.txt` ve/veya `sentinentx.zip`).  
+**Hedef**: “Önce dosya yapıma baksın ve bana eklenecek/silinecek dosyaların tümünü bildirsin. Dosya yapısını oluşturduktan sonra projeye başlayalım.”
+
+0.1 Keşif
+- Verilen txt/zip içeriğini çıkar ve **tam dosya/klasör listesi** üret.
+- Laravel konvansiyonları, bu prompttaki mimari ve servis haritası ile **eşleştir**.
+
+0.2 REPO RAPORLARI (iki artefakt zorunlu)
+- **docs/REPO_CLEANUP.md**: Aşağıdaki sütunlarla tablo:
+  `Yol | Durum {Kullanılacak|Taşınacak|YenidenAdlandır|Silinecek} | Gerekçe | Yeni Konum/Ad (varsa)`
+- **docs/REPO_SCAFFOLD_PLAN.md**: Eklenecek **tüm** klasör ve dosyaların listesi + gerekçeleri.
+  - Config, Migrations, Models/DTO, Services, Commands, HTTP, Observability, Scripts, CI konfig (opsiyonel) vb.
+  - Her öğe için: `Hedef Yol | Tip | Gerekçe | İlgili Bölüm (bu prompttaki)`
+
+0.3 İdempotent Scaffold
+- **scripts/scaffold.sh** (bash) üret:
+  - Mevcut dosyaları **silmez**, sadece **oluşturur/taşır/isimlendirir**; yıkıcı olmayan, tekrar çalıştırılabilir.
+  - Tüm yeni klasörleri oluştur; gerekli boş **.gitkeep**’leri koy.
+  - “Taşınacak/YenidenAdlandır” için `mv` adımlarını **yorum satırı** olarak bırak; kullanıcı onayıyla aktif edilir.
+  - README satırları: **DRY‑RUN modu** (env bayrağıyla sadece echo), **nasıl çalıştırılır**, **beklenen çıktı**.
+- (Opsiyonel) **tools/artisan-scaffold.php**: Laravel içinde aynı işlemleri yapan komut (idempotent).
+
+0.4 Onay Kapısı
+- Çıktılar: `REPO_CLEANUP.md`, `REPO_SCAFFOLD_PLAN.md`, `scripts/scaffold.sh`.
+- Kullanıcı onayı gerektir: **ONAY: SCAFFOLD=APPLY**. Onay gelmeden AŞAMA 1’e **geçme**.
+- Onay sonrası, scaffold’u uygula (sembolik olarak; gerçek ortamda kullanıcı çalıştırır) ve **özet** yaz:
+  kaç klasör/dosya yaratıldı, kaç öğe taşınacak/silinecek (silme talimatını sadece raporla).
+
+───────────────────────────────────────────────────────────────────────────────
+AŞAMA 1) İŞLEVSEL KAPSAM
+───────────────────────────────────────────────────────────────────────────────
+1.1 Komutla Açma (Telegram /open)
+- 4 coin (BTC, ETH, SOL, XRP) için **tek JSON snapshot** ile 3 AI’dan öneri al.
+- Öneriler: action {LONG|SHORT|NONE}, leverage, tp_pct, sl_pct, confidence(0–100), rationale.
+- Konsensüs: **2/3 çoğunluk**, NONE/ABSTAIN sayılmaz; **NONE-veto** kuralı aşağıda.
+- CoinGecko metriklerini (market cap rank, 24h/7d %, 24h hacim, dolaşım arzı, proje bayrakları…) AI paketine ekle.
+- Emir politikası (yeni giriş):
+  • Limit “yakın aralık”: entry_offset_bps = clamp(ceil(spread_bps*0.5), min_ticks=1, max_bps=8).
+    LONG: best_bid − offset | SHORT: best_ask + offset
+  • TIF: PostOnly → olmazsa Limit IOC → kısmi dolum kalana TWAP 3 parça (3–15 sn jitter).
+  • Slippage cap varsayılan 0.05% (config).
+  • TP/SL: OCO, reduceOnly, trigger=MARK_PRICE; girişin hemen ardından kur; pozitif onay alana kadar retry.
+  • **Stop‑Limit SL (opsiyonel)**: limit_offset_bps; N sn dolmayan kısım market’e döner.
+
+1.2 5 Dakikalık Yönetim (/manage veya scheduler)
+- Açık pozisyonlar tek promptta (KEEP/TIGHTEN/SCALE-IN/SCALE-OUT/CLOSE). Konsensüs kuralları aynıdır.
+- **Funding dikkati**: funding_rate_abs_bps ≥ threshold ve beklenen tutma süresi ≥ 8h → SCALE‑OUT/CLOSE’e meyil.
+- Cool‑down: kapanan sembol aynı yönde belli süre açılamaz. Tüm emirler reduceOnly/idempotent.
+
+───────────────────────────────────────────────────────────────────────────────
+AŞAMA 2) RİSK-BANT BOYUTLANDIRMA (IM BAZLI) + KALDIRAÇ
+───────────────────────────────────────────────────────────────────────────────
+Tanımlar: equity_usdt, used_margin_usdt, free_collateral, margin_util(=used/equity).  
+IM_eff = (notional/leverage) * IM_buffer_factor (1.01). ATR_spec = **ATR(14, 1H)**.
+
+Bantlar ve kaldıraç clamp:
+- 0–35%: yüksek risk **mümkün** → **30–75x**
+- 35–60%: orta risk **mümkün** → **15–30x**
+- 60–100%: düşük risk **mecbur** → **3–15x**
+
+**IM tabanlı tavanlar (pozisyon başına)**:
+- 0–35%: IM_cap_pos ≤ 0.30*equity
+- 35–60%: IM_cap_pos ≤ 0.30*equity
+- 60–100%: IM_cap_pos ≤ min(0.10*equity, 0.50*free_collateral)
+**margin_util_after**: sırasıyla ≤ 0.65 / 0.75 / 0.90.  
+**notional_cap_pos = IM_cap_pos * leverage_clamped** (borsa risk‑tier/max lev ile ayrıca clamp).  
+**Likidasyon guard**: liq mesafesi ≥ 2×ATR; **SL ≤ 0.5× liq mesafesi içeride**; değilse küçült, olmazsa **NO_TRADE**.
+
+2.1 SCALE‑IN (ekleme)
+- Yeni pozisyon kuralları + birleşik durum guard’ları **aynı anda** geçilmeli.
+- Ek IM: IM_eff_increment ≤ min(IM_cap_pos(band), 0.10*equity, 0.50*free_collateral).
+- Birleşik sonrası: margin_util_after band içinde; liq ≥ 2×ATR; SL buffer tamam.
+- Ortalama giriş **VWAP**; TP/SL orantısal güncelle; OCO relink.
+
+2.2 SCALE‑OUT (kısmi kapama)
+- reduceOnly limit/IOC; kapatılan miktar oransal/nominal.
+- Kalan: avg_entry aynı; realized PnL ↑, unrealized ↓; TP/SL orantısal küçülür (OCO korunur/yeniden kurulur).
+
+2.3 Korelasyon/Beta (algoritmik)
+- ρ_24x1H = Corr(BTC,ETH) (1H getiriler, son 24 saat). ρ_24x1H > 0.85 ve aynı yön giriş/SCALE‑IN ise →
+  **confidence düşük olan aday veto (NO_TRADE)**. (İlk sürümde sadece BTC/ETH; genişleme flag’li.)
+
+2.4 Funding zamanlaması (elit)
+- funding_window_minutes (varsayılan 5). Bir sonraki 8h funding ≤ window ise giriş **ertelenebilir** (config) ve Telegram uyarısı atılır.
+
+───────────────────────────────────────────────────────────────────────────────
+AŞAMA 3) LAB MODU (15 GÜN TESTNET) + PERFORMANS
+───────────────────────────────────────────────────────────────────────────────
+- BYBIT_MODE=testnet, LAB_MODE=true, 15 gün. Lab portföyü ~%1. PF/Sharpe/DD metrikleri kaydedilir.
+- Mainnet eşiği (manuel onay): son 15 günde PF ≥ 1.2, Max DD ≤ %15, Sharpe ≥ 0.8.
+- Canlı bekçi: Son 30 günde PF < 1.1 veya Sharpe < 0.5 → yeni açılışları durdur + uyarı.
+- A/B: İlk sürüm yalnız **altyapı/flag/rapor**; varyant üretimi **manuel**.
+
+───────────────────────────────────────────────────────────────────────────────
+AŞAMA 4) VERİ / ŞEMA / KONSENSÜS
+───────────────────────────────────────────────────────────────────────────────
+4.1 Snapshot (OPEN & MANAGE) → AI
+- Portföy (equity/used/free/margin_util, pozisyon listesi), Market (Bybit: last/mark/spread/depth/funding/oi/tick/lot/min/symbol_max_lev/risk‑tier),
+  CoinGecko (rank, 24h/7d, vol, supply, flags), Risk context (allowed lev [3,75], band lev aralıkları, slippage cap,
+  ATR_spec, SL_min_liq_buffer = 2×ATR, FUNDING_PAIN_THRESHOLD_BPS, funding_window_minutes), Mode (OPEN/MANAGE).
+
+4.2 AI çıkış şeması (katı)
+{
+  "version": "v1",
+  "snapshot_id": "...",
+  "decisions": [{
+    "symbol": "BTCUSDT",
+    "action": "LONG|SHORT|NONE|KEEP|TIGHTEN|SCALE-IN|SCALE-OUT|CLOSE",
+    "leverage": 3-75,
+    "tp_pct": float>0,
+    "sl_pct": float>0,
+    "confidence": 0-100,
+    "rationale": "kısa temel"
+  }]
+}
+Format/mantık hatası → 1 retry, sonra **BOŞ OY**.  
+**NONE‑veto**: confidence ≥ 90 ve NONE → **NO_TRADE** + kritik uyarı.
+
+4.3 Konsensüs
+- Yön/eylem: 2/3 çoğunluk (NONE hariç) + **NONE‑veto** istisnası.
+- Weighted Median (güven ağırlıklı):
+  1) Sadece **çoğunluk** ile uyumlu oylar.
+  2) Ağırlık = max(1, round(confidence)).
+  3) Kümülatif ağırlık %50’yi ilk geçen değer = medyan.
+  4) %10–%90 winsorize → tekrar hesapla.
+- **%20 sapma**: δ_i = |v_i − m| / max(m, ε) > 0.20 → **NO_TRADE** (lev/tp/sl ayrı ayrı).
+
+4.4 **2 Turlu Peer‑Review**
+- Tur 1: bağımsız yanıtlar. Tur 2: diğer ikisinin **anonim** {action, lev, tp, sl, conf, rationale kısa} bilgisi gösterilir; revize yanıt istenir.
+- Nihai konsensüs: **Tur 2 çıktıları** üzerinden (4.3). Timeout: model başı 10 sn; tur başı 30 sn; geciken → **BOŞ OY**.
+
+───────────────────────────────────────────────────────────────────────────────
+AŞAMA 5) EMİR AKIŞI, ÖNCELİK/LOCK, LİKİDASYON HESABI
+───────────────────────────────────────────────────────────────────────────────
+- **One‑Way modu zorunlu (v1)**: Başlangıçta kontrol; Hedge ise **durdur & uyar** (ileri sürümde flag’le destek).
+- Pre‑trade validator: tick/lot/min, symbol max lev, risk‑tier, position/margin mode, plan/tenant limitleri, slippage cap,
+  **risk‑tier tabanlı likidasyon** (StopCalculator).  
+- **Komut önceliği**: Manuel Telegram (/close, /manage <symbol>) **scheduler’dan üstün**.
+- **Sembol eylem kilidi**: `lock:action:{tenant}:{symbol}`; varsa düşük öncelikli işlem bekler/atlanır.
+- Giriş: PostOnly → Limit IOC → TWAP 3 parça. TP/SL: OCO, reduceOnly, MARK_PRICE; opsiyonel Stop‑Limit; ack’e kadar retry.
+- Hakikat sırası: fill stream > order stream > REST. Her emirde **orderLinkId** idempotans.
+
+5.1 Likidasyon — Risk‑Tier Doğruluğu (zorunlu)
+- Planlanan notional için Bybit **risk‑tier & maintenance margin** çek; **gerçek** liq fiyat/mesafe hesapla; varsayım yok.
+- Guard: liq ≥ 2×ATR ve SL ≤ 0.5× liq içeride; değilse boyut/kaldıraç düşür; olmuyorsa **NO_TRADE**.
+
+───────────────────────────────────────────────────────────────────────────────
+AŞAMA 6) SAAS / PLAN / BİLDİRİM / GÜVENLİK
+───────────────────────────────────────────────────────────────────────────────
+- Çoklu kiracı: tenants, plans, subscriptions, usage_counters (ilk aşama tek tenant; flag ile açılır).
+- Plan limitleri: coin seti, max lev tavanı, eşzamanlı pozisyon, günlük AI çağrısı/bütçe, bildirim kanalı sayısı.
+- Kullanım ölçümü & bütçe koruması (AI token/$).
+- Bildirim: Telegram aktif; Slack/Mail hazır‑kod ama bayrakla kapalı; AlertDispatcher öncelik + 120 sn dedup.
+- **Secrets (prod)**: Vault/Secrets Manager; **.env canlı key içermez**.
+
+───────────────────────────────────────────────────────────────────────────────
+AŞAMA 7) UYGULAMA YAPISI (KOD & DOSYALAR)
+───────────────────────────────────────────────────────────────────────────────
+- Config: config/{exchange,trading,queue,services,notifier,health}.php
+- Migrations: ai_providers, ai_logs(+round_cycle_latency), consensus_decisions, trades, market_data, alerts, settings,
+  tenants, plans, subscriptions, usage_counters, lab_runs, lab_metrics (hepsine tenant_id).
+- Modeller/DTO: AiProvider, AiLog, ConsensusDecision, Trade, MarketDatum, Alert, Setting, Tenant, Plan, Subscription,
+  UsageCounter, LabRun, LabMetric; DTO: AiDecision, ManageDecision.
+- Servisler:
+  • AI: Contracts/AiProvider, {OpenAI, Gemini, Grok}Client, PromptFactory, ConsensusService.
+  • Market: BybitMarketData(REST+WS), CoingeckoClient(cache+rate‑limit).
+  • Exchange: BybitClient, InstrumentInfoService, AccountService.
+  • Trading: PositionSizer (bant/clamp/**IM caps + SCALE‑IN/OUT**), StopCalculator(ATR/liq, **risk‑tier**),
+    TradeManager(PostOnly/IOC/TWAP), TradeCloser, **ReconciliationService**, PnlService(**real fees**, slippage metrics).
+  • Risk: RiskGuard (günlük max zarar, **korelasyon/beta**, cool‑down, plan/tenant, margin_util_after, **USDT de‑peg guard**).
+  • Notifier: TelegramNotifier(aktif), Slack/Mail(toggled), AlertDispatcher.
+  • Logger: AiLogCreatorService (decision_id/snapshot_id korelasyonu).
+  • Billing: UsageService (AI maliyeti/kota).
+  • Health: **StablecoinHealthCheck** (USDT/USD), **AnnouncementWatcher** (delist/contract change).
+  • WS: **WsClient** (gap detection, REST backfill).
+- Komutlar/HTTP:
+  • Telegram: /open, /manage, /status, /close <symbol>, /risk, /help (HMAC/allowlist).
+  • Artisan: sentx:open-now, sentx:execute, sentx:manage-open (*/5), sentx:lab-run, **sentx:reconcile**, **sentx:health-check**.
+  • HTTP admin (ops.): POST /admin/open-now, /admin/manage, /admin/reconcile.
+- Scheduler/Queue: 5 dk cron; locks: lock:open_now, lock:manage:{tenant}:{symbol}, **lock:action:{tenant}:{symbol}**;
+  retry/backoff [1,2,4,8,16,32] + jitter; heartbeat/healthcheck.
+
+───────────────────────────────────────────────────────────────────────────────
+AŞAMA 8) BİRLEŞİK RETRY + UZUN KESİNTİ RUNBOOK’U
+───────────────────────────────────────────────────────────────────────────────
+- Tüm kritik işlemler (AI, place/cancel/amend, TP/SL, status) aynı backoff: 1,2,4,8,16,32 sn + jitter (±20%), 6 deneme, idempotent.
+- TP/SL positive‑ack gelene dek retry + kritik alarm.
+- Bybit kesinti ≥ 60 dk: scheduler durdur → geri geldiğinde **reconcile** (pozisyon/exec/fee) → riskli pozisyonlar manuel kapat/SL sıkılaştır → kademeli yeniden başlat.
+
+───────────────────────────────────────────────────────────────────────────────
+AŞAMA 9) TEST / RUNBOOK
+───────────────────────────────────────────────────────────────────────────────
+- Unit: ConsensusService, PositionSizer (IM caps), StopCalculator (risk‑tier liq), RiskGuard, WsClient(gap), StablecoinHealthCheck,
+  AnnouncementWatcher, ReconciliationService.
+- E2E: /open → 2 tur konsensüs → emir; /manage → TIGHTEN/**SCALE‑IN/SCALE‑OUT**/**CLOSE**; idempotans/lock; PostOnly/IOC/TWAP;
+  OCO bağlama; **NONE veto**; **%20 sapma vetosu**; komut önceliği; Stop‑Limit SL; WS backfill; real‑fee PnL; LAB koşumları.
+- Fakes: FakeAiProvider, FakeAlertDispatcher, FakeBybit/CG.
+- Runbook/README: kurulum, dev .env, **prod secrets (Vault)**, migrate, cron/queue, healthcheck, LAB→PROD, uzun kesinti,
+  USDT de‑peg guard, funding timing notu.
+
+───────────────────────────────────────────────────────────────────────────────
+AŞAMA 10) OLASI HATALAR & ÇÖZÜMLER (KODA GÖM)
+───────────────────────────────────────────────────────────────────────────────
+- Band/clamp hatası → [0,35), [35,60), [60,100]; dışını clamp et.
+- “Kalan bakiyenin tümü” → IM bazlı sınırlar + margin_util_after guard; ihlalde **NO_TRADE**.
+- Cross/Isolated karışıklığı → moda göre margin_util kaynağı.
+- **Hedge Mode** aktif → v1’de **durdur & uyar**.
+- Yarış → locks + idempotent + **komut önceliği**.
+- Serbest metin AI → yalnız katı JSON; aksi **BOŞ OY**.
+- **NONE yüksek güven veto** (≥90) → **NO_TRADE** + kritik uyarı.
+- TP/SL yön hatası → Long TP>entry>SL; Short TP<entry<SL.
+- WS/REST ayrışması → fill>order>REST; **WS gap + REST backfill**.
+- SL/TP bağlanmadı → retry + kritik alarm.
+- Whipsaw/overtrading → cool‑down + edge<fee+funding ise NO_TRADE; opsiyonel ADX rejim filtresi.
+- Delist/contract change → **AnnouncementWatcher** ile yakala; planlı kapanış.
+- Alarm fırtınası → dedup 120 sn; açık incident bastırma.
+- Performans düşüşü → PF<1.1/Sharpe<0.5 → açılış durdur + uyarı.
+- Güvenlik → secrets loglama yok; IP whitelist; Telegram HMAC/allowlist; withdraw kapalı.
+- **Fee & SL slippage drift** → PnlService gerçek **fee_paid** ve **slippage_on_close_usd** ile hesaplar.
+- **Dust** → min_order_qty altı bakiyeler hesaba katılmaz.
+
+───────────────────────────────────────────────────────────────────────────────
+AŞAMA 11) RECONCILIATION (YETİM & HARİCİ KAPAMA) — ZORUNLU
+───────────────────────────────────────────────────────────────────────────────
+- Başlangıçta ve periyodik (örn. 10 dk).
+- Adımlar: Bybit açık pozisyonlar + executions + fees çek → DB ile eşleştir.
+  • **Borsada var / DB’de yok** → “Yetim Pozisyon”: kritik uyarı; DB’ye ekle; **TP/SL yoksa anında kur**; yönetime dahil et.
+  • **DB’de var / borsada yok** → “Harici Olarak Kapatıldı”: realized PnL güncelle; uyarı.
+  • **WS gap** → REST backfill ile doldur.
+- Komut: `sentx:reconcile` ve scheduler entegrasyonu.
+
+───────────────────────────────────────────────────────────────────────────────
+AŞAMA 12) REPO TEMİZLİĞİ – PERİYODİK BAKIM
+───────────────────────────────────────────────────────────────────────────────
+- AŞAMA 0 raporları başlangıç içindi; burada **periyodik** bakım talimatı:
+  • 6–12 saatte bir InstrumentInfo cache tazele (tick/lot/max_lev/risk‑tier).
+  • Değişiklik algılandığında **docs/REPO_CLEANUP.md**’ye not düş ve Telegram’da özetle.
+  • CI (ops.) ile PSR‑12, test, static analysis (phpstan) koş.
+
+───────────────────────────────────────────────────────────────────────────────
+ÖN SORULAR (tek mesajda sorulacak ve KAYDEDİLECEK)
+───────────────────────────────────────────────────────────────────────────────
+- Bybit: testnet/mainnet anahtarları, account mode (**One‑Way** zorunlu), margin (isolated/cross), planlanan max leverage?
+- Risk: günlük max zarar (%), sembol başı max notional (pozisyon başına), korelasyon/beta eşiği (vars.: ρ>0.85), cool‑down süresi?
+- Slippage cap (vars. 0.05%), ATR (vars. ATR(14,1H)), Stop‑Limit SL opsiyonu açık mı?
+- Telegram bot token/chat id; Slack/Mail şimdilik pasif (ileride anahtarlar)?
+- Plan/kota: günlük AI bütçesi ($), max eşzamanlı pozisyon, coin seti.
+- LAB modu: 15 gün; mainnet eşiği aynı mı?
+- funding_window_minutes (vars. 5), USDT de‑peg guard eşiği (örn. 0.98–1.02)?
+- **AŞAMA 0 onayı**: `ONAY: SCAFFOLD=APPLY` komutu ile scaffold’u uygulatacak mıyız?
+
+KABUL KRİTERLERİ
+- **AŞAMA 0**: `docs/REPO_CLEANUP.md`, `docs/REPO_SCAFFOLD_PLAN.md`, `scripts/scaffold.sh` üretilir; onay beklenir.
+- /open: 4 coin tek prompt, **2 tur konsensüs**, **IM bazlı** boyutlandırma, lev clamp (3–15/15–30/30–75), PostOnly/IOC/TWAP,
+  OCO TP/SL (opsiyonel Stop‑Limit), **NONE‑veto**, tüm guard’lar.
+- /manage (*/5): **TIGHTEN/SCALE‑IN/SCALE‑OUT/CLOSE** doğru uygulanır (IM caps + margin_util_after + risk‑tier liq).
+- **Reconciliation** başlangıç/periyodik; yetim/harici kapama + WS backfill çözümlenir.
+- **Komut önceliği** ve **sembol lock** yarışları önler.
+- **USDT de‑peg guard**, **AnnouncementWatcher**, **StablecoinHealthCheck** devrede.
+- Telegram aktif; Slack/Mail hazır‑kod (flag ile kapalı).
+- Tüm konuşma docs/TRANSCRIPT.md’de kelimesi kelimesine saklanır; kararlar DECISIONS.md’de.
+

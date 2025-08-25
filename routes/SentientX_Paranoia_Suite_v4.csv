@@ -1,0 +1,421 @@
+TestID,Kategori,Senaryo,Uyarı/Stimulus,Beklenen Davranış,Kanıt/Kayıt,Araç/Komut
+1,AŞAMA 0 — Depo & Temel,Depo envanteri,dosya haritası çıkar,tüm modüller listelenir,"dosya sayımı, ağaç",ops:repo:inventory
+2,AŞAMA 0 — Depo & Temel,Autoload/PSR-4,composer.json autoload,namespace eşleşmesi doğru,composer.json↔app/*,static:review
+3,AŞAMA 0 — Depo & Temel,ENV ayrışımı,.env.example/config,prod-only bayraklar doğru,.env.example vs config/*,static:review
+4,AŞAMA 0 — Depo & Temel,README doğruluğu,kurulum/çalıştırma,adımlar çalışır,README.md,static:review
+5,AŞAMA 0 — Depo & Temel,Runbook mevcudiyeti,kritik senaryolar,eksiksiz,docs/runbook*,static:review
+6,AŞAMA 0 — Depo & Temel,Scaffold bütünlüğü,scripts/scaffold.sh,idempotent,script çıktısı,bash scripts/scaffold.sh --dry
+7,AŞAMA 1 — Domain & Algoritmalar,2-Tur Konsensüs,round1/2 & timeout,boş oy + çoğunluk,ConsensusEngine kanıt,static:review
+8,AŞAMA 1 — Domain & Algoritmalar,Weighted median,winsorize 10–90,kümülatif %50 eşiği,median kanıt,static:review
+9,AŞAMA 1 — Domain & Algoritmalar,Sapma vetosu %20,aykırı TP/SL/lev,veto aktif,reason code,static:review
+10,AŞAMA 1 — Domain & Algoritmalar,IM-bazlı boyut,IM_cap_pos≤0.30e,limit uygulanır,calc satırları,static:review
+11,AŞAMA 1 — Domain & Algoritmalar,Leverage clamp,margin_util bandları,30–75x/3–15x,clamp kodu,static:review
+12,AŞAMA 1 — Domain & Algoritmalar,Likidasyon ≥2×ATR,"ATR(14,1H)",küçült→NO_TRADE,StopCalculator,static:review
+13,AŞAMA 1 — Domain & Algoritmalar,Scale-in/out,kademeli kurallar,limitlere uyar,SCALE kodu,static:review
+14,AŞAMA 2 — Borsa Entegrasyonu,İmza doğruluğu,Bybit auth,geçerli imza,client sign,static:review
+15,AŞAMA 2 — Borsa Entegrasyonu,Server time drift,UTC ofset,kompansasyon,time sync log,ops:net:time-skew
+16,AŞAMA 2 — Borsa Entegrasyonu,PriceFilter sync,değişim anı,anında clamp,version++,php artisan sentx:health:exchange
+17,AŞAMA 2 — Borsa Entegrasyonu,MARK tetikleyici,LAST anomali,MARK-only,trigger=MARK,php artisan sentx:manage-open
+18,AŞAMA 3 — Risk & Guardlar,USDT parity,<0.985,NO_TRADE+alarm,STABLECOIN_DEPEG,php artisan sentx:guard:stablecoin
+19,AŞAMA 3 — Risk & Guardlar,Funding window,≤5 dk,NO_TRADE giriş,FUNDING_WINDOW,php artisan sentx:open-now --dry
+20,AŞAMA 3 — Risk & Guardlar,Korelasyon veto,ρ>0.85 aynı yön,NO_TRADE,CORR_VETO,php artisan sentx:open-now --dry
+21,AŞAMA 3 — Risk & Guardlar,Slippage cap,cap ihlali,ABORT + alarm,SLIPPAGE_CAP,php artisan sentx:open-now --dry
+22,AŞAMA 3 — Risk & Guardlar,Cooldown,hemen tekrar giriş,NO_TRADE,COOLDOWN,php artisan sentx:open-now --dry
+23,AŞAMA 4 — Emir Yönetimi,PostOnly→IOC→TWAP,PostOnly reject,IOC kısmi+TWAP,fills timeline,php artisan sentx:open-now
+24,AŞAMA 4 — Emir Yönetimi,OCO bağlama,Entry ACK; retry,reduceOnly OCO,orders TP/SL,php artisan sentx:manage-open
+25,AŞAMA 4 — Emir Yönetimi,Idempotans,ağ kesintisi,çift emir=0,duplicate=0,php artisan sentx:test:idempotence
+26,AŞAMA 4 — Emir Yönetimi,Avg entry revizyonu,IOC kısmi,TP/SL yeniden hesap,recalc kanıtı,php artisan sentx:manage-open
+27,AŞAMA 5 — Senkronizasyon,WS gap→REST,45s kopukluk,backfill tamam,"gap≈45s, backfill>0",php artisan sentx:reconcile
+28,AŞAMA 5 — Senkronizasyon,Yetim pozisyon,borsada var,TP/SL bağla+kayıt,orphan_attached,php artisan sentx:reconcile
+29,AŞAMA 5 — Senkronizasyon,Harici kapama,DB var/borsa yok,PnL finalize,closed_by=EXTERNAL,php artisan sentx:reconcile
+30,AŞAMA 5 — Senkronizasyon,Dupe fill düşürme,aynı fill 2 kez,drop=1,dupe_fill_dropped,php artisan sentx:test:idempotence
+31,AŞAMA 6 — Gözlenebilirlik,Structured logging,decision/snapshot/orderLink,tam korelasyon,log alanları,ops:logs:sample
+32,AŞAMA 6 — Gözlenebilirlik,Alert dedup,120s’de tekrar,tek alarm,dedup counter,ops:alerts:replay
+33,AŞAMA 6 — Gözlenebilirlik,Metrik isimleri,AI/cycle/queue,etiketli/tutarlı,metrics dump,ops:metrics:dump
+34,AŞAMA 6 — Gözlenebilirlik,Runbook linki,alarm→runbook,bağ var,alert payload,static:review
+35,AŞAMA 7 — Performans/SLA,p99 open ≤30s,yük profili,≤30s,round_cycle_latency_p99,ops:load:open
+36,AŞAMA 7 — Performans/SLA,p99 manage ≤20s,yük profili,≤20s,manage_latency_p99,ops:load:manage
+37,AŞAMA 7 — Performans/SLA,Queue lag ≤2s,4 sembol,≤2s,queue_lag_p99,ops:load:multi
+38,AŞAMA 7 — Performans/SLA,AI hata oranı <1%,15 dk pencere,<1%,ai_err_rate,ops:load:ai
+39,AŞAMA 8 — Güvenlik,HMAC doğrulama,admin /close,valid/invalid ayrımı,audit.hmac_valid,curl /admin/close
+40,AŞAMA 8 — Güvenlik,IP allowlist,yasak IP,403,http.status=403,ops:net:simulate-ip
+41,AŞAMA 8 — Güvenlik,Rate limiting,burst istek,429,http.status=429,ops:net:burst
+42,AŞAMA 8 — Güvenlik,Mass assignment,$fillable/$guarded,korumalı,model audit,static:review
+43,AŞAMA 8 — Güvenlik,SQL injection,parametrik,hazırlanmış ifade,query builder,static:review
+44,AŞAMA 8 — Güvenlik,Prompt injection,AI rationale,allowlist JSON,schema_validation,php artisan sentx:test:schema
+45,AŞAMA 8 — Güvenlik,Log injection,kontrol karakteri,sanitize/mask,masked logs,php artisan sentx:test:logs
+46,AŞAMA 8 — Güvenlik,Secrets,log sızıntısı,**** maskeli,log örnekleri,static:review
+47,AŞAMA 8 — Güvenlik,Withdraw yokluğu,/withdraw*,404/405,router/probe,curl /admin/withdraw
+48,AŞAMA 9 — Veri & Şema,Migration ileri/geri,fresh→rollback,0 hata,exit=0,php artisan migrate:fresh --seed && php artisan migrate:rollback
+49,AŞAMA 9 — Veri & Şema,FK/RI,ilişkiler,ihlâl=0,InnoDB status,ops:db:check-fk
+50,AŞAMA 9 — Veri & Şema,Index denetimi,unique/composite,dupe=0,schema/list + EXPLAIN,ops:db:index-audit
+51,AŞAMA 9 — Veri & Şema,Enum/sabit eşliği,kod↔DB,eşleşir,const vs schema,static:review
+52,AŞAMA 9 — Veri & Şema,Soft delete,deleted_at,sorgu filtreli,query kanıtı,ops:db:softdelete-audit
+53,AŞAMA 9 — Veri & Şema,Audit alanları,created/updated by,tutarlı,trigger/log,ops:db:audit-audit
+54,AŞAMA 10 — Açık Pozisyon Otopsisi,Metrik çıkarımı,tüm açıklar,"PnL_net, liq_ATR, IM/EM doğru",snapshot + hesap,php artisan sentx:audit:open-positions
+55,AŞAMA 10 — Açık Pozisyon Otopsisi,Funding ≤5dk,açık pozisyon,manage-only öner,FUNDING_WINDOW,php artisan sentx:audit:open-positions
+56,AŞAMA 10 — Açık Pozisyon Otopsisi,Korelasyon kümesi,ρ24×1H,kısıtlama öner,rho matrisi,php artisan sentx:audit:open-positions
+57,AŞAMA 10 — Açık Pozisyon Otopsisi,USDT <0.985,açık pozisyon,hedge/kapama öner,DEPEG alarm,php artisan sentx:audit:open-positions
+58,AŞAMA 10 — Açık Pozisyon Otopsisi,OCO/trigger,reduceOnly & MARK,sağlam,orders TP/SL,php artisan sentx:audit:open-positions
+59,AŞAMA 10 — Açık Pozisyon Otopsisi,Fail Plan,WS gap/429/maint,runbook hazır,alerts timeline,php artisan sentx:audit:open-positions
+60,AŞAMA 11 — Yeni Pozisyon (Dry),Consensus dry,timeout+JSON kırık,boş oy + çoğunluk,schema/timeout,php artisan sentx:decision:dry
+61,AŞAMA 11 — Yeni Pozisyon (Dry),Entry offset clamp,spread=30bps,ceil*0.5=15→clamp=8,offset_bps=8,php artisan sentx:decision:dry
+62,AŞAMA 11 — Yeni Pozisyon (Dry),Slippage pre-check,yüksek vol,ABORT öner,SLIPPAGE_CAP,php artisan sentx:decision:dry
+63,AŞAMA 11 — Yeni Pozisyon (Dry),Risk & boyut,liq<2×ATR,lev/qty↓; yoksa NO_TRADE,RISK_ATR_GUARD,php artisan sentx:decision:dry
+64,AŞAMA 11 — Yeni Pozisyon (Dry),Corr & funding,ρ>0.85 veya ≤5dk,NO_TRADE,CORR/FUND,php artisan sentx:decision:dry
+65,AŞAMA 11 — Yeni Pozisyon (Dry),Anti-bias,OPEN eğilimi,karşı argüman,anti-bias text,php artisan sentx:decision:dry
+66,AŞAMA 12 — Backtest/Parite,Lookahead yokluğu,streaming sim,sızıntı=0,sim position=t,php artisan sentx:backtest --strict
+67,AŞAMA 12 — Backtest/Parite,Deterministik tohum,seed=42,aynı sonuç,hash eşleşir,php artisan sentx:backtest --seed=42
+68,AŞAMA 12 — Backtest/Parite,Live vs BT,slippage/fee,|Δ|<0.5%,parite raporu,php artisan sentx:bt:parity
+69,AŞAMA 13 — CI/CD & Kalite,phpstan max-level,static analysis,0 error,phpstan.out,vendor/bin/phpstan analyse --memory-limit=1G
+70,AŞAMA 13 — CI/CD & Kalite,psalm (taint),güvenlik analizi,0 critical,psalm.out,vendor/bin/psalm
+71,AŞAMA 13 — CI/CD & Kalite,composer audit,supply chain,0 vulnerable,audit log,composer audit
+72,AŞAMA 13 — CI/CD & Kalite,php-cs-fixer,PSR-12,temiz rapor,cs-fixer.out,vendor/bin/php-cs-fixer fix --dry-run
+73,AŞAMA 13 — CI/CD & Kalite,rector,upgrade hints,güvenli öneriler,rector.out,vendor/bin/rector process --dry-run
+74,AŞAMA 13 — CI/CD & Kalite,infection,mutation ≥80%,PASS,infection.html,vendor/bin/infection
+75,AŞAMA 13 — CI/CD & Kalite,property-based,Eris,violations=0,phpunit logs,vendor/bin/phpunit --group=property
+76,AŞAMA 14 — Tedarik Zinciri,composer.lock checksum,sha256,sabit,checksum,ops:supply:checksum
+77,AŞAMA 14 — Tedarik Zinciri,Lisanslar,bağımlılıklar,uyumlu,license report,ops:supply:licenses
+78,AŞAMA 14 — Tedarik Zinciri,Pinned versions,semver aralığı yok,sabit sürüm,composer.json,static:review
+79,AŞAMA 15 — Çoklu Kiracı & Kota,Tenant izolasyonu,aynı sembol,ayrı lock,lock_owner tenant,php artisan sentx:test:locks
+80,AŞAMA 15 — Çoklu Kiracı & Kota,Plan kotası,limit aşıldı,aday reddi,PLAN_LIMIT,php artisan sentx:open-now --dry
+81,AŞAMA 15 — Çoklu Kiracı & Kota,AI bütçe tavanı,quota dolu,/open blok,AI_BUDGET_CUTOFF,php artisan sentx:test:quota
+82,AŞAMA 15 — Çoklu Kiracı & Kota,Sayaç reset,günlük,doğru reset,usage reset log,ops:cron:simulate
+83,AŞAMA 16 — Gizlilik & Uyum,PII maskesi,loglarda,****,masked snippet,ops:logs:sample
+84,AŞAMA 16 — Gizlilik & Uyum,Veri yaşam döngüsü,retention,policy mevcut,config/retention,static:review
+85,AŞAMA 16 — Gizlilik & Uyum,İz sürülebilirlik,decision→order→fill,tam zincir,ids chain,ops:trace:chain
+86,AŞAMA 17 — Yedekleme & DR,Yedekleme politikası,takvim/şifreleme,tanımlı,backup config,static:review
+87,AŞAMA 17 — Yedekleme & DR,Restore provası,örnek yedek,tutarlı,checksum/row counts,ops:db:restore-dry
+88,AŞAMA 17 — Yedekleme & DR,DR runbook,bölgesel kesinti,adımlar açık,runbook dokümanı,static:review
+89,AŞAMA 18 — Yükseltmeler & Pazar,Risk-tier sıçraması,scale-in sonrası,liq hesabı güncel,tier change log,php artisan sentx:manage-open
+90,AŞAMA 18 — Yükseltmeler & Pazar,Sözleşme değişimi,BTCUSDT-P→Q,mapping+reconcile,symbol map,php artisan sentx:reconcile
+91,AŞAMA 18 — Yükseltmeler & Pazar,Delist duyurusu,AnnouncementWatcher,planlı kapanış,DELIST alarm,ops:announce:simulate
+92,AŞAMA 19 — Analitik & Muhasebe,PnL defteri,real-fee + slippage,defter eşleşir,ledger vs report,ops:accounting:reconcile
+93,AŞAMA 19 — Analitik & Muhasebe,Fee ayrıştırma,maker/taker,toplam doğru,fee report,php artisan sentx:test:fees
+94,AŞAMA 19 — Analitik & Muhasebe,Slippage raporu,close işlemleri,cap ihlal kaydı,slippage log,ops:slippage:summary
+95,AŞAMA 20 — Dokümantasyon,API/Komut yardım,artisan list --help,bayraklar belgeli,help metinleri,php artisan list --help
+96,AŞAMA 20 — Dokümantasyon,Değişiklik günlüğü,CHANGELOG,sürüm notları,CHANGELOG.md,static:review
+97,AŞAMA 20 — Dokümantasyon,Sözlük/terimler,Glossary,mevcut & güncel,docs/glossary*,static:review
+98,Kombinasyon/Yol Kapsamı,Funding+Corr,≤5dk & ρ>0.85,NO_TRADE,reason listesi,php artisan sentx:open-now --dry
+99,Kombinasyon/Yol Kapsamı,USDT+Slippage,<0.985 & cap,NO_TRADE,iki alarm,php artisan sentx:open-now --dry
+100,Kombinasyon/Yol Kapsamı,ATR+Cooldown,<2×ATR & cooldown,NO_TRADE,reasons birleşik,php artisan sentx:open-now --dry
+101,Kombinasyon/Yol Kapsamı,FilterDrift+Idempotans,tick değişti & ağ kesildi,çift emir=0,"dupe=0, clamp",php artisan sentx:open-now
+102,Kombinasyon/Yol Kapsamı,NONE veto,"2 LONG, 1 NONE(conf>92)",NO_TRADE (NONE_VETO),reason=NONE_VETO,php artisan sentx:decision:dry
+103,Kombinasyon/Yol Kapsamı,Winsorize etkisi,uç TP/SL,10–90 winsorize→median,post-winsor median,php artisan sentx:decision:dry
+104,Kombinasyon/Yol Kapsamı,Leverage out-of-range,model lev=200,schema reject + karar sürer,validation fail,php artisan sentx:decision:dry
+105,Kombinasyon/Yol Kapsamı,IOC kısmi→OCO revizyon,kısmi fill,TP/SL avg_entry’ye göre revize,recalc evidence,php artisan sentx:manage-open
+106,Kombinasyon/Yol Kapsamı,ReduceOnly garantisi,kapatma denemesi,ters yön büyüme yok,reduceOnly=true,php artisan sentx:manage-open
+107,Kombinasyon/Yol Kapsamı,Slippage cap close,kapanışta cap,ABORT & alarm,SLIPPAGE_CAP on close,php artisan sentx:manage-open
+108,Property Micro,Rastgele invariant 108,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+109,Property Micro,Rastgele invariant 109,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+110,Property Micro,Rastgele invariant 110,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+111,Property Micro,Rastgele invariant 111,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+112,Property Micro,Rastgele invariant 112,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+113,Property Micro,Rastgele invariant 113,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+114,Property Micro,Rastgele invariant 114,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+115,Property Micro,Rastgele invariant 115,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+116,Property Micro,Rastgele invariant 116,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+117,Property Micro,Rastgele invariant 117,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+118,Property Micro,Rastgele invariant 118,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+119,Property Micro,Rastgele invariant 119,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+120,Property Micro,Rastgele invariant 120,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+121,Property Micro,Rastgele invariant 121,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+122,Property Micro,Rastgele invariant 122,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+123,Property Micro,Rastgele invariant 123,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+124,Property Micro,Rastgele invariant 124,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+125,Property Micro,Rastgele invariant 125,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+126,Property Micro,Rastgele invariant 126,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+127,Property Micro,Rastgele invariant 127,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+128,Property Micro,Rastgele invariant 128,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+129,Property Micro,Rastgele invariant 129,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+130,Property Micro,Rastgele invariant 130,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+131,Property Micro,Rastgele invariant 131,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+132,Property Micro,Rastgele invariant 132,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+133,Property Micro,Rastgele invariant 133,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+134,Property Micro,Rastgele invariant 134,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+135,Property Micro,Rastgele invariant 135,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+136,Property Micro,Rastgele invariant 136,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+137,Property Micro,Rastgele invariant 137,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+138,Property Micro,Rastgele invariant 138,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+139,Property Micro,Rastgele invariant 139,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+140,Property Micro,Rastgele invariant 140,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+141,Property Micro,Rastgele invariant 141,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+142,Property Micro,Rastgele invariant 142,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+143,Property Micro,Rastgele invariant 143,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+144,Property Micro,Rastgele invariant 144,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+145,Property Micro,Rastgele invariant 145,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+146,Property Micro,Rastgele invariant 146,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+147,Property Micro,Rastgele invariant 147,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+148,Property Micro,Rastgele invariant 148,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+149,Property Micro,Rastgele invariant 149,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+150,Property Micro,Rastgele invariant 150,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+151,Property Micro,Rastgele invariant 151,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+152,Property Micro,Rastgele invariant 152,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+153,Property Micro,Rastgele invariant 153,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+154,Property Micro,Rastgele invariant 154,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+155,Property Micro,Rastgele invariant 155,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+156,Property Micro,Rastgele invariant 156,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+157,Property Micro,Rastgele invariant 157,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+158,Property Micro,Rastgele invariant 158,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+159,Property Micro,Rastgele invariant 159,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+160,Property Micro,Rastgele invariant 160,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+161,Property Micro,Rastgele invariant 161,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+162,Property Micro,Rastgele invariant 162,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+163,Property Micro,Rastgele invariant 163,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+164,Property Micro,Rastgele invariant 164,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+165,Property Micro,Rastgele invariant 165,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+166,Property Micro,Rastgele invariant 166,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+167,Property Micro,Rastgele invariant 167,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+168,Property Micro,Rastgele invariant 168,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+169,Property Micro,Rastgele invariant 169,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+170,Property Micro,Rastgele invariant 170,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+171,Property Micro,Rastgele invariant 171,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+172,Property Micro,Rastgele invariant 172,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+173,Property Micro,Rastgele invariant 173,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+174,Property Micro,Rastgele invariant 174,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+175,Property Micro,Rastgele invariant 175,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+176,Property Micro,Rastgele invariant 176,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+177,Property Micro,Rastgele invariant 177,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+178,Property Micro,Rastgele invariant 178,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+179,Property Micro,Rastgele invariant 179,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+180,Property Micro,Rastgele invariant 180,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+181,Property Micro,Rastgele invariant 181,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+182,Property Micro,Rastgele invariant 182,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+183,Property Micro,Rastgele invariant 183,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+184,Property Micro,Rastgele invariant 184,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+185,Property Micro,Rastgele invariant 185,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+186,Property Micro,Rastgele invariant 186,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+187,Property Micro,Rastgele invariant 187,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+188,Property Micro,Rastgele invariant 188,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+189,Property Micro,Rastgele invariant 189,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+190,Property Micro,Rastgele invariant 190,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+191,Property Micro,Rastgele invariant 191,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+192,Property Micro,Rastgele invariant 192,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+193,Property Micro,Rastgele invariant 193,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+194,Property Micro,Rastgele invariant 194,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+195,Property Micro,Rastgele invariant 195,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+196,Property Micro,Rastgele invariant 196,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+197,Property Micro,Rastgele invariant 197,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+198,Property Micro,Rastgele invariant 198,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+199,Property Micro,Rastgele invariant 199,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+200,Property Micro,Rastgele invariant 200,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+201,Property Micro,Rastgele invariant 201,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+202,Property Micro,Rastgele invariant 202,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+203,Property Micro,Rastgele invariant 203,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+204,Property Micro,Rastgele invariant 204,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+205,Property Micro,Rastgele invariant 205,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+206,Property Micro,Rastgele invariant 206,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+207,Property Micro,Rastgele invariant 207,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+208,Property Micro,Rastgele invariant 208,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+209,Property Micro,Rastgele invariant 209,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+210,Property Micro,Rastgele invariant 210,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+211,Property Micro,Rastgele invariant 211,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+212,Property Micro,Rastgele invariant 212,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+213,Property Micro,Rastgele invariant 213,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+214,Property Micro,Rastgele invariant 214,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+215,Property Micro,Rastgele invariant 215,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+216,Property Micro,Rastgele invariant 216,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+217,Property Micro,Rastgele invariant 217,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+218,Property Micro,Rastgele invariant 218,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+219,Property Micro,Rastgele invariant 219,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+220,Property Micro,Rastgele invariant 220,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+221,Property Micro,Rastgele invariant 221,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+222,Property Micro,Rastgele invariant 222,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+223,Property Micro,Rastgele invariant 223,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+224,Property Micro,Rastgele invariant 224,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+225,Property Micro,Rastgele invariant 225,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+226,Property Micro,Rastgele invariant 226,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+227,Property Micro,Rastgele invariant 227,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+228,Property Micro,Rastgele invariant 228,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+229,Property Micro,Rastgele invariant 229,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+230,Property Micro,Rastgele invariant 230,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+231,Property Micro,Rastgele invariant 231,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+232,Property Micro,Rastgele invariant 232,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+233,Property Micro,Rastgele invariant 233,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+234,Property Micro,Rastgele invariant 234,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+235,Property Micro,Rastgele invariant 235,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+236,Property Micro,Rastgele invariant 236,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+237,Property Micro,Rastgele invariant 237,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+238,Property Micro,Rastgele invariant 238,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+239,Property Micro,Rastgele invariant 239,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+240,Property Micro,Rastgele invariant 240,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+241,Property Micro,Rastgele invariant 241,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+242,Property Micro,Rastgele invariant 242,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+243,Property Micro,Rastgele invariant 243,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+244,Property Micro,Rastgele invariant 244,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+245,Property Micro,Rastgele invariant 245,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+246,Property Micro,Rastgele invariant 246,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+247,Property Micro,Rastgele invariant 247,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+248,Property Micro,Rastgele invariant 248,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+249,Property Micro,Rastgele invariant 249,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+250,Property Micro,Rastgele invariant 250,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+251,Property Micro,Rastgele invariant 251,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+252,Property Micro,Rastgele invariant 252,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+253,Property Micro,Rastgele invariant 253,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+254,Property Micro,Rastgele invariant 254,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+255,Property Micro,Rastgele invariant 255,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+256,Property Micro,Rastgele invariant 256,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+257,Property Micro,Rastgele invariant 257,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+258,Property Micro,Rastgele invariant 258,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+259,Property Micro,Rastgele invariant 259,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+260,Property Micro,Rastgele invariant 260,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+261,Property Micro,Rastgele invariant 261,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+262,Property Micro,Rastgele invariant 262,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+263,Property Micro,Rastgele invariant 263,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+264,Property Micro,Rastgele invariant 264,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+265,Property Micro,Rastgele invariant 265,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+266,Property Micro,Rastgele invariant 266,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+267,Property Micro,Rastgele invariant 267,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+268,Property Micro,Rastgele invariant 268,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+269,Property Micro,Rastgele invariant 269,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+270,Property Micro,Rastgele invariant 270,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+271,Property Micro,Rastgele invariant 271,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+272,Property Micro,Rastgele invariant 272,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+273,Property Micro,Rastgele invariant 273,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+274,Property Micro,Rastgele invariant 274,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+275,Property Micro,Rastgele invariant 275,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+276,Property Micro,Rastgele invariant 276,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+277,Property Micro,Rastgele invariant 277,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+278,Property Micro,Rastgele invariant 278,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+279,Property Micro,Rastgele invariant 279,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+280,Property Micro,Rastgele invariant 280,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+281,Property Micro,Rastgele invariant 281,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+282,Property Micro,Rastgele invariant 282,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+283,Property Micro,Rastgele invariant 283,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+284,Property Micro,Rastgele invariant 284,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+285,Property Micro,Rastgele invariant 285,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+286,Property Micro,Rastgele invariant 286,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+287,Property Micro,Rastgele invariant 287,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+288,Property Micro,Rastgele invariant 288,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+289,Property Micro,Rastgele invariant 289,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+290,Property Micro,Rastgele invariant 290,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+291,Property Micro,Rastgele invariant 291,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+292,Property Micro,Rastgele invariant 292,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+293,Property Micro,Rastgele invariant 293,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+294,Property Micro,Rastgele invariant 294,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+295,Property Micro,Rastgele invariant 295,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+296,Property Micro,Rastgele invariant 296,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+297,Property Micro,Rastgele invariant 297,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+298,Property Micro,Rastgele invariant 298,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+299,Property Micro,Rastgele invariant 299,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+300,Property Micro,Rastgele invariant 300,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+301,Property Micro,Rastgele invariant 301,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+302,Property Micro,Rastgele invariant 302,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+303,Property Micro,Rastgele invariant 303,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+304,Property Micro,Rastgele invariant 304,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+305,Property Micro,Rastgele invariant 305,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+306,Property Micro,Rastgele invariant 306,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+307,Property Micro,Rastgele invariant 307,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+308,Property Micro,Rastgele invariant 308,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+309,Property Micro,Rastgele invariant 309,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+310,Property Micro,Rastgele invariant 310,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+311,Property Micro,Rastgele invariant 311,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+312,Property Micro,Rastgele invariant 312,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+313,Property Micro,Rastgele invariant 313,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+314,Property Micro,Rastgele invariant 314,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+315,Property Micro,Rastgele invariant 315,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+316,Property Micro,Rastgele invariant 316,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+317,Property Micro,Rastgele invariant 317,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+318,Property Micro,Rastgele invariant 318,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+319,Property Micro,Rastgele invariant 319,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+320,Property Micro,Rastgele invariant 320,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+321,Property Micro,Rastgele invariant 321,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+322,Property Micro,Rastgele invariant 322,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+323,Property Micro,Rastgele invariant 323,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+324,Property Micro,Rastgele invariant 324,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+325,Property Micro,Rastgele invariant 325,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+326,Property Micro,Rastgele invariant 326,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+327,Property Micro,Rastgele invariant 327,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+328,Property Micro,Rastgele invariant 328,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+329,Property Micro,Rastgele invariant 329,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+330,Property Micro,Rastgele invariant 330,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+331,Property Micro,Rastgele invariant 331,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+332,Property Micro,Rastgele invariant 332,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+333,Property Micro,Rastgele invariant 333,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+334,Property Micro,Rastgele invariant 334,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+335,Property Micro,Rastgele invariant 335,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+336,Property Micro,Rastgele invariant 336,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+337,Property Micro,Rastgele invariant 337,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+338,Property Micro,Rastgele invariant 338,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+339,Property Micro,Rastgele invariant 339,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+340,Property Micro,Rastgele invariant 340,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+341,Property Micro,Rastgele invariant 341,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+342,Property Micro,Rastgele invariant 342,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+343,Property Micro,Rastgele invariant 343,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+344,Property Micro,Rastgele invariant 344,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+345,Property Micro,Rastgele invariant 345,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+346,Property Micro,Rastgele invariant 346,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+347,Property Micro,Rastgele invariant 347,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+348,Property Micro,Rastgele invariant 348,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+349,Property Micro,Rastgele invariant 349,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+350,Property Micro,Rastgele invariant 350,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+351,Property Micro,Rastgele invariant 351,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+352,Property Micro,Rastgele invariant 352,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+353,Property Micro,Rastgele invariant 353,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+354,Property Micro,Rastgele invariant 354,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+355,Property Micro,Rastgele invariant 355,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+356,Property Micro,Rastgele invariant 356,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+357,Property Micro,Rastgele invariant 357,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+358,Property Micro,Rastgele invariant 358,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+359,Property Micro,Rastgele invariant 359,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+360,Property Micro,Rastgele invariant 360,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+361,Property Micro,Rastgele invariant 361,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+362,Property Micro,Rastgele invariant 362,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+363,Property Micro,Rastgele invariant 363,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+364,Property Micro,Rastgele invariant 364,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+365,Property Micro,Rastgele invariant 365,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+366,Property Micro,Rastgele invariant 366,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+367,Property Micro,Rastgele invariant 367,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+368,Property Micro,Rastgele invariant 368,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+369,Property Micro,Rastgele invariant 369,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+370,Property Micro,Rastgele invariant 370,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+371,Property Micro,Rastgele invariant 371,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+372,Property Micro,Rastgele invariant 372,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+373,Property Micro,Rastgele invariant 373,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+374,Property Micro,Rastgele invariant 374,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+375,Property Micro,Rastgele invariant 375,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+376,Property Micro,Rastgele invariant 376,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+377,Property Micro,Rastgele invariant 377,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+378,Property Micro,Rastgele invariant 378,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+379,Property Micro,Rastgele invariant 379,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+380,Property Micro,Rastgele invariant 380,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+381,Property Micro,Rastgele invariant 381,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+382,Property Micro,Rastgele invariant 382,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+383,Property Micro,Rastgele invariant 383,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+384,Property Micro,Rastgele invariant 384,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+385,Property Micro,Rastgele invariant 385,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+386,Property Micro,Rastgele invariant 386,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+387,Property Micro,Rastgele invariant 387,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+388,Property Micro,Rastgele invariant 388,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+389,Property Micro,Rastgele invariant 389,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+390,Property Micro,Rastgele invariant 390,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+391,Property Micro,Rastgele invariant 391,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+392,Property Micro,Rastgele invariant 392,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+393,Property Micro,Rastgele invariant 393,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+394,Property Micro,Rastgele invariant 394,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+395,Property Micro,Rastgele invariant 395,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+396,Property Micro,Rastgele invariant 396,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+397,Property Micro,Rastgele invariant 397,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+398,Property Micro,Rastgele invariant 398,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+399,Property Micro,Rastgele invariant 399,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+400,Property Micro,Rastgele invariant 400,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+401,Property Micro,Rastgele invariant 401,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+402,Property Micro,Rastgele invariant 402,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+403,Property Micro,Rastgele invariant 403,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+404,Property Micro,Rastgele invariant 404,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+405,Property Micro,Rastgele invariant 405,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+406,Property Micro,Rastgele invariant 406,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+407,Property Micro,Rastgele invariant 407,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+408,Property Micro,Rastgele invariant 408,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+409,Property Micro,Rastgele invariant 409,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+410,Property Micro,Rastgele invariant 410,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+411,Property Micro,Rastgele invariant 411,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+412,Property Micro,Rastgele invariant 412,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+413,Property Micro,Rastgele invariant 413,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+414,Property Micro,Rastgele invariant 414,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+415,Property Micro,Rastgele invariant 415,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+416,Property Micro,Rastgele invariant 416,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+417,Property Micro,Rastgele invariant 417,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+418,Property Micro,Rastgele invariant 418,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+419,Property Micro,Rastgele invariant 419,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
+420,Property Micro,Rastgele invariant 420,Eris random path,İnvariant PASS,violations=0,vendor/bin/phpunit --group=property
