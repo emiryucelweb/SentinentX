@@ -252,7 +252,6 @@ TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
 
 OPENAI_API_KEY=
-ANTHROPIC_API_KEY=
 GEMINI_API_KEY=
 GROK_API_KEY=
 COINGECKO_API_KEY=
@@ -303,12 +302,10 @@ BYBIT_BASE_URL=https://api-testnet.bybit.com
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
 
-# AI Providers
+# AI Providers (3-AI Consensus System)
 OPENAI_API_KEY=
 OPENAI_ENABLED=true
 OPENAI_MODEL=gpt-4o-mini
-
-ANTHROPIC_API_KEY=
 
 GEMINI_API_KEY=
 GEMINI_ENABLED=true
@@ -424,16 +421,15 @@ echo -e "${CYAN}📝 NEXT STEPS:${NC}"
 echo -e "${YELLOW}1. Edit .env file and add your API keys:${NC}"
 echo "   nano /var/www/sentinentx/.env"
 echo ""
-echo -e "${YELLOW}   Required API Keys:${NC}"
+echo -e "${YELLOW}   Required API Keys (3-AI Consensus):${NC}"
 echo "   - BYBIT_API_KEY=your_testnet_api_key"
 echo "   - BYBIT_API_SECRET=your_testnet_secret"
 echo "   - TELEGRAM_BOT_TOKEN=your_bot_token"
 echo "   - TELEGRAM_CHAT_ID=your_chat_id"
 echo "   - OPENAI_API_KEY=sk-your_openai_key"
-echo "   - ANTHROPIC_API_KEY=sk-ant-your_claude_key"
 echo "   - GEMINI_API_KEY=AIza_your_gemini_key"
 echo "   - GROK_API_KEY=your_grok_key"
-echo "   - COINGECKO_API_KEY=CG-your_coingecko_key"
+echo "   - COINGECKO_API_KEY=CG-your_coingecko_key (optional)"
 echo ""
 echo -e "${YELLOW}2. Start services:${NC}"
 echo "   systemctl start sentx-queue"
