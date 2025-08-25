@@ -307,10 +307,13 @@ echo -e "${CYAN}🗄️ STEP 11/12: Running Database Migration${NC}"
 php artisan migrate --force
 echo -e "${GREEN}✅ Database tables created${NC}"
 
-# Optimize Laravel
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+# Optimize Laravel (skip config:cache due to Closure issues)
+echo "🧹 Clearing caches..."
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
+echo "⚠️ Skipping config:cache due to Closure in config files"
 
 # Step 12: Create System Services
 echo -e "${CYAN}🔄 STEP 12/12: Creating System Services${NC}"
