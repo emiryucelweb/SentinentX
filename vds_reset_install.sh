@@ -403,9 +403,9 @@ LAB_STOP_LOSS_PCT=2
 LAB_TAKE_PROFIT_PCT=4
 
 # Security
-SECURITY_ENCRYPTION_KEY=base64:\$(openssl rand -base64 32)
-HMAC_SECRET_KEY=\$(openssl rand -hex 32)
-BYBIT_HMAC_SECRET=\$(openssl rand -hex 32)
+SECURITY_ENCRYPTION_KEY=placeholder_encryption_key
+HMAC_SECRET_KEY=placeholder_hmac_key
+BYBIT_HMAC_SECRET=placeholder_bybit_hmac
 
 # Monitoring
 LOGGING_LEVEL=info
@@ -413,7 +413,20 @@ MONITORING_ENABLED=true
 METRICS_ENABLED=true
 EOF
 
-# Generate new key
+# Generate security keys and update .env
+echo -e "${CYAN}🔐 Generating security keys...${NC}"
+ENCRYPTION_KEY="base64:$(openssl rand -base64 32)"
+HMAC_KEY=$(openssl rand -hex 32)
+BYBIT_HMAC_KEY=$(openssl rand -hex 32)
+
+# Replace placeholders with actual keys
+sed -i "s/placeholder_encryption_key/${ENCRYPTION_KEY}/" /var/www/sentinentx/.env
+sed -i "s/placeholder_hmac_key/${HMAC_KEY}/" /var/www/sentinentx/.env
+sed -i "s/placeholder_bybit_hmac/${BYBIT_HMAC_KEY}/" /var/www/sentinentx/.env
+
+echo -e "${GREEN}✅ Security keys generated${NC}"
+
+# Generate Laravel app key
 php artisan key:generate --force
 echo -e "${GREEN}✅ Laravel configured${NC}"
 
