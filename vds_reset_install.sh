@@ -87,6 +87,25 @@ echo ""
 echo -e "${BLUE}🚀 PHASE 2: FRESH INSTALLATION${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
+# Wait for apt lock to be released
+echo -e "${CYAN}🔐 Waiting for apt lock to be released...${NC}"
+while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+    echo -e "${YELLOW}⏳ Waiting for other apt processes to finish...${NC}"
+    sleep 5
+done
+
+# Kill any hanging apt processes
+pkill -f "apt|dpkg" 2>/dev/null || true
+sleep 2
+
+# Remove lock files if they exist
+rm -f /var/lib/dpkg/lock-frontend 2>/dev/null || true
+rm -f /var/lib/dpkg/lock 2>/dev/null || true
+rm -f /var/cache/apt/archives/lock 2>/dev/null || true
+
+# Configure dpkg
+dpkg --configure -a 2>/dev/null || true
+
 # Update system
 echo -e "${CYAN}📦 STEP 1/12: System Update${NC}"
 apt update -y
@@ -99,7 +118,21 @@ echo -e "${GREEN}✅ Basic packages installed${NC}"
 
 # Install PHP 8.2
 echo -e "${CYAN}🐘 STEP 3/12: Installing PHP 8.2${NC}"
+
+# Wait for lock again before adding repository
+while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+    echo -e "${YELLOW}⏳ Waiting for apt lock before adding PHP repository...${NC}"
+    sleep 3
+done
+
 add-apt-repository ppa:ondrej/php -y
+
+# Wait for lock again before update
+while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+    echo -e "${YELLOW}⏳ Waiting for apt lock before update...${NC}"
+    sleep 3
+done
+
 apt update -y
 
 # Install PHP packages one by one to handle missing packages gracefully
@@ -141,6 +174,13 @@ echo -e "${GREEN}✅ Composer installed${NC}"
 
 # Install PostgreSQL
 echo -e "${CYAN}🗄️  STEP 5/12: Installing PostgreSQL${NC}"
+
+# Wait for lock before PostgreSQL installation
+while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+    echo -e "${YELLOW}⏳ Waiting for apt lock before PostgreSQL installation...${NC}"
+    sleep 3
+done
+
 apt install -y postgresql postgresql-contrib
 systemctl start postgresql
 systemctl enable postgresql
@@ -155,6 +195,13 @@ echo -e "${GREEN}✅ Database created${NC}"
 
 # Install Redis
 echo -e "${CYAN}🧽 STEP 7/12: Installing Redis${NC}"
+
+# Wait for lock before Redis installation
+while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+    echo -e "${YELLOW}⏳ Waiting for apt lock before Redis installation...${NC}"
+    sleep 3
+done
+
 apt install -y redis-server
 systemctl start redis
 systemctl enable redis
