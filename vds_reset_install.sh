@@ -255,6 +255,7 @@ OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
 GEMINI_API_KEY=
 GROK_API_KEY=
+COINGECKO_API_KEY=
 ENVEXAMPLE
 fi
 
@@ -318,6 +319,10 @@ GROK_API_KEY=
 GROK_ENABLED=true
 GROK_MODEL=grok-2-1212
 GROK_BASE_URL=https://api.x.ai/v1
+
+# Market Data
+COINGECKO_API_KEY=
+COINGECKO_BASE_URL=https://pro-api.coingecko.com/api/v3
 
 # Trading Configuration
 TRADING_MAX_LEVERAGE=75
@@ -428,6 +433,7 @@ echo "   - OPENAI_API_KEY=sk-your_openai_key"
 echo "   - ANTHROPIC_API_KEY=sk-ant-your_claude_key"
 echo "   - GEMINI_API_KEY=AIza_your_gemini_key"
 echo "   - GROK_API_KEY=your_grok_key"
+echo "   - COINGECKO_API_KEY=CG-your_coingecko_key"
 echo ""
 echo -e "${YELLOW}2. Start services:${NC}"
 echo "   systemctl start sentx-queue"
