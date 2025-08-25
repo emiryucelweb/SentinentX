@@ -87,24 +87,46 @@ echo ""
 echo -e "${BLUE}🚀 PHASE 2: FRESH INSTALLATION${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-# Wait for apt lock to be released
-echo -e "${CYAN}🔐 Waiting for apt lock to be released...${NC}"
-while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
-    echo -e "${YELLOW}⏳ Waiting for other apt processes to finish...${NC}"
-    sleep 5
-done
+# Aggressive apt lock cleanup
+echo -e "${CYAN}🔐 Cleaning apt locks and processes...${NC}"
 
-# Kill any hanging apt processes
-pkill -f "apt|dpkg" 2>/dev/null || true
-sleep 2
+# Kill all apt/dpkg processes immediately
+echo -e "${YELLOW}🔪 Killing apt/dpkg processes...${NC}"
+pkill -9 -f "apt|dpkg|unattended-upgrade" 2>/dev/null || true
+killall -9 apt apt-get dpkg 2>/dev/null || true
 
-# Remove lock files if they exist
+# Wait a moment for processes to die
+sleep 3
+
+# Remove all lock files
+echo -e "${YELLOW}🗑️ Removing lock files...${NC}"
 rm -f /var/lib/dpkg/lock-frontend 2>/dev/null || true
 rm -f /var/lib/dpkg/lock 2>/dev/null || true
 rm -f /var/cache/apt/archives/lock 2>/dev/null || true
+rm -f /var/lib/apt/lists/lock 2>/dev/null || true
 
 # Configure dpkg
+echo -e "${YELLOW}⚙️ Configuring dpkg...${NC}"
 dpkg --configure -a 2>/dev/null || true
+
+# Final check with timeout
+echo -e "${CYAN}🔍 Final lock check with timeout...${NC}"
+timeout=0
+while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 && [ $timeout -lt 6 ]; do
+    echo -e "${YELLOW}⏳ Waiting... (${timeout}/5)${NC}"
+    sleep 5
+    timeout=$((timeout + 1))
+done
+
+# If still locked after timeout, force remove and continue
+if fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+    echo -e "${RED}⚠️ Force removing persistent locks...${NC}"
+    fuser -k /var/lib/dpkg/lock-frontend 2>/dev/null || true
+    rm -f /var/lib/dpkg/lock-frontend 2>/dev/null || true
+    sleep 2
+fi
+
+echo -e "${GREEN}✅ Lock cleanup completed${NC}"
 
 # Update system
 echo -e "${CYAN}📦 STEP 1/12: System Update${NC}"
@@ -119,19 +141,31 @@ echo -e "${GREEN}✅ Basic packages installed${NC}"
 # Install PHP 8.2
 echo -e "${CYAN}🐘 STEP 3/12: Installing PHP 8.2${NC}"
 
-# Wait for lock again before adding repository
-while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
-    echo -e "${YELLOW}⏳ Waiting for apt lock before adding PHP repository...${NC}"
-    sleep 3
+# Quick lock check before adding repository
+timeout=0
+while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 && [ $timeout -lt 3 ]; do
+    echo -e "${YELLOW}⏳ Quick check before PHP repository... (${timeout}/2)${NC}"
+    sleep 2
+    timeout=$((timeout + 1))
 done
+if fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+    echo -e "${RED}⚠️ Force proceeding with PHP repository...${NC}"
+    fuser -k /var/lib/dpkg/lock-frontend 2>/dev/null || true
+fi
 
 add-apt-repository ppa:ondrej/php -y
 
-# Wait for lock again before update
-while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
-    echo -e "${YELLOW}⏳ Waiting for apt lock before update...${NC}"
+# Quick lock check before update
+timeout=0
+while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 && [ $timeout -lt 2 ]; do
+    echo -e "${YELLOW}⏳ Quick check before update... (${timeout}/1)${NC}"
     sleep 3
+    timeout=$((timeout + 1))
 done
+if fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+    echo -e "${RED}⚠️ Force proceeding with update...${NC}"
+    fuser -k /var/lib/dpkg/lock-frontend 2>/dev/null || true
+fi
 
 apt update -y
 
@@ -175,11 +209,12 @@ echo -e "${GREEN}✅ Composer installed${NC}"
 # Install PostgreSQL
 echo -e "${CYAN}🗄️  STEP 5/12: Installing PostgreSQL${NC}"
 
-# Wait for lock before PostgreSQL installation
-while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
-    echo -e "${YELLOW}⏳ Waiting for apt lock before PostgreSQL installation...${NC}"
-    sleep 3
-done
+# Quick lock check before PostgreSQL
+if fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+    echo -e "${RED}⚠️ Force proceeding with PostgreSQL...${NC}"
+    fuser -k /var/lib/dpkg/lock-frontend 2>/dev/null || true
+    sleep 1
+fi
 
 apt install -y postgresql postgresql-contrib
 systemctl start postgresql
@@ -196,11 +231,12 @@ echo -e "${GREEN}✅ Database created${NC}"
 # Install Redis
 echo -e "${CYAN}🧽 STEP 7/12: Installing Redis${NC}"
 
-# Wait for lock before Redis installation
-while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
-    echo -e "${YELLOW}⏳ Waiting for apt lock before Redis installation...${NC}"
-    sleep 3
-done
+# Quick lock check before Redis
+if fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+    echo -e "${RED}⚠️ Force proceeding with Redis...${NC}"
+    fuser -k /var/lib/dpkg/lock-frontend 2>/dev/null || true
+    sleep 1
+fi
 
 apt install -y redis-server
 systemctl start redis
