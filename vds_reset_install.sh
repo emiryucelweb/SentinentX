@@ -79,6 +79,9 @@ echo ""
 echo -e "${CYAN}🚀 PHASE 2: FRESH INSTALLATION${NC}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
+# Fix working directory issue at start
+cd /root 2>/dev/null || cd /tmp 2>/dev/null || cd /
+
 # Function for aggressive apt lock cleanup
 cleanup_apt_locks() {
     echo -e "${CYAN}🔐 Cleaning apt locks and processes...${NC}"
@@ -257,22 +260,8 @@ fi
 
 cp .env.example .env
 
-# Prompt for API keys
-echo -e "${CYAN}🔐 API KEYS CONFIGURATION${NC}"
-echo -e "${YELLOW}Please provide your API keys:${NC}"
-echo ""
-
-read -p "🚀 Bybit Testnet API Key: " BYBIT_API_KEY
-read -s -p "🔐 Bybit Testnet Secret: " BYBIT_API_SECRET
-echo ""
-read -p "🤖 Telegram Bot Token: " TELEGRAM_BOT_TOKEN
-read -p "💬 Telegram Chat ID: " TELEGRAM_CHAT_ID
-read -p "🧠 OpenAI API Key (sk-...): " OPENAI_API_KEY
-read -p "⚡ Anthropic API Key (sk-ant-...): " ANTHROPIC_API_KEY
-read -p "🌟 Gemini API Key (AIza...): " GEMINI_API_KEY
-read -p "🔥 Grok API Key: " GROK_API_KEY
-echo ""
-echo -e "${GREEN}✅ API keys collected${NC}"
+echo -e "${CYAN}🔐 Creating basic .env configuration...${NC}"
+echo -e "${YELLOW}⚠️ API keys will need to be added manually after installation${NC}"
 
 # Update .env with complete config
 cat > .env << ENVEOF
@@ -304,28 +293,28 @@ REDIS_PASSWORD=null
 REDIS_PORT=6379
 
 # Exchange API
-BYBIT_API_KEY=${BYBIT_API_KEY}
-BYBIT_API_SECRET=${BYBIT_API_SECRET}
+BYBIT_API_KEY=
+BYBIT_API_SECRET=
 BYBIT_TESTNET=true
 BYBIT_BASE_URL=https://api-testnet.bybit.com
 
 # Telegram
-TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
 
 # AI Providers
-OPENAI_API_KEY=${OPENAI_API_KEY}
+OPENAI_API_KEY=
 OPENAI_ENABLED=true
 OPENAI_MODEL=gpt-4o-mini
 
-ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+ANTHROPIC_API_KEY=
 
-GEMINI_API_KEY=${GEMINI_API_KEY}
+GEMINI_API_KEY=
 GEMINI_ENABLED=true
 GEMINI_MODEL=gemini-2.0-flash-exp
 GEMINI_BASE_URL=https://generativelanguage.googleapis.com
 
-GROK_API_KEY=${GROK_API_KEY}
+GROK_API_KEY=
 GROK_ENABLED=true
 GROK_MODEL=grok-2-1212
 GROK_BASE_URL=https://api.x.ai/v1
@@ -427,15 +416,28 @@ echo -e "${GREEN}🎉 INSTALLATION COMPLETED!${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo -e "${CYAN}📝 NEXT STEPS:${NC}"
-echo -e "${YELLOW}1. Start services:${NC}"
+echo -e "${YELLOW}1. Edit .env file and add your API keys:${NC}"
+echo "   nano /var/www/sentinentx/.env"
+echo ""
+echo -e "${YELLOW}   Required API Keys:${NC}"
+echo "   - BYBIT_API_KEY=your_testnet_api_key"
+echo "   - BYBIT_API_SECRET=your_testnet_secret"
+echo "   - TELEGRAM_BOT_TOKEN=your_bot_token"
+echo "   - TELEGRAM_CHAT_ID=your_chat_id"
+echo "   - OPENAI_API_KEY=sk-your_openai_key"
+echo "   - ANTHROPIC_API_KEY=sk-ant-your_claude_key"
+echo "   - GEMINI_API_KEY=AIza_your_gemini_key"
+echo "   - GROK_API_KEY=your_grok_key"
+echo ""
+echo -e "${YELLOW}2. Start services:${NC}"
 echo "   systemctl start sentx-queue"
 echo "   systemctl start sentx-telegram"
 echo ""
-echo -e "${YELLOW}2. Check status:${NC}"
+echo -e "${YELLOW}3. Check status:${NC}"
 echo "   systemctl status sentx-queue"
 echo "   systemctl status sentx-telegram"
 echo ""
-echo -e "${YELLOW}3. Test Telegram bot with:${NC}"
+echo -e "${YELLOW}4. Test Telegram bot with:${NC}"
 echo "   /help"
 echo ""
 echo -e "${GREEN}🚀 SentinentX is ready for testnet trading!${NC}"
