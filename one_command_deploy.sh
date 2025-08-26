@@ -6,8 +6,16 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# Trap for error handling
-trap 'handle_error $? $LINENO' ERR
+# Basic logging functions (defined early for error handler)
+log_error() {
+    echo -e "\033[0;31m[ERROR]\033[0m $1" >&2
+    echo "[ERROR] $1" >> "${LOG_FILE:-/tmp/sentinentx_deploy.log}" 2>/dev/null || true
+}
+
+log_info() {
+    echo -e "\033[0;34m[INFO]\033[0m $1"
+    echo "[INFO] $1" >> "${LOG_FILE:-/tmp/sentinentx_deploy.log}" 2>/dev/null || true
+}
 
 # Error handler
 handle_error() {
@@ -26,7 +34,7 @@ handle_error() {
     echo ""
     echo "🚨 Deployment failed - Troubleshooting Information:"
     echo "================================================"
-    echo "• Check log file: $LOG_FILE"
+    echo "• Check log file: ${LOG_FILE:-/tmp/sentinentx_deploy.log}"
     echo "• Verify internet connection"
     echo "• Ensure you have root privileges"
     echo "• Try running again: the script is idempotent"
@@ -34,6 +42,9 @@ handle_error() {
     
     exit $exit_code
 }
+
+# Trap for error handling (after functions are defined)
+trap 'handle_error $? $LINENO' ERR
 
 # Colors
 RED='\033[0;31m'
@@ -52,25 +63,17 @@ REPO_URL_MIRROR="https://gitlab.com/emiryucelweb/SentinentX.git"
 INSTALL_DIR="/var/www/sentinentx"
 LOG_FILE="/tmp/sentinentx_deploy.log"
 
-# Enhanced logging with fallback
-log_info() {
-    echo -e "${GREEN}[INFO]${NC} $1" | tee -a "$LOG_FILE" 2>/dev/null || echo -e "${GREEN}[INFO]${NC} $1"
-}
-
+# Enhanced logging functions (using basic functions defined above)
 log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1" | tee -a "$LOG_FILE" 2>/dev/null || echo -e "${YELLOW}[WARN]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1" | tee -a "$LOG_FILE" 2>/dev/null || echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1" | tee -a "${LOG_FILE:-/tmp/sentinentx_deploy.log}" 2>/dev/null || echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
 log_step() {
-    echo -e "${BLUE}[STEP]${NC} $1" | tee -a "$LOG_FILE" 2>/dev/null || echo -e "${BLUE}[STEP]${NC} $1"
+    echo -e "${BLUE}[STEP]${NC} $1" | tee -a "${LOG_FILE:-/tmp/sentinentx_deploy.log}" 2>/dev/null || echo -e "${BLUE}[STEP]${NC} $1"
 }
 
 log_success() {
-    echo -e "${CYAN}[SUCCESS]${NC} $1" | tee -a "$LOG_FILE" 2>/dev/null || echo -e "${CYAN}[SUCCESS]${NC} $1"
+    echo -e "${CYAN}[SUCCESS]${NC} $1" | tee -a "${LOG_FILE:-/tmp/sentinentx_deploy.log}" 2>/dev/null || echo -e "${CYAN}[SUCCESS]${NC} $1"
 }
 
 # Create log file with proper permissions
