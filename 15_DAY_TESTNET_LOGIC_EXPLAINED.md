@@ -15,7 +15,8 @@
 │  ├─ Aggressive: 100-200% günlük hedef       │
 │  └─ All Profiles: Paralel çalışma           │
 │                                             │
-│  🔍 Her 5 Dakikada Market Analizi           │
+│  ⏰ Her 2 Saatte Yeni Pozisyon Arama        │
+│  🔍 Her 5 Dakikada Market Analizi (monitoring) │
 │  ├─ CoinGecko 4 coin verisi (BTC/ETH/SOL/XRP) │
 │  ├─ Bybit fiyat ve hacim analizi            │
 │  ├─ AI Consensus (OpenAI/Gemini/Grok)       │
@@ -150,7 +151,7 @@ Risk Management: Multi-layered approach
 
 ## 🤖 **AI CONSENSUS SİSTEMİ**
 
-### **📡 Market Data Toplama (Her 5 Dakika):**
+### **📡 New Position Search (Her 2 Saatte):**
 ```javascript
 // 1. CoinGecko API Call
 {

@@ -1037,7 +1037,8 @@ class TelegramWebhookController extends Controller
                "🔧 <b>Diğer:</b>\n".
                "/risk SYMBOL - Risk profili\n".
                "/help - Bu yardım\n\n".
-               "⏰ <b>Otomatik:</b> Her 2 saatte bir /scan\n".
+               "⏰ <b>Otomatik Trading:</b> Her 2 saatte bir yeni pozisyon arama\n".
+               "🔄 <b>Pozisyon İzleme:</b> Risk profiline göre 1-3 dakikada bir AI kontrolü\n".
                '💡 <b>Özel pozisyon:</b> Gerekçe ile AI analizi';
     }
 
