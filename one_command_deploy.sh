@@ -85,14 +85,68 @@ touch "$LOG_FILE" 2>/dev/null || {
     }
 }
 
+# Validate critical variables are defined
+REQUIRED_VARS=(
+    "REPO_URL_PRIMARY"
+    "REPO_URL_SSH" 
+    "REPO_URL_MIRROR"
+    "INSTALL_DIR"
+    "LOG_FILE"
+)
+
+echo "🔍 Validating deployment variables..."
+MISSING_VARS=()
+for var in "${REQUIRED_VARS[@]}"; do
+    if [[ -z "${!var:-}" ]]; then
+        MISSING_VARS+=("$var")
+    fi
+done
+
+if [[ ${#MISSING_VARS[@]} -gt 0 ]]; then
+    echo "❌ ERROR: Missing required variables:"
+    for var in "${MISSING_VARS[@]}"; do
+        echo "  - $var"
+    done
+    echo "Script configuration is incomplete. Please fix and retry."
+    exit 1
+fi
+
 # Header
 echo "🚀 SentinentX One-Command Complete Deployment"
 echo "============================================="
-echo "Repository: $REPO_URL"
+echo "Repository: $REPO_URL_PRIMARY"
 echo "Install Directory: $INSTALL_DIR"
 echo "Log File: $LOG_FILE"
 echo "Timestamp: $(date '+%Y-%m-%d %H:%M:%S')"
 echo ""
+
+# System requirements check
+echo "🔧 Checking system requirements..."
+
+# Check if essential commands exist
+REQUIRED_COMMANDS=("curl" "git" "ping" "nslookup")
+MISSING_COMMANDS=()
+
+for cmd in "${REQUIRED_COMMANDS[@]}"; do
+    if ! command -v "$cmd" &> /dev/null; then
+        MISSING_COMMANDS+=("$cmd")
+    fi
+done
+
+if [[ ${#MISSING_COMMANDS[@]} -gt 0 ]]; then
+    echo "⚠️  Installing missing system requirements..."
+    apt-get update -qq
+    for cmd in "${MISSING_COMMANDS[@]}"; do
+        case "$cmd" in
+            "curl") apt-get install -y curl ;;
+            "git") apt-get install -y git ;;
+            "ping") apt-get install -y iputils-ping ;;
+            "nslookup") apt-get install -y dnsutils ;;
+        esac
+    done
+fi
+
+echo "✅ System requirements verified"
 
 # Check root privileges
 if [[ $EUID -ne 0 ]]; then
