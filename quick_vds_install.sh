@@ -295,6 +295,8 @@ install_essential_packages() {
         "htop"
         "nano"
         "ufw"
+        "lsof"
+        "net-tools"
     )
     
     for package in "${essential_packages[@]}"; do
@@ -426,24 +428,67 @@ install_nginx() {
     systemctl stop apache2 2>/dev/null || true
     systemctl disable apache2 2>/dev/null || true
     
-    # Install nginx with specific flags
-    retry_command $MAX_RETRIES $RETRY_DELAY "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends nginx"
+    # Install nginx with enhanced checks
+    log_debug "Installing nginx package..."
+    if ! retry_command $MAX_RETRIES $RETRY_DELAY "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends nginx"; then
+        log_error "Failed to install nginx package"
+        
+        # Try alternative installation method
+        log_info "Trying alternative nginx installation..."
+        DEBIAN_FRONTEND=noninteractive apt-get install -y nginx-core nginx-common
+        
+        if ! command -v nginx &> /dev/null; then
+            log_error "Nginx installation completely failed"
+            exit 1
+        fi
+    fi
+    
+    # Verify nginx binary exists
+    if ! command -v nginx &> /dev/null; then
+        log_error "Nginx binary not found after installation"
+        exit 1
+    fi
+    
+    # Ensure nginx directories exist and fix configuration issues
+    mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
     
     # Fix any potential configuration issues
     nginx -t 2>/dev/null || {
         log_warn "Nginx configuration test failed, fixing..."
-        # Remove default conflicting configs
+        
+        # Remove any conflicting configs
         rm -f /etc/nginx/sites-enabled/default
-        # Create minimal test config
-        echo "
+        
+        # Create minimal working config
+        cat > /etc/nginx/sites-available/default << 'NGINXEOF'
 server {
     listen 80 default_server;
+    listen [::]:80 default_server;
+    
     root /var/www/html;
-    index index.html;
+    index index.html index.htm;
+    
     server_name _;
-    location / { try_files \$uri \$uri/ =404; }
-}" > /etc/nginx/sites-available/default
-        ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+    
+    location / {
+        try_files $uri $uri/ =404;
+    }
+    
+    location ~ /\.ht {
+        deny all;
+    }
+}
+NGINXEOF
+        
+        # Enable the site
+        ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+        
+        # Test again
+        if ! nginx -t; then
+            log_error "Still can't fix nginx config, showing nginx.conf:"
+            cat /etc/nginx/nginx.conf
+            exit 1
+        fi
     }
     
     # Create web directory
