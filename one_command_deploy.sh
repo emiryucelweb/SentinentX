@@ -175,6 +175,27 @@ done
 
 cd "$INSTALL_DIR"
 
+# Verify we're in the right directory and it has Laravel structure
+if [[ ! -f "artisan" ]] || [[ ! -f "composer.json" ]]; then
+    log_error "Directory $INSTALL_DIR does not contain a valid Laravel project"
+    log_error "Directory contents:"
+    ls -la
+    exit 1
+fi
+
+# Check available disk space before continuing
+AVAILABLE_SPACE=$(df . | awk 'NR==2 {print $4}')
+REQUIRED_SPACE=2097152  # 2GB in KB
+
+if [[ $AVAILABLE_SPACE -lt $REQUIRED_SPACE ]]; then
+    log_error "Insufficient disk space for installation"
+    log_error "Available: $((AVAILABLE_SPACE/1024/1024))GB, Required: 2GB"
+    df -h .
+    exit 1
+fi
+
+log_success "Laravel project structure verified"
+
 # Step 3: Install dependencies and configure
 log_step "Step 3/5: Installing dependencies and configuring..."
 
@@ -370,6 +391,51 @@ done
 # Set risk profile in environment
 sed -i "s/RISK_PROFILE=moderate/RISK_PROFILE=$RISK_PROFILE/" .env
 
+# Critical .env validation
+log_info "Validating .env configuration..."
+
+# Check if critical variables are set
+REQUIRED_ENV_VARS=(
+    "APP_NAME"
+    "APP_KEY"
+    "DB_CONNECTION"
+    "DB_PASSWORD"
+    "REDIS_PASSWORD"
+    "HMAC_SECRET"
+    "BYBIT_TESTNET"
+    "RISK_PROFILE"
+)
+
+MISSING_ENV_VARS=()
+for var in "${REQUIRED_ENV_VARS[@]}"; do
+    if ! grep -q "^${var}=" .env || grep -q "^${var}=$" .env || grep -q "^${var}=null$" .env; then
+        MISSING_ENV_VARS+=("$var")
+    fi
+done
+
+if [[ ${#MISSING_ENV_VARS[@]} -gt 0 ]]; then
+    log_error "Critical environment variables are missing or empty:"
+    for var in "${MISSING_ENV_VARS[@]}"; do
+        log_error "  - $var"
+    done
+    log_error "Please check your .env file configuration"
+    exit 1
+fi
+
+# Verify database configuration
+DB_CONNECTION=$(grep "^DB_CONNECTION=" .env | cut -d'=' -f2)
+if [[ "$DB_CONNECTION" != "pgsql" ]]; then
+    log_warn "Database connection is not PostgreSQL: $DB_CONNECTION"
+fi
+
+# Verify testnet mode
+BYBIT_TESTNET=$(grep "^BYBIT_TESTNET=" .env | cut -d'=' -f2)
+if [[ "$BYBIT_TESTNET" != "true" ]]; then
+    log_warn "⚠️  BYBIT_TESTNET is not set to true - this may be dangerous!"
+fi
+
+log_success ".env validation completed"
+
 # Configure Comprehensive Logging
 echo ""
 echo "📝 LOGGING CONFIGURATION"
@@ -434,12 +500,42 @@ log_success "Environment configured for TESTNET mode"
 # Step 5: Laravel setup and final configuration
 log_step "Step 5/5: Laravel setup and final configuration..."
 
-# Generate application key
+# Generate application key with PHP path verification
 log_info "Generating Laravel application key..."
+
+# Verify PHP installation and path
+if ! command -v php &> /dev/null; then
+    log_error "PHP command not found - checking installation..."
+    # Try to find PHP binary
+    for php_path in /usr/bin/php /usr/local/bin/php /opt/php/bin/php; do
+        if [[ -x "$php_path" ]]; then
+            log_info "Found PHP at: $php_path"
+            alias php="$php_path"
+            break
+        fi
+    done
+    
+    if ! command -v php &> /dev/null; then
+        log_error "PHP not found anywhere - installation may have failed"
+        exit 1
+    fi
+fi
+
+# Check if artisan exists
+if [[ ! -f "artisan" ]]; then
+    log_error "Laravel artisan file not found in $PWD"
+    log_error "Directory contents:"
+    ls -la
+    exit 1
+fi
+
+# Generate application key
 if php artisan key:generate --force; then
     log_success "Application key generated"
 else
     log_error "Failed to generate application key"
+    log_error "PHP version: $(php -v)"
+    log_error "Artisan check: $(php artisan --version 2>&1 || echo 'FAILED')"
     exit 1
 fi
 
@@ -485,18 +581,95 @@ for ((i=1; i<=MAX_MIGRATION_RETRIES; i++)); do
     fi
 done
 
-# Cache optimization
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+# Cache optimization with error handling
+log_info "Optimizing Laravel caches..."
 
-# Create storage link
-php artisan storage:link
+# Check for .env file before caching
+if [[ ! -f ".env" ]]; then
+    log_error ".env file not found for cache optimization"
+    exit 1
+fi
 
-# Set proper permissions
-chmod -R 775 storage bootstrap/cache
-chown -R www-data:www-data storage bootstrap/cache
-chown -R www-data:www-data "$INSTALL_DIR"
+# Clear any existing caches first
+php artisan config:clear 2>/dev/null || true
+php artisan route:clear 2>/dev/null || true
+php artisan view:clear 2>/dev/null || true
+php artisan cache:clear 2>/dev/null || true
+
+# Create optimized caches
+if php artisan config:cache; then
+    log_success "Config cache created"
+else
+    log_warn "Config cache failed - continuing without cache"
+fi
+
+if php artisan route:cache; then
+    log_success "Route cache created"
+else
+    log_warn "Route cache failed - continuing without cache"
+fi
+
+if php artisan view:cache; then
+    log_success "View cache created"
+else
+    log_warn "View cache failed - continuing without cache"
+fi
+
+# Create storage link with error handling
+log_info "Creating storage symlink..."
+if [[ -L "public/storage" ]]; then
+    log_info "Storage link already exists"
+elif php artisan storage:link; then
+    log_success "Storage link created"
+else
+    log_warn "Storage link creation failed - manual link may be needed"
+    # Manual fallback
+    ln -sf ../storage/app/public public/storage 2>/dev/null || true
+fi
+
+# Set proper permissions with verification
+log_info "Setting file permissions and ownership..."
+
+# Ensure required directories exist
+mkdir -p storage/logs storage/app storage/framework/cache storage/framework/sessions storage/framework/views
+mkdir -p bootstrap/cache public/storage
+
+# Verify www-data user exists
+if ! id www-data &>/dev/null; then
+    log_warn "www-data user not found, creating..."
+    useradd -r -s /bin/false www-data 2>/dev/null || true
+fi
+
+# Set storage permissions
+if chmod -R 775 storage bootstrap/cache 2>/dev/null; then
+    log_success "Directory permissions set (775)"
+else
+    log_warn "Failed to set directory permissions"
+    # Fallback to more permissive
+    chmod -R 777 storage bootstrap/cache 2>/dev/null || true
+fi
+
+# Set ownership
+if chown -R www-data:www-data storage bootstrap/cache 2>/dev/null; then
+    log_success "Storage ownership set (www-data)"
+else
+    log_warn "Failed to set storage ownership"
+fi
+
+if chown -R www-data:www-data "$INSTALL_DIR" 2>/dev/null; then
+    log_success "Installation directory ownership set"
+else
+    log_warn "Failed to set installation directory ownership"
+fi
+
+# Verify permissions
+if [[ -w "storage/logs" ]] && [[ -w "bootstrap/cache" ]]; then
+    log_success "Directory permissions verified"
+else
+    log_warn "Directory permissions may be incorrect"
+    # Show current permissions for debugging
+    ls -la storage/ bootstrap/
+fi
 
 # Start services with error handling
 log_info "Starting SentinentX services..."
