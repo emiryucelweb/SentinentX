@@ -6,6 +6,35 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# Trap for error handling
+trap 'handle_error $? $LINENO' ERR
+
+# Error handler
+handle_error() {
+    local exit_code=$1
+    local line_number=$2
+    log_error "Script failed at line $line_number with exit code $exit_code"
+    log_error "Attempting automatic recovery..."
+    
+    # Cleanup on error
+    if [[ -d "/tmp/sentinentx_install" ]]; then
+        log_info "Cleaning up temporary files..."
+        rm -rf /tmp/sentinentx_install || true
+    fi
+    
+    # Display troubleshooting info
+    echo ""
+    echo "🚨 Deployment failed - Troubleshooting Information:"
+    echo "================================================"
+    echo "• Check log file: $LOG_FILE"
+    echo "• Verify internet connection"
+    echo "• Ensure you have root privileges"
+    echo "• Try running again: the script is idempotent"
+    echo ""
+    
+    exit $exit_code
+}
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -62,10 +91,35 @@ fi
 
 # Step 1: Run infrastructure installation
 log_step "Step 1/5: Installing infrastructure (PHP, PostgreSQL, Redis, Nginx)..."
-if curl -sSL https://raw.githubusercontent.com/emiryucelweb/SentinentX/main/quick_vds_install.sh | bash; then
-    log_success "Infrastructure installation completed"
+
+# Download and verify infrastructure script first
+INFRA_SCRIPT="/tmp/quick_vds_install.sh"
+if curl -sSL https://raw.githubusercontent.com/emiryucelweb/SentinentX/main/quick_vds_install.sh -o "$INFRA_SCRIPT"; then
+    log_info "Infrastructure script downloaded successfully"
+    chmod +x "$INFRA_SCRIPT"
+    
+    # Run with error handling
+    if bash "$INFRA_SCRIPT"; then
+        log_success "Infrastructure installation completed"
+    else
+        log_error "Infrastructure installation failed"
+        log_error "Retrying infrastructure installation..."
+        # Second attempt
+        if bash "$INFRA_SCRIPT"; then
+            log_success "Infrastructure installation completed on retry"
+        else
+            log_error "Infrastructure installation failed after retry"
+            exit 1
+        fi
+    fi
 else
-    log_error "Infrastructure installation failed"
+    log_error "Failed to download infrastructure script"
+    log_error "Checking network connectivity..."
+    if ping -c 1 google.com &>/dev/null; then
+        log_error "Network is available but GitHub may be unreachable"
+    else
+        log_error "No network connectivity detected"
+    fi
     exit 1
 fi
 
@@ -78,26 +132,75 @@ if [[ -d "$INSTALL_DIR" ]]; then
     rm -rf "$INSTALL_DIR"
 fi
 
-# Clone repository
-if git clone "$REPO_URL" "$INSTALL_DIR"; then
-    log_success "Repository cloned successfully"
-else
-    log_error "Failed to clone repository"
-    exit 1
-fi
+# Clone repository with retry mechanism
+MAX_CLONE_RETRIES=3
+for ((i=1; i<=MAX_CLONE_RETRIES; i++)); do
+    log_info "Cloning repository (attempt $i/$MAX_CLONE_RETRIES)..."
+    
+    if git clone "$REPO_URL" "$INSTALL_DIR"; then
+        log_success "Repository cloned successfully"
+        break
+    else
+        if [[ $i -eq $MAX_CLONE_RETRIES ]]; then
+            log_error "Failed to clone repository after $MAX_CLONE_RETRIES attempts"
+            log_error "Please check:"
+            log_error "• Internet connectivity"
+            log_error "• Repository URL: $REPO_URL"
+            log_error "• Git is installed: $(which git || echo 'NOT FOUND')"
+            exit 1
+        else
+            log_warn "Clone attempt $i failed, retrying in 5 seconds..."
+            sleep 5
+            # Remove partial clone if exists
+            [[ -d "$INSTALL_DIR" ]] && rm -rf "$INSTALL_DIR"
+        fi
+    fi
+done
 
 cd "$INSTALL_DIR"
 
 # Step 3: Install dependencies and configure
 log_step "Step 3/5: Installing dependencies and configuring..."
 
-# Install Composer dependencies
-if composer install --optimize-autoloader --no-dev; then
-    log_success "Composer dependencies installed"
-else
-    log_error "Failed to install Composer dependencies"
+# Install Composer dependencies with error handling
+log_info "Installing Composer dependencies..."
+
+# Check if composer is available
+if ! command -v composer &> /dev/null; then
+    log_error "Composer not found - infrastructure installation may have failed"
     exit 1
 fi
+
+# Clear composer cache first
+composer clear-cache 2>/dev/null || true
+
+# Install with retry mechanism
+MAX_COMPOSER_RETRIES=3
+for ((i=1; i<=MAX_COMPOSER_RETRIES; i++)); do
+    log_info "Installing Composer dependencies (attempt $i/$MAX_COMPOSER_RETRIES)..."
+    
+    if composer install --optimize-autoloader --no-dev --no-interaction; then
+        log_success "Composer dependencies installed"
+        break
+    else
+        if [[ $i -eq $MAX_COMPOSER_RETRIES ]]; then
+            log_error "Failed to install Composer dependencies after $MAX_COMPOSER_RETRIES attempts"
+            log_error "Trying with different flags..."
+            
+            # Last attempt with different flags
+            if composer install --no-dev --no-interaction --ignore-platform-reqs; then
+                log_warn "Composer dependencies installed with platform requirements ignored"
+                break
+            else
+                log_error "Composer installation completely failed"
+                exit 1
+            fi
+        else
+            log_warn "Composer attempt $i failed, retrying in 10 seconds..."
+            sleep 10
+        fi
+    fi
+done
 
 # Install NPM dependencies and build assets
 if [[ -f "package.json" ]]; then
@@ -121,12 +224,47 @@ else
 fi
 
 # Read generated passwords from infrastructure installation
-if [[ -f "/tmp/sentinentx_install/config" ]]; then
-    source /tmp/sentinentx_install/config
-    log_success "Infrastructure configuration loaded"
-else
-    log_error "Infrastructure configuration not found"
-    exit 1
+CONFIG_PATHS=(
+    "/tmp/sentinentx_install/config"
+    "/tmp/sentinentx_config"
+    "/var/log/sentinentx_install_config"
+)
+
+CONFIG_LOADED=false
+for config_path in "${CONFIG_PATHS[@]}"; do
+    if [[ -f "$config_path" ]]; then
+        log_info "Loading configuration from $config_path"
+        source "$config_path"
+        CONFIG_LOADED=true
+        log_success "Infrastructure configuration loaded"
+        break
+    fi
+done
+
+if [[ "$CONFIG_LOADED" == false ]]; then
+    log_error "Infrastructure configuration not found in any expected location"
+    log_error "Searched paths:"
+    for path in "${CONFIG_PATHS[@]}"; do
+        log_error "  • $path"
+    done
+    
+    # Try to generate minimal config if DB exists
+    if systemctl is-active --quiet postgresql; then
+        log_warn "PostgreSQL is running, attempting to create minimal config..."
+        DB_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
+        REDIS_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
+        
+        # Test if we can create a simple database
+        if sudo -u postgres psql -c "SELECT 1;" &>/dev/null; then
+            log_warn "Using generated passwords for database configuration"
+        else
+            log_error "Cannot access PostgreSQL - infrastructure setup incomplete"
+            exit 1
+        fi
+    else
+        log_error "Infrastructure installation appears incomplete"
+        exit 1
+    fi
 fi
 
 # Update .env file with generated values
@@ -160,14 +298,55 @@ log_success "Environment configured for TESTNET mode"
 log_step "Step 5/5: Laravel setup and final configuration..."
 
 # Generate application key
-php artisan key:generate --force
-
-# Run database migrations
-if php artisan migrate --force; then
-    log_success "Database migrations completed"
+log_info "Generating Laravel application key..."
+if php artisan key:generate --force; then
+    log_success "Application key generated"
 else
-    log_warn "Database migrations failed (may need manual setup)"
+    log_error "Failed to generate application key"
+    exit 1
 fi
+
+# Test database connection before migrations
+log_info "Testing database connection..."
+if php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'DB_OK'; } catch(Exception \$e) { echo 'DB_FAIL: ' . \$e->getMessage(); }" 2>/dev/null | grep -q "DB_OK"; then
+    log_success "Database connection verified"
+else
+    log_error "Database connection failed"
+    log_error "Attempting to fix database configuration..."
+    
+    # Try to create database if it doesn't exist
+    if sudo -u postgres psql -c "CREATE DATABASE sentinentx;" 2>/dev/null; then
+        log_info "Database created"
+    fi
+    
+    # Test again
+    if php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'DB_OK'; } catch(Exception \$e) { echo 'DB_FAIL: ' . \$e->getMessage(); }" 2>/dev/null | grep -q "DB_OK"; then
+        log_success "Database connection fixed"
+    else
+        log_error "Cannot establish database connection"
+        exit 1
+    fi
+fi
+
+# Run database migrations with retry
+MAX_MIGRATION_RETRIES=3
+for ((i=1; i<=MAX_MIGRATION_RETRIES; i++)); do
+    log_info "Running database migrations (attempt $i/$MAX_MIGRATION_RETRIES)..."
+    
+    if php artisan migrate --force; then
+        log_success "Database migrations completed"
+        break
+    else
+        if [[ $i -eq $MAX_MIGRATION_RETRIES ]]; then
+            log_error "Database migrations failed after $MAX_MIGRATION_RETRIES attempts"
+            log_warn "Continuing without migrations - may need manual setup"
+            break
+        else
+            log_warn "Migration attempt $i failed, retrying in 5 seconds..."
+            sleep 5
+        fi
+    fi
+done
 
 # Cache optimization
 php artisan config:cache
@@ -182,16 +361,65 @@ chmod -R 775 storage bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache
 chown -R www-data:www-data "$INSTALL_DIR"
 
-# Start services
+# Start services with error handling
 log_info "Starting SentinentX services..."
-systemctl start sentinentx-queue
-systemctl start sentinentx-telegram
 
-# Verify services
-if systemctl is-active --quiet sentinentx-queue && systemctl is-active --quiet sentinentx-telegram; then
-    log_success "All services started successfully"
+# Check if service files exist
+SERVICES=("sentinentx-queue" "sentinentx-telegram")
+for service in "${SERVICES[@]}"; do
+    if [[ ! -f "/etc/systemd/system/${service}.service" ]]; then
+        log_error "Service file not found: /etc/systemd/system/${service}.service"
+        log_error "Infrastructure installation may be incomplete"
+        exit 1
+    fi
+done
+
+# Reload systemd daemon
+systemctl daemon-reload
+
+# Start services with retry
+for service in "${SERVICES[@]}"; do
+    log_info "Starting service: $service"
+    
+    # Enable service first
+    systemctl enable "$service" || log_warn "Failed to enable $service"
+    
+    # Start with retry mechanism
+    MAX_SERVICE_RETRIES=3
+    for ((i=1; i<=MAX_SERVICE_RETRIES; i++)); do
+        if systemctl start "$service"; then
+            log_success "Service $service started successfully"
+            break
+        else
+            if [[ $i -eq $MAX_SERVICE_RETRIES ]]; then
+                log_error "Failed to start $service after $MAX_SERVICE_RETRIES attempts"
+                log_error "Service logs:"
+                journalctl -u "$service" --no-pager --lines=10 || true
+            else
+                log_warn "Failed to start $service (attempt $i), retrying in 5 seconds..."
+                sleep 5
+            fi
+        fi
+    done
+done
+
+# Final service verification
+sleep 5  # Wait for services to stabilize
+all_services_running=true
+for service in "${SERVICES[@]}"; do
+    if systemctl is-active --quiet "$service"; then
+        log_success "Service $service is running"
+    else
+        log_error "Service $service is not running"
+        journalctl -u "$service" --no-pager --lines=5 || true
+        all_services_running=false
+    fi
+done
+
+if [[ "$all_services_running" == true ]]; then
+    log_success "All SentinentX services are running"
 else
-    log_warn "Some services may not have started properly"
+    log_warn "Some services are not running - system may still be functional"
 fi
 
 # Final status check

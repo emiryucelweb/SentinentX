@@ -2,7 +2,7 @@
 
 # SentinentX Quick VDS Installation Script
 # Optimized for Ubuntu 24.04 LTS x64 (Also supports 22.04 LTS)
-# Run with: curl -sSL https://raw.githubusercontent.com/your-repo/sentinentx/main/quick_vds_install.sh | bash
+# Run with: curl -sSL https://raw.githubusercontent.com/emiryucelweb/SentinentX/main/quick_vds_install.sh | bash
 # 
 # Features:
 # - Ultra-robust error handling and auto-recovery

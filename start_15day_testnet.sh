@@ -6,6 +6,28 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# Trap for error handling
+trap 'handle_error $? $LINENO' ERR
+
+# Error handler
+handle_error() {
+    local exit_code=$1
+    local line_number=$2
+    log_error "15-day testnet script failed at line $line_number with exit code $exit_code"
+    
+    # Display troubleshooting info
+    echo ""
+    echo "🚨 15-Day Testnet Setup Failed - Troubleshooting:"
+    echo "==============================================="
+    echo "• Check installation: ls -la $INSTALL_DIR"
+    echo "• Check logs: tail -f $TEST_LOG"
+    echo "• Verify deployment: cat /root/sentinentx_deployment_summary.txt"
+    echo "• Manual setup: nano $INSTALL_DIR/.env"
+    echo ""
+    
+    exit $exit_code
+}
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -102,6 +124,27 @@ if [[ ${#missing_keys[@]} -gt 0 ]]; then
     done
     echo ""
     log_error "Please configure these keys in $INSTALL_DIR/.env before starting the test"
+    
+    # Provide helpful configuration hints
+    echo ""
+    echo "📝 Configuration Guide:"
+    echo "========================"
+    echo "1. Edit the environment file:"
+    echo "   nano $INSTALL_DIR/.env"
+    echo ""
+    echo "2. Add your API keys:"
+    echo "   OPENAI_API_KEY=sk-your-openai-key-here"
+    echo "   GEMINI_API_KEY=your-gemini-key-here"
+    echo "   GROK_API_KEY=your-grok-key-here"
+    echo "   BYBIT_API_KEY=your-testnet-api-key"
+    echo "   BYBIT_API_SECRET=your-testnet-secret"
+    echo "   TELEGRAM_BOT_TOKEN=your-bot-token"
+    echo "   TELEGRAM_CHAT_ID=your-chat-id"
+    echo ""
+    echo "3. Restart this script:"
+    echo "   $0"
+    echo ""
+    
     exit 1
 fi
 
@@ -257,37 +300,138 @@ log_success "Daily reporting configured"
 log_step "Restarting all services for clean start..."
 
 services=("sentinentx-queue" "sentinentx-telegram" "nginx" "php8.2-fpm")
+failed_services=()
+
 for service in "${services[@]}"; do
-    systemctl restart "$service"
-    if systemctl is-active --quiet "$service"; then
-        log_success "Service restarted: $service"
-    else
+    log_info "Restarting service: $service"
+    
+    # Stop service first
+    systemctl stop "$service" 2>/dev/null || true
+    sleep 2
+    
+    # Start service with retry
+    MAX_RESTART_RETRIES=3
+    service_started=false
+    
+    for ((i=1; i<=MAX_RESTART_RETRIES; i++)); do
+        if systemctl start "$service"; then
+            sleep 3  # Wait for service to stabilize
+            if systemctl is-active --quiet "$service"; then
+                log_success "Service restarted: $service"
+                service_started=true
+                break
+            fi
+        fi
+        
+        if [[ $i -lt $MAX_RESTART_RETRIES ]]; then
+            log_warn "Failed to restart $service (attempt $i), retrying..."
+            sleep 5
+        fi
+    done
+    
+    if [[ "$service_started" == false ]]; then
         log_error "Failed to restart: $service"
+        failed_services+=("$service")
+        
+        # Show service logs for debugging
+        log_error "Service logs for $service:"
+        journalctl -u "$service" --no-pager --lines=5 || true
     fi
 done
+
+# Check if critical services failed
+critical_services=("sentinentx-queue" "sentinentx-telegram")
+for critical_service in "${critical_services[@]}"; do
+    if [[ " ${failed_services[*]} " =~ " ${critical_service} " ]]; then
+        log_error "Critical service $critical_service failed to start"
+        log_error "15-day test cannot proceed without this service"
+        exit 1
+    fi
+done
+
+if [[ ${#failed_services[@]} -gt 0 ]]; then
+    log_warn "Some non-critical services failed: ${failed_services[*]}"
+    log_warn "Test will proceed but functionality may be limited"
+else
+    log_success "All services restarted successfully"
+fi
 
 # Initial system test
 log_step "Running initial system test..."
 
-# Test database connection
-if php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database OK';" 2>/dev/null | grep -q "Database OK"; then
+# Comprehensive system testing
+system_tests_passed=0
+total_system_tests=6
+
+# Test 1: Database connection
+log_info "Test 1/6: Database connection..."
+if php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'Database OK'; } catch(Exception \$e) { echo 'Database FAIL'; }" 2>/dev/null | grep -q "Database OK"; then
     log_success "Database connection verified"
+    ((system_tests_passed++))
 else
     log_error "Database connection failed"
 fi
 
-# Test Redis connection
-if php artisan tinker --execute="Cache::put('test', 'ok'); echo Cache::get('test');" 2>/dev/null | grep -q "ok"; then
+# Test 2: Redis connection
+log_info "Test 2/6: Redis connection..."
+if php artisan tinker --execute="try { Cache::put('test_15day', 'ok'); echo Cache::get('test_15day'); } catch(Exception \$e) { echo 'Redis FAIL'; }" 2>/dev/null | grep -q "ok"; then
     log_success "Redis connection verified"
+    ((system_tests_passed++))
 else
     log_error "Redis connection failed"
 fi
 
-# Test web server
-if curl -s "http://localhost" &>/dev/null; then
+# Test 3: Web server
+log_info "Test 3/6: Web server..."
+if curl -s --max-time 10 "http://localhost" &>/dev/null; then
     log_success "Web server responding"
+    ((system_tests_passed++))
 else
     log_error "Web server not responding"
+fi
+
+# Test 4: API health endpoint
+log_info "Test 4/6: API health endpoint..."
+if curl -s --max-time 10 "http://localhost/api/health" | grep -q "ok\|healthy\|success" 2>/dev/null; then
+    log_success "API health endpoint responding"
+    ((system_tests_passed++))
+else
+    log_warn "API health endpoint not responding (may be normal)"
+fi
+
+# Test 5: Artisan commands
+log_info "Test 5/6: Laravel Artisan commands..."
+if php artisan --version &>/dev/null; then
+    log_success "Artisan commands working"
+    ((system_tests_passed++))
+else
+    log_error "Artisan commands failed"
+fi
+
+# Test 6: File permissions
+log_info "Test 6/6: File permissions..."
+if [[ -w "$INSTALL_DIR/storage/logs" ]] && [[ -w "$INSTALL_DIR/bootstrap/cache" ]]; then
+    log_success "File permissions correct"
+    ((system_tests_passed++))
+else
+    log_error "File permissions incorrect"
+    # Try to fix permissions
+    chmod -R 775 "$INSTALL_DIR/storage" "$INSTALL_DIR/bootstrap/cache" || true
+    chown -R www-data:www-data "$INSTALL_DIR/storage" "$INSTALL_DIR/bootstrap/cache" || true
+fi
+
+# System test summary
+echo ""
+log_info "System Test Results: $system_tests_passed/$total_system_tests tests passed"
+
+if [[ $system_tests_passed -ge 4 ]]; then
+    log_success "System tests mostly passed - proceeding with 15-day test"
+elif [[ $system_tests_passed -ge 2 ]]; then
+    log_warn "Some system tests failed - test will proceed with limitations"
+else
+    log_error "Too many system tests failed - aborting 15-day test"
+    log_error "Please fix the issues and run the deployment again"
+    exit 1
 fi
 
 # Create test summary
