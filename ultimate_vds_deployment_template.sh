@@ -373,14 +373,45 @@ install_packages() {
     log_step "Installing Nginx..."
     DEBIAN_FRONTEND=noninteractive apt-get install -y nginx
     
-    # Install Composer
+    # Install Composer with error handling
     log_step "Installing Composer..."
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    if curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; then
+        log_success "Composer installed successfully"
+    else
+        log_error "Composer installation failed"
+        exit 1
+    fi
     
-    # Install Node.js and NPM
+    # Verify Composer installation
+    if ! command -v composer >/dev/null 2>&1; then
+        log_error "Composer command not found after installation"
+        exit 1
+    fi
+    
+    # Install Node.js and NPM with error handling
     log_step "Installing Node.js..."
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-    apt-get install -y nodejs
+    if curl -fsSL https://deb.nodesource.com/setup_20.x | bash -; then
+        if DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs; then
+            log_success "Node.js installed successfully"
+        else
+            log_error "Node.js installation failed"
+            exit 1
+        fi
+    else
+        log_error "Node.js repository setup failed"
+        exit 1
+    fi
+    
+    # Verify installations
+    if ! command -v node >/dev/null 2>&1; then
+        log_error "Node.js command not found after installation"
+        exit 1
+    fi
+    
+    if ! command -v npm >/dev/null 2>&1; then
+        log_error "NPM command not found after installation"
+        exit 1
+    fi
     
     log_success "Package installation completed"
 }
@@ -392,9 +423,14 @@ install_packages() {
 configure_postgresql() {
     log_header "🗄️ POSTGRESQL CONFIGURATION"
     
-    # Start PostgreSQL
-    systemctl start postgresql
-    systemctl enable postgresql
+    # Start PostgreSQL with error handling
+    if systemctl start postgresql; then
+        systemctl enable postgresql
+        log_success "PostgreSQL service started"
+    else
+        log_error "Failed to start PostgreSQL service"
+        exit 1
+    fi
     
     # Create database and user
     log_step "Creating database and user..."
@@ -436,9 +472,14 @@ configure_redis() {
     echo "maxmemory 256mb" >> /etc/redis/redis.conf
     echo "maxmemory-policy allkeys-lru" >> /etc/redis/redis.conf
     
-    # Start Redis
-    systemctl restart redis-server
-    systemctl enable redis-server
+    # Start Redis with error handling
+    if systemctl restart redis-server; then
+        systemctl enable redis-server
+        log_success "Redis service started"
+    else
+        log_error "Failed to start Redis service"
+        exit 1
+    fi
     
     # Test connection
     if redis-cli -a ${VDS_PASSWORD} ping >/dev/null 2>&1; then
@@ -470,9 +511,14 @@ configure_php() {
     sed -i "s/listen.owner = .*/listen.owner = www-data/" $FPM_POOL
     sed -i "s/listen.group = .*/listen.group = www-data/" $FPM_POOL
     
-    # Start PHP-FPM
-    systemctl restart php${PHP_VERSION}-fpm
-    systemctl enable php${PHP_VERSION}-fpm
+    # Start PHP-FPM with error handling
+    if systemctl restart php${PHP_VERSION}-fpm; then
+        systemctl enable php${PHP_VERSION}-fpm
+        log_success "PHP-FPM service started"
+    else
+        log_error "Failed to start PHP-FPM service"
+        exit 1
+    fi
     
     log_success "PHP configured successfully"
 }
@@ -643,9 +689,28 @@ deploy_application() {
     mkdir -p storage/app/{public,temp}
     mkdir -p bootstrap/cache
     
-    # Set permissions
-    chown -R www-data:www-data storage bootstrap/cache
+    # Set comprehensive file permissions
+    log_step "Setting file permissions..."
+    
+    # Ensure directories exist
+    mkdir -p storage/logs storage/framework/{cache,sessions,views} bootstrap/cache
+    
+    # Set ownership for all Laravel directories
+    chown -R www-data:www-data storage bootstrap/cache public
+    
+    # Set proper permissions
     chmod -R 775 storage bootstrap/cache
+    chmod -R 755 public
+    
+    # Set specific permissions for sensitive files
+    find ${PROJECT_DIR} -name "*.sh" -exec chmod +x {} \; 2>/dev/null || true
+    
+    # Verify permissions
+    if [ -w "storage/logs" ] && [ -w "bootstrap/cache" ]; then
+        log_success "File permissions set correctly"
+    else
+        log_warn "Some permission issues may exist"
+    fi
     
     log_success "Application deployed successfully"
 }
@@ -685,13 +750,14 @@ DB_DATABASE=sentinentx
 DB_USERNAME=${VDS_USER}
 DB_PASSWORD=${VDS_PASSWORD}
 
-# Cache & Queue (Redis)
-CACHE_DRIVER=redis
+# Cache & Queue - FILE BASED (No DB dependency)
+CACHE_DRIVER=file
+CACHE_PREFIX=sentinentx_cache
 QUEUE_CONNECTION=sync
-SESSION_DRIVER=redis
+SESSION_DRIVER=file
 SESSION_LIFETIME=120
 
-# Redis Configuration
+# Redis Configuration (Available for future use)
 REDIS_HOST=127.0.0.1
 REDIS_PASSWORD=${VDS_PASSWORD}
 REDIS_PORT=6379
@@ -758,14 +824,16 @@ EOF
     log_step "Generating application key..."
     sudo -u www-data php artisan key:generate --force
     
-    # Clear and cache configuration
-    log_step "Optimizing Laravel..."
+    # Clear and cache configuration (FILE-BASED CACHE - NO DB DEPENDENCY)
+    log_step "Optimizing Laravel with file-based cache..."
     sudo -u www-data php artisan config:clear
-    
-    # Don't clear database cache until migration is done, use file cache temporarily
-    sudo -u www-data php artisan cache:clear --no-interaction || echo "Cache clear skipped (tables may not exist yet)"
-    sudo -u www-data php artisan route:clear
+    sudo -u www-data php artisan route:clear  
     sudo -u www-data php artisan view:clear
+    
+    # Clear file cache (safe, no DB tables needed)
+    sudo -u www-data php artisan cache:clear || true
+    
+    log_success "Laravel optimized with file-based cache (zero DB dependency)"
     
     # Run migrations with retries
     log_step "Running database migrations..."
