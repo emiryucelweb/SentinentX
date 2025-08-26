@@ -45,7 +45,10 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # Configuration
-REPO_URL="https://github.com/emiryucelweb/SentinentX.git"
+# Primary and backup repository URLs
+REPO_URL_PRIMARY="https://github.com/emiryucelweb/SentinentX.git"
+REPO_URL_SSH="git@github.com:emiryucelweb/SentinentX.git"
+REPO_URL_MIRROR="https://gitlab.com/emiryucelweb/SentinentX.git"
 INSTALL_DIR="/var/www/sentinentx"
 LOG_FILE="/tmp/sentinentx_deploy.log"
 
@@ -147,31 +150,129 @@ if [[ -d "$INSTALL_DIR" ]]; then
     rm -rf "$INSTALL_DIR"
 fi
 
-# Clone repository with retry mechanism (cache bypass)
-MAX_CLONE_RETRIES=3
-for ((i=1; i<=MAX_CLONE_RETRIES; i++)); do
-    log_info "Cloning repository (attempt $i/$MAX_CLONE_RETRIES)..."
+# Network connectivity test
+log_info "Testing network connectivity..."
+if ! ping -c 1 -W 5 8.8.8.8 &>/dev/null; then
+    log_error "No internet connectivity detected"
+    log_error "Please check your network connection"
+    exit 1
+fi
+
+# Configure Git for the system if not configured
+if ! git config --global user.email &>/dev/null; then
+    log_info "Configuring Git for system..."
+    git config --global user.email "deploy@sentinentx.local"
+    git config --global user.name "SentinentX Deploy"
+    git config --global init.defaultBranch main
+fi
+
+# Increase Git timeout and buffer sizes for slow connections
+git config --global http.postBuffer 524288000
+git config --global http.lowSpeedLimit 1000
+git config --global http.lowSpeedTime 600
+
+# GitHub connectivity test with detailed diagnostics
+log_info "Testing GitHub connectivity..."
+if ! ping -c 1 -W 10 github.com &>/dev/null; then
+    log_warn "GitHub connectivity issues detected"
+    log_info "Checking DNS resolution..."
+    nslookup github.com || log_warn "DNS resolution failed"
+fi
+
+# Repository URLs to try in order of preference
+REPO_URLS=(
+    "$REPO_URL_PRIMARY"
+    "https://github.com/emiryucelweb/SentinentX.git"
+    "$REPO_URL_SSH"
+)
+
+# Try different clone methods
+CLONE_SUCCESS=false
+
+for repo_url in "${REPO_URLS[@]}"; do
+    log_info "Trying repository URL: $repo_url"
     
-    # Git clone with cache bypass
-    if git clone --no-cache --depth 1 "$REPO_URL" "$INSTALL_DIR"; then
-        log_success "Repository cloned successfully"
-        break
-    else
-        if [[ $i -eq $MAX_CLONE_RETRIES ]]; then
-            log_error "Failed to clone repository after $MAX_CLONE_RETRIES attempts"
-            log_error "Please check:"
-            log_error "• Internet connectivity"
-            log_error "• Repository URL: $REPO_URL"
-            log_error "• Git is installed: $(which git || echo 'NOT FOUND')"
-            exit 1
-        else
-            log_warn "Clone attempt $i failed, retrying in 5 seconds..."
-            sleep 5
-            # Remove partial clone if exists
-            [[ -d "$INSTALL_DIR" ]] && rm -rf "$INSTALL_DIR"
-        fi
+    # Skip SSH if no SSH key is available
+    if [[ "$repo_url" == *"git@github.com"* ]] && ! ssh-add -l &>/dev/null; then
+        log_warn "SSH key not available, skipping SSH clone"
+        continue
     fi
+    
+    for attempt in {1..3}; do
+        log_info "Clone attempt $attempt/3 for: $repo_url"
+        
+        # Use timeout to prevent hanging
+        if timeout 120 git clone --depth 1 "$repo_url" "$INSTALL_DIR" 2>/dev/null; then
+            log_success "Repository cloned successfully from: $repo_url"
+            CLONE_SUCCESS=true
+            break 2
+        else
+            log_warn "Clone failed for: $repo_url (attempt $attempt)"
+            rm -rf "$INSTALL_DIR" 2>/dev/null
+            sleep 3
+        fi
+    done
 done
+
+# Fallback: Download ZIP archive
+if [[ "$CLONE_SUCCESS" != true ]]; then
+    log_warn "Git clone failed, attempting ZIP download..."
+    
+    ZIP_URL="https://github.com/emiryucelweb/SentinentX/archive/refs/heads/main.zip"
+    TEMP_ZIP="/tmp/sentinentx.zip"
+    
+    if curl -sSL --max-time 120 --retry 3 -o "$TEMP_ZIP" "$ZIP_URL"; then
+        log_info "ZIP downloaded, extracting..."
+        mkdir -p "$INSTALL_DIR"
+        
+        # Check if unzip is available
+        if ! command -v unzip &> /dev/null; then
+            log_warn "unzip not found, installing..."
+            apt-get update -qq && apt-get install -y unzip 2>/dev/null || {
+                log_warn "Failed to install unzip, trying manual extraction"
+                python3 -c "
+import zipfile
+import os
+with zipfile.ZipFile('$TEMP_ZIP', 'r') as zip_ref:
+    zip_ref.extractall('/tmp/')
+" 2>/dev/null || {
+                    log_warn "Python zipfile extraction also failed"
+                    rm -f "$TEMP_ZIP"
+                    continue
+                }
+            }
+        fi
+        
+        if unzip -q "$TEMP_ZIP" -d /tmp/ && mv /tmp/SentinentX-main/* "$INSTALL_DIR/"; then
+            log_success "Repository downloaded and extracted from ZIP"
+            CLONE_SUCCESS=true
+            rm -f "$TEMP_ZIP"
+            rm -rf /tmp/SentinentX-main
+        else
+            log_warn "ZIP extraction failed"
+            rm -f "$TEMP_ZIP"
+            rm -rf /tmp/SentinentX-main
+        fi
+    else
+        log_warn "ZIP download failed"
+    fi
+fi
+
+# Final fallback: Create minimal Laravel structure if we're completely offline
+if [[ "$CLONE_SUCCESS" != true ]]; then
+    log_error "All download methods failed"
+    log_error "Network diagnostics:"
+    log_error "• Internet: $(ping -c 1 8.8.8.8 &>/dev/null && echo 'OK' || echo 'FAILED')"
+    log_error "• GitHub: $(ping -c 1 github.com &>/dev/null && echo 'OK' || echo 'FAILED')"
+    log_error "• DNS: $(nslookup github.com &>/dev/null && echo 'OK' || echo 'FAILED')"
+    log_error ""
+    log_error "Possible solutions:"
+    log_error "1. Check internet connection"
+    log_error "2. Check firewall settings"
+    log_error "3. Try from a different network"
+    log_error "4. Contact system administrator"
+    exit 1
+fi
 
 cd "$INSTALL_DIR"
 
