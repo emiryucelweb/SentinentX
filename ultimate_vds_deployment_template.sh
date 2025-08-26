@@ -841,7 +841,7 @@ EOF
     local attempt=1
     
     while [ $attempt -le $max_attempts ]; do
-        if sudo -u www-data php artisan migrate --force; then
+        if sudo -u www-data php artisan migrate --force --no-interaction; then
             log_success "Database migrations completed successfully"
             
             # Now that tables exist, clear cache properly
