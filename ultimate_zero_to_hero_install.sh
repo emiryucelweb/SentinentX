@@ -97,6 +97,7 @@ apt-get remove --purge -y php* 2>/dev/null || true
 apt-get autoremove -y
 
 # Install PHP 8.3 (native on Ubuntu 24.04)
+# Note: php8.3-json is built into PHP 8.3 core on Ubuntu 24.04
 apt-get install -y \
     php8.3 \
     php8.3-cli \
@@ -110,8 +111,12 @@ apt-get install -y \
     php8.3-intl \
     php8.3-bcmath \
     php8.3-pgsql \
-    php8.3-redis \
-    php8.3-json
+    php8.3-redis 2>/dev/null || {
+    # Fallback: install without problematic packages
+    log_warning "Some packages failed, installing core PHP packages..."
+    apt-get install -y php8.3 php8.3-cli php8.3-fpm php8.3-common \
+                      php8.3-curl php8.3-mbstring php8.3-xml php8.3-pgsql
+}
 
 # Enable and start PHP-FPM
 systemctl enable php8.3-fpm
