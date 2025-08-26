@@ -82,21 +82,8 @@ return [
             'level' => env('LOG_LEVEL', 'info'),
             'formatter' => \Monolog\Formatter\JsonFormatter::class,
             'processors' => [
-                // Add request context processor
-                function ($record) {
-                    if (app()->bound('request')) {
-                        $request = app('request');
-                        $record['extra']['request'] = [
-                            'method' => $request->method(),
-                            'url' => $request->fullUrl(),
-                            'ip' => $request->ip(),
-                            'correlation_id' => $request->attributes->get('correlation_id'),
-                            'tenant_id' => $request->attributes->get('tenant_id'),
-                        ];
-                    }
-
-                    return $record;
-                },
+                // Request context processor disabled for config caching compatibility
+                // Closures cannot be serialized for config cache
             ],
         ],
 

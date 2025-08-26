@@ -847,7 +847,10 @@ EOF
             # Now that tables exist, clear cache properly
             log_step "Clearing cache with database tables available..."
             sudo -u www-data php artisan cache:clear || true
-            sudo -u www-data php artisan config:cache || true
+            
+            # Skip config:cache due to serialization issues with closures
+            # Use config:clear only for production
+            sudo -u www-data php artisan config:clear || true
             
             break
         else
