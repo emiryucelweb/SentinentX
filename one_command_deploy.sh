@@ -101,9 +101,15 @@ fi
 # Step 1: Run infrastructure installation
 log_step "Step 1/5: Installing infrastructure (PHP, PostgreSQL, Redis, Nginx)..."
 
-# Download and verify infrastructure script first
+# Download and verify infrastructure script first (with cache bypass)
 INFRA_SCRIPT="/tmp/quick_vds_install.sh"
-if curl -sSL https://raw.githubusercontent.com/emiryucelweb/SentinentX/main/quick_vds_install.sh -o "$INFRA_SCRIPT"; then
+TIMESTAMP=$(date +%s%N)
+if curl -sSL --max-time 60 --retry 3 --retry-delay 5 \
+        --header "Cache-Control: no-cache, no-store, must-revalidate" \
+        --header "Pragma: no-cache" \
+        --header "Expires: 0" \
+        "https://raw.githubusercontent.com/emiryucelweb/SentinentX/main/quick_vds_install.sh?v=$TIMESTAMP" \
+        -o "$INFRA_SCRIPT"; then
     log_info "Infrastructure script downloaded successfully"
     chmod +x "$INFRA_SCRIPT"
     
@@ -141,12 +147,13 @@ if [[ -d "$INSTALL_DIR" ]]; then
     rm -rf "$INSTALL_DIR"
 fi
 
-# Clone repository with retry mechanism
+# Clone repository with retry mechanism (cache bypass)
 MAX_CLONE_RETRIES=3
 for ((i=1; i<=MAX_CLONE_RETRIES; i++)); do
     log_info "Cloning repository (attempt $i/$MAX_CLONE_RETRIES)..."
     
-    if git clone "$REPO_URL" "$INSTALL_DIR"; then
+    # Git clone with cache bypass
+    if git clone --no-cache --depth 1 "$REPO_URL" "$INSTALL_DIR"; then
         log_success "Repository cloned successfully"
         break
     else
