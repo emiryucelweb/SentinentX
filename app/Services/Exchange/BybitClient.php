@@ -563,6 +563,11 @@ final class BybitClient implements ExchangeClientInterface
             ->throw()
             ->json();
 
+        // Testnet fiyat düzeltmesi uygula
+        if (is_array($resp) && isset($resp['result']['list'])) {
+            $resp = $this->correctTestnetPrices($resp);
+        }
+
         return is_array($resp) ? $resp : [];
     }
 
@@ -693,6 +698,11 @@ final class BybitClient implements ExchangeClientInterface
         $headers = $this->authHeadersForGet($queryString);
 
         $resp = $this->makeHttpRequest('GET', '/v5/position/list?'.$queryString, [], $headers);
+
+        // Pozisyon fiyat düzeltmesi uygula
+        if (is_array($resp) && isset($resp['result']['list'])) {
+            $resp = $this->correctTestnetPositionPrices($resp);
+        }
 
         return $resp;
     }
@@ -839,5 +849,68 @@ final class BybitClient implements ExchangeClientInterface
                 'retMsg' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Testnet fiyat düzeltmesi - indexPrice gerçek piyasa fiyatını gösteriyor
+     */
+    private function correctTestnetPrices(array $response): array
+    {
+        if (isset($response['result']['list']) && is_array($response['result']['list'])) {
+            foreach ($response['result']['list'] as &$ticker) {
+                if (isset($ticker['indexPrice']) && $ticker['indexPrice'] > 0) {
+                    $indexPrice = (float) $ticker['indexPrice'];
+                    $ticker['lastPrice'] = (string) $indexPrice;
+                    $ticker['markPrice'] = (string) $indexPrice;
+                    $ticker['bid1Price'] = (string) ($indexPrice * 0.9995);
+                    $ticker['ask1Price'] = (string) ($indexPrice * 1.0005);
+                    
+                    if (isset($ticker['prevPrice24h']) && $ticker['prevPrice24h'] > 0) {
+                        $prevPrice = (float) $ticker['prevPrice24h'];
+                        if ($prevPrice > $indexPrice * 1.5) {
+                            $ticker['prevPrice24h'] = (string) ($indexPrice * 0.98);
+                        }
+                    }
+                }
+            }
+        }
+        return $response;
+    }
+
+    /**
+     * Pozisyon fiyatlarını düzelt
+     */
+    private function correctTestnetPositionPrices(array $response): array
+    {
+        if (isset($response['result']['list']) && is_array($response['result']['list'])) {
+            foreach ($response['result']['list'] as &$position) {
+                $symbol = $position['symbol'] ?? '';
+                
+                if ($symbol && isset($position['markPrice']) && $position['markPrice'] > 0) {
+                    try {
+                        $params = ['category' => 'linear', 'symbol' => $symbol];
+                        $tickerResp = $this->makeHttpRequest('GET', '/v5/market/tickers?'.http_build_query($params));
+                        
+                        if (isset($tickerResp['result']['list'][0]['indexPrice'])) {
+                            $indexPrice = (float) $tickerResp['result']['list'][0]['indexPrice'];
+                            
+                            if ($indexPrice > 0) {
+                                $position['markPrice'] = (string) $indexPrice;
+                                
+                                if (isset($position['avgPrice']) && $position['avgPrice'] > 0) {
+                                    $avgPrice = (float) $position['avgPrice'];
+                                    if ($avgPrice > $indexPrice * 1.5) {
+                                        $position['avgPrice'] = (string) $indexPrice;
+                                    }
+                                }
+                            }
+                        }
+                    } catch (\Throwable $e) {
+                        \Log::warning('Position price correction failed', ['symbol' => $symbol]);
+                    }
+                }
+            }
+        }
+        return $response;
     }
 }
