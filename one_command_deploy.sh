@@ -426,10 +426,24 @@ CONFIG_LOADED=false
 for config_path in "${CONFIG_PATHS[@]}"; do
     if [[ -f "$config_path" ]]; then
         log_info "Loading configuration from $config_path"
-        source "$config_path"
-        CONFIG_LOADED=true
-        log_success "Infrastructure configuration loaded"
-        break
+        
+        # Validate config file before sourcing
+        if bash -n "$config_path" 2>/dev/null; then
+            # Config file syntax is valid, source it
+            if source "$config_path" 2>/dev/null; then
+                CONFIG_LOADED=true
+                log_success "Infrastructure configuration loaded"
+                break
+            else
+                log_warn "Configuration file has runtime errors, skipping: $config_path"
+                # Remove corrupted config file
+                rm -f "$config_path"
+            fi
+        else
+            log_warn "Configuration file has syntax errors, removing: $config_path"
+            # Remove corrupted config file
+            rm -f "$config_path"
+        fi
     fi
 done
 
