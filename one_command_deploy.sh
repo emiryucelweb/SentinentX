@@ -112,8 +112,8 @@ if [[ ${#MISSING_VARS[@]} -gt 0 ]]; then
 fi
 
 # Header
-echo "🚀 SentinentX One-Command Complete Deployment"
-echo "============================================="
+echo "🚀 SentinentX One-Command Complete Deployment v2.0"
+echo "=================================================="
 echo "Repository: $REPO_URL_PRIMARY"
 echo "Install Directory: $INSTALL_DIR"
 echo "Log File: $LOG_FILE"
