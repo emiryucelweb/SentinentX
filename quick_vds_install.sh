@@ -89,6 +89,102 @@ retry_command() {
 }
 
 # System requirements check
+# Complete VDS reset and cleanup
+reset_vds_completely() {
+    log_info "🧹 COMPLETE VDS RESET - Cleaning all existing installations..."
+    
+    # Stop all services that might interfere
+    local services_to_stop=(
+        "nginx" "apache2" "httpd"
+        "php8.3-fpm" "php8.2-fpm" "php8.1-fpm" "php8.0-fpm" "php7.4-fpm"
+        "postgresql" "mysql" "mariadb"
+        "redis-server" "redis"
+        "sentinentx-queue" "sentinentx-telegram"
+    )
+    
+    for service in "${services_to_stop[@]}"; do
+        systemctl stop "$service" 2>/dev/null || true
+        systemctl disable "$service" 2>/dev/null || true
+    done
+    
+    # Remove all web servers
+    log_debug "Removing web servers..."
+    DEBIAN_FRONTEND=noninteractive apt-get remove --purge -y \
+        nginx nginx-common nginx-core \
+        apache2 apache2-common apache2-utils \
+        lighttpd \
+        2>/dev/null || true
+    
+    # Remove all PHP versions
+    log_debug "Removing all PHP versions..."
+    DEBIAN_FRONTEND=noninteractive apt-get remove --purge -y \
+        'php*' \
+        2>/dev/null || true
+    
+    # Remove databases
+    log_debug "Removing databases..."
+    DEBIAN_FRONTEND=noninteractive apt-get remove --purge -y \
+        postgresql postgresql-* \
+        mysql-server mysql-client mysql-common \
+        mariadb-server mariadb-client \
+        2>/dev/null || true
+    
+    # Remove Redis
+    log_debug "Removing Redis..."
+    DEBIAN_FRONTEND=noninteractive apt-get remove --purge -y \
+        redis-server redis-tools \
+        2>/dev/null || true
+    
+    # Remove Node.js
+    log_debug "Removing Node.js..."
+    DEBIAN_FRONTEND=noninteractive apt-get remove --purge -y \
+        nodejs npm \
+        2>/dev/null || true
+    
+    # Clean configuration directories
+    log_debug "Cleaning configuration directories..."
+    rm -rf /etc/nginx /var/log/nginx /var/lib/nginx
+    rm -rf /etc/apache2 /var/log/apache2
+    rm -rf /etc/php /var/lib/php
+    rm -rf /etc/postgresql /var/lib/postgresql
+    rm -rf /etc/mysql /var/lib/mysql
+    rm -rf /etc/redis /var/lib/redis
+    rm -rf /var/www/html /var/www/sentinentx
+    rm -rf /usr/local/bin/composer
+    
+    # Remove systemd services
+    rm -f /etc/systemd/system/sentinentx-*.service
+    rm -f /etc/systemd/system/nginx.service.d/*
+    systemctl daemon-reload
+    
+    # Clean package lists and caches
+    rm -f /etc/apt/sources.list.d/php.list
+    rm -f /etc/apt/sources.list.d/nginx.list
+    rm -f /etc/apt/sources.list.d/postgresql.list
+    rm -f /etc/apt/sources.list.d/redis.list
+    rm -f /etc/apt/sources.list.d/nodesource.list
+    rm -f /usr/share/keyrings/php-archive-keyring.gpg
+    rm -f /usr/share/keyrings/nginx-archive-keyring.gpg
+    rm -f /usr/share/keyrings/postgresql-archive-keyring.gpg
+    
+    # Complete package cleanup
+    apt-get clean
+    apt-get autoclean
+    apt-get autoremove --purge -y
+    
+    # Fix broken packages
+    DEBIAN_FRONTEND=noninteractive apt-get install -f -y
+    
+    # Kill any remaining processes
+    pkill -f nginx 2>/dev/null || true
+    pkill -f apache 2>/dev/null || true
+    pkill -f php-fpm 2>/dev/null || true
+    pkill -f postgresql 2>/dev/null || true
+    pkill -f redis 2>/dev/null || true
+    
+    log_success "VDS completely reset and cleaned"
+}
+
 check_system_requirements() {
     log_info "Checking system requirements..."
     
@@ -322,17 +418,85 @@ install_redis() {
     log_success "Redis installed and configured"
 }
 
-# Install Nginx
+# Install Nginx with enhanced error handling
 install_nginx() {
     log_info "Installing Nginx..."
     
-    retry_command $MAX_RETRIES $RETRY_DELAY "DEBIAN_FRONTEND=noninteractive apt-get install -y nginx"
+    # Ensure no conflicting web servers
+    systemctl stop apache2 2>/dev/null || true
+    systemctl disable apache2 2>/dev/null || true
     
-    systemctl enable nginx
-    systemctl start nginx
+    # Install nginx with specific flags
+    retry_command $MAX_RETRIES $RETRY_DELAY "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends nginx"
+    
+    # Fix any potential configuration issues
+    nginx -t 2>/dev/null || {
+        log_warn "Nginx configuration test failed, fixing..."
+        # Remove default conflicting configs
+        rm -f /etc/nginx/sites-enabled/default
+        # Create minimal test config
+        echo "
+server {
+    listen 80 default_server;
+    root /var/www/html;
+    index index.html;
+    server_name _;
+    location / { try_files \$uri \$uri/ =404; }
+}" > /etc/nginx/sites-available/default
+        ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+    }
+    
+    # Create web directory
+    mkdir -p /var/www/html
+    echo "<h1>SentinentX Server Ready</h1>" > /var/www/html/index.html
+    chown -R www-data:www-data /var/www/html
+    
+    # Test configuration again
+    if ! nginx -t; then
+        log_error "Nginx configuration is invalid"
+        cat /etc/nginx/nginx.conf | head -20
+        exit 1
+    fi
+    
+    # Enable and start with retry
+    systemctl enable nginx || {
+        log_warn "Failed to enable nginx, trying manual enable..."
+        systemctl daemon-reload
+        systemctl enable nginx
+    }
+    
+    # Start nginx with specific checks
+    if ! systemctl start nginx; then
+        log_error "Failed to start nginx, checking logs..."
+        journalctl -u nginx --no-pager --lines=10
+        
+        # Try to fix common issues
+        log_info "Attempting to fix nginx startup issues..."
+        
+        # Kill any processes using port 80
+        lsof -ti:80 | xargs kill -9 2>/dev/null || true
+        
+        # Check if there are any competing services
+        systemctl stop apache2 2>/dev/null || true
+        systemctl stop lighttpd 2>/dev/null || true
+        
+        # Try starting again
+        sleep 2
+        if ! systemctl start nginx; then
+            log_error "Nginx still failing to start"
+            exit 1
+        fi
+    fi
+    
+    # Verify nginx is running
+    if ! systemctl is-active --quiet nginx; then
+        log_error "Nginx is not running after installation"
+        systemctl status nginx --no-pager
+        exit 1
+    fi
     
     # Configure basic Nginx for SentinentX
-    cat > /etc/nginx/sites-available/sentinentx << 'EOF'
+    cat > /etc/nginx/sites-available/sentinentx << EOF
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -343,13 +507,13 @@ server {
     server_name _;
     
     location / {
-        try_files $uri $uri/ /index.php?$query_string;
+        try_files \$uri \$uri/ /index.php?\$query_string;
     }
     
     location ~ \.php$ {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_pass unix:/var/run/php/php${PHP_VERSION}-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
         include fastcgi_params;
     }
     
@@ -464,6 +628,7 @@ final_setup() {
 main() {
     log_info "Starting SentinentX VDS installation..."
     
+    reset_vds_completely
     check_system_requirements
     fix_package_conflicts
     update_system
