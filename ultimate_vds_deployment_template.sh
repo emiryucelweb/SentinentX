@@ -606,8 +606,18 @@ deploy_application() {
     local npm_attempts=3
     local npm_attempt=1
     
+    # Fix NPM cache permissions first
+    if [ -d "/var/www/.npm" ]; then
+        log_step "Fixing NPM cache permissions..."
+        chown -R www-data:www-data /var/www/.npm
+    fi
+    
+    # Create npm cache directory with proper permissions
+    mkdir -p /var/www/.npm
+    chown -R www-data:www-data /var/www/.npm
+    
     while [ $npm_attempt -le $npm_attempts ]; do
-        if sudo -u www-data npm install --production; then
+        if sudo -u www-data npm install --omit=dev --cache /var/www/.npm; then
             log_success "NPM dependencies installed successfully"
             break
         else
@@ -617,9 +627,11 @@ deploy_application() {
                 break
             else
                 npm_attempt=$((npm_attempt + 1))
-                # Clear NPM cache and try again
-                sudo -u www-data npm cache clean --force 2>/dev/null || true
-                sleep 5
+                # Clean and recreate NPM cache
+                rm -rf /var/www/.npm
+                mkdir -p /var/www/.npm
+                chown -R www-data:www-data /var/www/.npm
+                sleep 2
             fi
         fi
     done
@@ -657,6 +669,7 @@ configure_laravel() {
 # Laravel Core
 APP_NAME=SentinentX
 APP_ENV=production
+APP_KEY=
 APP_DEBUG=false
 APP_URL=http://localhost
 APP_TIMEZONE=UTC
@@ -748,7 +761,9 @@ EOF
     # Clear and cache configuration
     log_step "Optimizing Laravel..."
     sudo -u www-data php artisan config:clear
-    sudo -u www-data php artisan cache:clear
+    
+    # Don't clear database cache until migration is done, use file cache temporarily
+    sudo -u www-data php artisan cache:clear --no-interaction || echo "Cache clear skipped (tables may not exist yet)"
     sudo -u www-data php artisan route:clear
     sudo -u www-data php artisan view:clear
     
@@ -760,6 +775,12 @@ EOF
     while [ $attempt -le $max_attempts ]; do
         if sudo -u www-data php artisan migrate --force; then
             log_success "Database migrations completed successfully"
+            
+            # Now that tables exist, clear cache properly
+            log_step "Clearing cache with database tables available..."
+            sudo -u www-data php artisan cache:clear || true
+            sudo -u www-data php artisan config:cache || true
+            
             break
         else
             log_warn "Migration attempt $attempt failed"
