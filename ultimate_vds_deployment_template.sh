@@ -969,42 +969,64 @@ run_final_tests() {
     
     cd ${PROJECT_DIR}
     
-    # Test database connection
+    # Test database connection (fix PsySH permissions)
     log_step "Testing database connection..."
-    if sudo -u www-data php artisan tinker --execute="
-        use Illuminate\Support\Facades\DB;
-        try {
-            \$pdo = DB::connection()->getPdo();
-            echo 'PostgreSQL: SUCCESS' . PHP_EOL;
-        } catch (Exception \$e) {
-            echo 'PostgreSQL Error: ' . \$e->getMessage() . PHP_EOL;
-            exit(1);
-        }
-        exit;
-    "; then
-        log_success "Database connection working"
+    
+    # Create PsySH config directory with proper permissions
+    mkdir -p /var/www/.config/psysh
+    chown -R www-data:www-data /var/www/.config
+    
+    # Use migrate:status as primary test (no PsySH needed)
+    if sudo -u www-data php artisan migrate:status >/dev/null 2>&1; then
+        log_success "Database connection verified (migration status check)"
     else
-        log_error "Database connection failed"
-        exit 1
+        log_warn "Migration status check failed, trying direct connection test..."
+        
+        # Fallback: Try tinker with explicit config dir
+        if sudo -u www-data XDG_CONFIG_HOME=/var/www/.config php artisan tinker --execute="
+            use Illuminate\Support\Facades\DB;
+            try {
+                \$pdo = DB::connection()->getPdo();
+                echo 'PostgreSQL: SUCCESS' . PHP_EOL;
+                exit(0);
+            } catch (Exception \$e) {
+                echo 'PostgreSQL Error: ' . \$e->getMessage() . PHP_EOL;
+                exit(1);
+            }
+        " >/dev/null 2>&1; then
+            log_success "Database connection verified (direct test)"
+        else
+            log_error "Database connection failed"
+            exit 1
+        fi
     fi
     
-    # Test Redis connection
+    # Test Redis connection (fix PsySH permissions)
     log_step "Testing Redis connection..."
-    if sudo -u www-data php artisan tinker --execute="
-        use Illuminate\Support\Facades\Redis;
-        try {
-            \$result = Redis::ping();
-            echo 'Redis: SUCCESS' . PHP_EOL;
-        } catch (Exception \$e) {
-            echo 'Redis Error: ' . \$e->getMessage() . PHP_EOL;
-            exit(1);
-        }
-        exit;
-    "; then
-        log_success "Redis connection working"
+    
+    # Test Redis with direct redis-cli first (no PsySH issues)
+    if redis-cli -a ${VDS_PASSWORD} ping >/dev/null 2>&1; then
+        log_success "Redis connection verified (redis-cli)"
     else
-        log_error "Redis connection failed"
-        exit 1
+        log_warn "Direct Redis test failed, trying Laravel Redis test..."
+        
+        # Fallback: Try tinker with explicit config dir
+        if sudo -u www-data XDG_CONFIG_HOME=/var/www/.config php artisan tinker --execute="
+            use Illuminate\Support\Facades\Redis;
+            try {
+                \$result = Redis::ping();
+                echo 'Redis: SUCCESS' . PHP_EOL;
+                exit(0);
+            } catch (Exception \$e) {
+                echo 'Redis Error: ' . \$e->getMessage() . PHP_EOL;
+                exit(1);
+            }
+        " >/dev/null 2>&1; then
+            log_success "Redis connection verified (Laravel test)"
+        else
+            log_error "Redis connection failed"
+            exit 1
+        fi
     fi
     
     # Test web server
@@ -1017,22 +1039,25 @@ run_final_tests() {
         log_warn "Web server not responding (normal for Laravel)"
     fi
     
-    # Test AI services
+    # Test AI services (fix PsySH permissions)
     log_step "Testing AI services..."
-    if sudo -u www-data php artisan tinker --execute="
+    
+    # Test CoinGecko with XDG_CONFIG_HOME fix
+    if sudo -u www-data XDG_CONFIG_HOME=/var/www/.config php artisan tinker --execute="
         use App\Services\Market\CoinGeckoService;
         try {
             \$service = app(CoinGeckoService::class);
             \$data = \$service->getMultiCoinData(['bitcoin']);
             echo 'CoinGecko: SUCCESS' . PHP_EOL;
+            exit(0);
         } catch (Exception \$e) {
             echo 'CoinGecko: ' . \$e->getMessage() . PHP_EOL;
+            exit(1);
         }
-        exit;
-    "; then
-        log_success "AI services accessible"
+    " >/dev/null 2>&1; then
+        log_success "AI services verified"
     else
-        log_warn "AI services may need network access"
+        log_warn "AI services may need configuration (will be tested during trading)"
     fi
     
     log_success "Final testing completed"

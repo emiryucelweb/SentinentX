@@ -1,7 +1,7 @@
 🚀🚀🚀 SENTINENTX ULTIMATE VDS DEPLOYMENT 🚀🚀🚀
 ==========================================================
 [INFO] Starting zero-error deployment for 15-day testnet...
-[INFO] Timestamp: Tue Aug 26 16:35:10 UTC 2025
+[INFO] Timestamp: Tue Aug 26 16:41:31 UTC 2025
 [INFO] Log file: /tmp/sentinentx_ultimate_deploy.log
 
 🔑 API KEY VALIDATION
@@ -150,27 +150,20 @@ Building dependency tree... Done
 Reading state information... Done
 0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
 Hit:1 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble InRelease
-Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                  
-Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                                
-Hit:4 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                       
-Hit:5 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                            
-Get:6 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]    
-Get:7 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1083 kB]
-Hit:8 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease
-Get:9 http://security.ubuntu.com/ubuntu noble-security/main amd64 Components [21.5 kB]
-Get:10 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [881 kB]
-Get:11 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Components [52.2 kB]
-Get:12 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Components [212 B]
-Get:13 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Components [212 B]
-Fetched 2164 kB in 2s (1048 kB/s)                                 
-Reading package lists... Done
+Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                     
+Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                                   
+Hit:4 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                          
+Hit:5 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                                                                  
+Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                                                    
+Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease         
+Reading package lists... Done                              
 🔧 Cleaning old installations...
-Backing up 'user.rules' to '/etc/ufw/user.rules.20250826_163521'
-Backing up 'before.rules' to '/etc/ufw/before.rules.20250826_163521'
-Backing up 'after.rules' to '/etc/ufw/after.rules.20250826_163521'
-Backing up 'user6.rules' to '/etc/ufw/user6.rules.20250826_163521'
-Backing up 'before6.rules' to '/etc/ufw/before6.rules.20250826_163521'
-Backing up 'after6.rules' to '/etc/ufw/after6.rules.20250826_163521'
+Backing up 'user.rules' to '/etc/ufw/user.rules.20250826_164139'
+Backing up 'before.rules' to '/etc/ufw/before.rules.20250826_164139'
+Backing up 'after.rules' to '/etc/ufw/after.rules.20250826_164139'
+Backing up 'user6.rules' to '/etc/ufw/user6.rules.20250826_164139'
+Backing up 'before6.rules' to '/etc/ufw/before6.rules.20250826_164139'
+Backing up 'after6.rules' to '/etc/ufw/after6.rules.20250826_164139'
 
 [SUCCESS] System reset completed
 📦 PACKAGE INSTALLATION
@@ -180,8 +173,8 @@ Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelea
 Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                                   
 Hit:4 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                                                                   
 Hit:5 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                          
-Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                                                                     
-Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease
+Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                                                                       
+Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease         
 Reading package lists... Done
 🔧 Installing essential packages...
 Reading package lists... Done
@@ -238,9 +231,9 @@ Hit:1 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble InRelease
 Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                     
 Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                                   
 Hit:4 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                                                                   
-Hit:5 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                              
-Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                                                                     
-Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease
+Hit:5 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                          
+Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                                                                       
+Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease         
 Reading package lists... Done
 Hit:1 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble InRelease
 Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                     
@@ -369,7 +362,7 @@ Need to get 564 kB of archives.
 After this operation, 1596 kB of additional disk space will be used.
 Get:1 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates/main amd64 nginx-common all 1.24.0-2ubuntu7.5 [43.4 kB]
 Get:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates/main amd64 nginx amd64 1.24.0-2ubuntu7.5 [520 kB]
-Fetched 564 kB in 0s (13.8 MB/s)
+Fetched 564 kB in 0s (12.6 MB/s)
 Preconfiguring packages ...
 Selecting previously unselected package nginx-common.
 (Reading database ... 86785 files and directories currently installed.)
@@ -405,15 +398,15 @@ Use it: php /usr/local/bin/composer
 
 [SUCCESS] Composer installed successfully
 🔧 Installing Node.js...
-2025-08-26 16:35:55 - Installing pre-requisites
+2025-08-26 16:42:13 - Installing pre-requisites
 Hit:1 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble InRelease
-Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                
-Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                              
-Hit:4 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                                                              
-Hit:5 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                    
-Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                  
-Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease          
-Reading package lists... Done                              
+Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                     
+Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                                   
+Hit:4 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                                                                   
+Hit:5 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                          
+Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                                                                     
+Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease
+Reading package lists... Done
 Reading package lists... Done
 Building dependency tree... Done
 Reading state information... Done
@@ -423,17 +416,17 @@ curl is already the newest version (8.5.0-2ubuntu10.6).
 gnupg is already the newest version (2.4.4-2ubuntu17.3).
 0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
 Hit:1 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble InRelease
-Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                     
-Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                                   
-Hit:4 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                          
-Hit:5 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                                                                   
-Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                                                                     
-Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease
-Reading package lists... Done
-2025-08-26 16:36:00 - Repository configured successfully.
-2025-08-26 16:36:00 - To install Node.js, run: apt-get install nodejs -y
-2025-08-26 16:36:00 - You can use N|solid Runtime as a node.js alternative
-2025-08-26 16:36:00 - To install N|solid Runtime, run: apt-get install nsolid -y 
+Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                
+Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                              
+Hit:4 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                     
+Hit:5 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                                                              
+Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                  
+Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease         
+Reading package lists... Done                              
+2025-08-26 16:42:18 - Repository configured successfully.
+2025-08-26 16:42:18 - To install Node.js, run: apt-get install nodejs -y
+2025-08-26 16:42:18 - You can use N|solid Runtime as a node.js alternative
+2025-08-26 16:42:18 - To install N|solid Runtime, run: apt-get install nsolid -y 
 
 Reading package lists... Done
 Building dependency tree... Done
@@ -719,7 +712,7 @@ Use the `composer fund` command to find out more!
 🔧 Installing NPM dependencies...
 🔧 Fixing NPM cache permissions...
 
-up to date, audited 1 package in 6s
+up to date, audited 1 package in 7s
 
 found 0 vulnerabilities
 [SUCCESS] NPM dependencies installed successfully
@@ -763,41 +756,41 @@ In Connection.php line 595:
 
    INFO  Preparing database.  
 
-  Creating migration table ............................................................................................................ 30.34ms DONE
+  Creating migration table ............................................................................................................ 30.67ms DONE
 
    INFO  Running migrations.  
 
-  0001_01_01_000000_create_users_table ................................................................................................ 27.30ms DONE
-  0001_01_01_000001_create_cache_table ................................................................................................ 13.23ms DONE
-  0001_01_01_000002_create_jobs_table ................................................................................................. 24.12ms DONE
-  2025_01_20_120000_optimize_database_for_saas ......................................................................................... 0.51ms DONE
-  2025_01_20_150000_create_trading_logs_tables ....................................................................................... 123.22ms DONE
-  2025_08_08_190800_alter_ai_logs_fix_schema ........................................................................................... 1.40ms DONE
-  2025_08_09_000004_create_market_data_table .......................................................................................... 14.48ms DONE
-  2025_08_09_000005_create_settings_table ............................................................................................. 15.03ms DONE
-  2025_08_10_000012_alter_ai_logs_add_round_cycle_latency .............................................................................. 1.26ms DONE
-  2025_08_11_000001_create_trades_table ............................................................................................... 16.97ms DONE
-  2025_08_11_000002_create_ai_logs_table .............................................................................................. 16.56ms DONE
-  2025_08_11_000003_create_consensus_decisions_table .................................................................................. 11.28ms DONE
-  2025_08_11_000004_create_alerts_table ............................................................................................... 19.60ms DONE
-  2025_08_11_000005_create_ai_providers_table ......................................................................................... 10.47ms DONE
-  2025_08_11_120000_add_testing_columns_to_trades ..................................................................................... 14.29ms DONE
-  2025_08_13_031132_add_performance_indexes_to_tables ................................................................................. 15.90ms DONE
-  2025_08_13_031852_update_ai_logs_stage_enum_values ................................................................................... 0.42ms DONE
-  2025_08_13_100000_create_lab_trades_table ........................................................................................... 14.18ms DONE
-  2025_08_13_100100_create_lab_metrics_table ........................................................................................... 9.94ms DONE
-  2025_08_14_010655_create_lab_runs_table ............................................................................................. 14.27ms DONE
-  2025_08_14_010719_create_usage_counters_table ....................................................................................... 21.69ms DONE
-  2025_08_14_010747_create_plans_table ................................................................................................ 13.11ms DONE
-  2025_08_14_010748_create_subscriptions_table ........................................................................................ 13.35ms DONE
-  2025_08_14_010850_create_tenants_table .............................................................................................. 12.03ms DONE
-  2025_08_14_010953_add_tenant_fields_to_users_table .................................................................................. 11.80ms DONE
-  2025_08_14_130000_add_plan_to_tenants ................................................................................................ 8.42ms DONE
-  2025_08_20_000001_create_audit_logs_table ........................................................................................... 36.14ms DONE
-  2025_08_21_064148_fix_postgresql_ai_logs_enum ........................................................................................ 4.19ms DONE
-  2025_08_21_082537_add_tenant_id_to_trades_table ...................................................................................... 7.68ms DONE
-  2025_08_25_083150_update_lab_metrics_table_add_missing_columns ....................................................................... 2.93ms DONE
-  2025_08_25_083301_fix_lab_metrics_unique_constraint .................................................................................. 4.51ms DONE
+  0001_01_01_000000_create_users_table ................................................................................................ 31.04ms DONE
+  0001_01_01_000001_create_cache_table ................................................................................................ 15.79ms DONE
+  0001_01_01_000002_create_jobs_table ................................................................................................. 29.46ms DONE
+  2025_01_20_120000_optimize_database_for_saas ......................................................................................... 0.48ms DONE
+  2025_01_20_150000_create_trading_logs_tables ....................................................................................... 130.26ms DONE
+  2025_08_08_190800_alter_ai_logs_fix_schema ........................................................................................... 1.32ms DONE
+  2025_08_09_000004_create_market_data_table .......................................................................................... 14.82ms DONE
+  2025_08_09_000005_create_settings_table ............................................................................................. 12.82ms DONE
+  2025_08_10_000012_alter_ai_logs_add_round_cycle_latency .............................................................................. 1.51ms DONE
+  2025_08_11_000001_create_trades_table ............................................................................................... 16.90ms DONE
+  2025_08_11_000002_create_ai_logs_table .............................................................................................. 18.72ms DONE
+  2025_08_11_000003_create_consensus_decisions_table .................................................................................. 14.54ms DONE
+  2025_08_11_000004_create_alerts_table ............................................................................................... 23.27ms DONE
+  2025_08_11_000005_create_ai_providers_table ......................................................................................... 13.49ms DONE
+  2025_08_11_120000_add_testing_columns_to_trades ..................................................................................... 14.36ms DONE
+  2025_08_13_031132_add_performance_indexes_to_tables ................................................................................. 20.69ms DONE
+  2025_08_13_031852_update_ai_logs_stage_enum_values ................................................................................... 0.67ms DONE
+  2025_08_13_100000_create_lab_trades_table ........................................................................................... 17.79ms DONE
+  2025_08_13_100100_create_lab_metrics_table .......................................................................................... 14.65ms DONE
+  2025_08_14_010655_create_lab_runs_table ............................................................................................. 16.24ms DONE
+  2025_08_14_010719_create_usage_counters_table ....................................................................................... 27.19ms DONE
+  2025_08_14_010747_create_plans_table ................................................................................................ 16.45ms DONE
+  2025_08_14_010748_create_subscriptions_table ........................................................................................ 18.42ms DONE
+  2025_08_14_010850_create_tenants_table .............................................................................................. 14.57ms DONE
+  2025_08_14_010953_add_tenant_fields_to_users_table .................................................................................. 12.02ms DONE
+  2025_08_14_130000_add_plan_to_tenants ................................................................................................ 7.32ms DONE
+  2025_08_20_000001_create_audit_logs_table ........................................................................................... 38.22ms DONE
+  2025_08_21_064148_fix_postgresql_ai_logs_enum ........................................................................................ 4.09ms DONE
+  2025_08_21_082537_add_tenant_id_to_trades_table ...................................................................................... 8.69ms DONE
+  2025_08_25_083150_update_lab_metrics_table_add_missing_columns ....................................................................... 3.09ms DONE
+  2025_08_25_083301_fix_lab_metrics_unique_constraint .................................................................................. 5.34ms DONE
 
 [SUCCESS] Database migrations completed successfully
 🔧 Clearing cache with database tables available...
@@ -805,26 +798,48 @@ In Connection.php line 595:
    INFO  Application cache cleared successfully.  
 
 
-In ConfigCacheCommand.php line 72:
-                                                  
-  Your configuration files are not serializable.  
-                                                  
-
-In config.php line 1077:
-                                                   
-  Call to undefined method Closure::__set_state()  
-                                                   
+   INFO  Configuration cache cleared successfully.  
 
 🔧 Caching configurations...
 
-In ConfigCacheCommand.php line 72:
-                                                  
-  Your configuration files are not serializable.  
-                                                  
+   INFO  Configuration cached successfully.  
 
-In config.php line 1077:
-                                                   
-  Call to undefined method Closure::__set_state()  
-                                                   
 
-root@tradebot:/home/mumkunmuyuc# 
+   INFO  Routes cached successfully.  
+
+
+
+   INFO  Blade templates cached successfully.  
+
+[SUCCESS] Laravel configured successfully
+🔧 SYSTEMD SERVICE CREATION
+[SUCCESS] Systemd service created successfully
+🔥 FIREWALL CONFIGURATION
+Backing up 'user.rules' to '/etc/ufw/user.rules.20250826_164246'
+Backing up 'before.rules' to '/etc/ufw/before.rules.20250826_164246'
+Backing up 'after.rules' to '/etc/ufw/after.rules.20250826_164246'
+Backing up 'user6.rules' to '/etc/ufw/user6.rules.20250826_164246'
+Backing up 'before6.rules' to '/etc/ufw/before6.rules.20250826_164246'
+Backing up 'after6.rules' to '/etc/ufw/after6.rules.20250826_164246'
+
+Default incoming policy changed to 'deny'
+(be sure to update your rules accordingly)
+Default outgoing policy changed to 'allow'
+(be sure to update your rules accordingly)
+Rules updated
+Rules updated (v6)
+Rules updated
+Rules updated (v6)
+Rules updated
+Rules updated (v6)
+Firewall is active and enabled on system startup
+[SUCCESS] Firewall configured successfully
+🧪 FINAL SYSTEM TESTING
+🔧 Testing database connection...
+
+In ConfigPaths.php line 331:
+                                                               
+  Writing to directory /var/www/.config/psysh is not allowed.  
+                                                               
+
+[ERROR] Database connection failed
