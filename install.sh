@@ -1,516 +1,251 @@
 #!/bin/bash
 
-# ========================================
-# SENTINENTX VDS AUTO INSTALLER
-# ========================================
-# 🚀 AI-Powered Cryptocurrency Trading Bot
-# 📡 Public Repository Installation Script
-# 
-# Usage:
-# curl -sSL https://raw.githubusercontent.com/emiryucelweb/SentinentX/main/install.sh | bash
-# 
-# Or download and run:
-# wget https://raw.githubusercontent.com/emiryucelweb/SentinentX/main/install.sh
-# chmod +x install.sh
-# ./install.sh
+# SentinentX Installation Script
+# Updated: 2025-01-20
 
-set -e  # Exit on any error
+set -e
 
-# Colors for output
+# Color definitions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Welcome banner
-echo -e "${PURPLE}"
-echo "╔═══════════════════════════════════════════════════════════════╗"
-echo "║                    🚀 SENTINENTX INSTALLER                   ║"
-echo "║                                                               ║"
-echo "║  AI-Powered Cryptocurrency Trading Bot                       ║"
-echo "║  Automated VDS Setup & Deployment                            ║"
-echo "║                                                               ║"
-echo "║  🤖 2-Stage AI Consensus (OpenAI + Gemini + Grok)           ║"
-echo "║  ⚡ Bybit Testnet Integration                                ║"
-echo "║  📱 Telegram Bot Interface                                   ║"
-echo "║  🔬 15-Day LAB Backtesting                                   ║"
-echo "║                                                               ║"
-echo "╚═══════════════════════════════════════════════════════════════╝"
-echo -e "${NC}"
-
-echo -e "${CYAN}🎯 SentinentX Auto Installation Starting...${NC}"
-echo -e "${YELLOW}⏰ Estimated time: 10-15 minutes${NC}"
-echo -e "${BLUE}🌐 Repository: https://github.com/emiryucelweb/SentinentX${NC}"
-echo ""
-
-# Check if running as root
-if [[ $EUID -ne 0 ]]; then
-   echo -e "${RED}❌ This script must be run as root!${NC}"
-   echo -e "${YELLOW}💡 Run with: sudo bash install.sh${NC}"
-   exit 1
-fi
-
-# System information
-echo -e "${CYAN}📊 System Information:${NC}"
-echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | cut -d'"' -f2)"
-echo "Kernel: $(uname -r)"
-echo "Architecture: $(uname -m)"
-echo ""
-
-# Get API keys interactively
-echo -e "${BLUE}🔑 CONFIGURATION SETUP${NC}"
-echo -e "${YELLOW}💡 Enter your API keys (you can leave empty and configure later)${NC}"
-echo -e "${YELLOW}💡 Press Enter to skip any field${NC}"
-echo ""
-
-read -p "📡 Bybit Testnet API Key: " BYBIT_API_KEY
-read -s -p "🔐 Bybit Testnet Secret: " BYBIT_API_SECRET
-echo ""
-read -p "🤖 OpenAI API Key (sk-...): " OPENAI_API_KEY
-read -p "🧠 Gemini API Key (AIzaSy...): " GEMINI_API_KEY
-read -p "🚀 Grok API Key: " GROK_API_KEY
-read -p "📱 Telegram Bot Token: " TELEGRAM_BOT_TOKEN
-read -p "💬 Telegram Chat ID: " TELEGRAM_CHAT_ID
-
-echo ""
-echo -e "${GREEN}✅ Configuration collected! Starting installation...${NC}"
-echo ""
-
-# Create log file
-LOGFILE="/var/log/sentinentx_install.log"
-echo "📜 Installation log: $LOGFILE"
-exec 1> >(tee -a $LOGFILE)
-exec 2> >(tee -a $LOGFILE >&2)
-
-# Step 1: System Update
-echo -e "${CYAN}📦 STEP 1/12: System Update${NC}"
-apt update -y
-apt upgrade -y
-echo -e "${GREEN}✅ System updated${NC}"
-
-# Step 2: Essential Packages
-echo -e "${CYAN}📦 STEP 2/12: Installing Essential Packages${NC}"
-apt install -y curl wget git unzip software-properties-common ca-certificates gnupg lsb-release
-echo -e "${GREEN}✅ Essential packages installed${NC}"
-
-# Step 3: PHP 8.2
-echo -e "${CYAN}🐘 STEP 3/12: Installing PHP 8.2${NC}"
-add-apt-repository ppa:ondrej/php -y
-apt update
-apt install -y php8.2 php8.2-cli php8.2-fpm php8.2-pgsql php8.2-xml php8.2-curl \
-    php8.2-zip php8.2-mbstring php8.2-bcmath php8.2-gd php8.2-redis php8.2-intl
-
-# Configure PHP timezone
-sed -i 's/;date.timezone =/date.timezone = Europe\/Istanbul/' /etc/php/8.2/cli/php.ini
-sed -i 's/;date.timezone =/date.timezone = Europe\/Istanbul/' /etc/php/8.2/fpm/php.ini
-
-echo -e "${GREEN}✅ PHP 8.2 installed and configured${NC}"
-
-# Step 4: Composer
-echo -e "${CYAN}🎼 STEP 4/12: Installing Composer${NC}"
-curl -sS https://getcomposer.org/installer | php
-mv composer.phar /usr/local/bin/composer
-chmod +x /usr/local/bin/composer
-echo -e "${GREEN}✅ Composer installed${NC}"
-
-# Step 5: PostgreSQL
-echo -e "${CYAN}🐘 STEP 5/12: Installing PostgreSQL${NC}"
-apt install -y postgresql postgresql-contrib
-systemctl start postgresql
-systemctl enable postgresql
-
-# Create database and user
-sudo -u postgres createuser sentx 2>/dev/null || true
-sudo -u postgres createdb sentx 2>/dev/null || true
-sudo -u postgres psql -c "ALTER USER sentx PASSWORD 'sentx123';" 2>/dev/null || true
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE sentx TO sentx;" 2>/dev/null || true
-
-echo -e "${GREEN}✅ PostgreSQL installed and configured${NC}"
-
-# Step 6: Redis
-echo -e "${CYAN}🔴 STEP 6/12: Installing Redis${NC}"
-apt install -y redis-server
-systemctl enable redis-server
-systemctl start redis-server
-
-# Test Redis
-if redis-cli ping | grep -q "PONG"; then
-    echo -e "${GREEN}✅ Redis installed and running${NC}"
-else
-    echo -e "${RED}❌ Redis installation failed${NC}"
-    exit 1
-fi
-
-# Step 7: Download Project
-echo -e "${CYAN}📁 STEP 7/12: Downloading SentinentX Project${NC}"
-echo -e "${BLUE}🌐 Cloning from: https://github.com/emiryucelweb/SentinentX.git${NC}"
-
-mkdir -p /var/www/sentinentx
-cd /var/www/sentinentx
-
-# Clean directory if not empty
-if [ "$(ls -A /var/www/sentinentx)" ]; then
-    rm -rf /var/www/sentinentx/*
-fi
-
-# Clone project
-git clone https://github.com/emiryucelweb/SentinentX.git .
-echo -e "${GREEN}✅ Project downloaded successfully${NC}"
-
-# Step 8: Set Permissions
-echo -e "${CYAN}👤 STEP 8/12: Setting Permissions${NC}"
-useradd -r -s /bin/false www-data 2>/dev/null || true
-chown -R www-data:www-data /var/www/sentinentx
-chmod -R 755 /var/www/sentinentx
-chmod -R 775 /var/www/sentinentx/storage
-chmod -R 775 /var/www/sentinentx/bootstrap/cache
-echo -e "${GREEN}✅ Permissions configured${NC}"
-
-# Step 9: Install Dependencies
-echo -e "${CYAN}📦 STEP 9/12: Installing PHP Dependencies${NC}"
-cd /var/www/sentinentx
-composer install --no-dev --optimize-autoloader --no-interaction
-echo -e "${GREEN}✅ Dependencies installed${NC}"
-
-# Step 10: Laravel Configuration
-echo -e "${CYAN}🔧 STEP 10/12: Configuring Laravel${NC}"
-
-# Ensure we're in the right directory
-cd /var/www/sentinentx
-
-# Check if .env.example exists, create if missing
-if [ ! -f .env.example ]; then
-    echo -e "${YELLOW}⚠️ .env.example not found! Creating template...${NC}"
-    cat > .env.example << 'EOF'
-APP_NAME=SentinentX
-APP_ENV=production
-APP_KEY=
-APP_DEBUG=false
-APP_TIMEZONE=Europe/Istanbul
-APP_URL=http://localhost
-
-LOG_CHANNEL=json
-LOG_LEVEL=info
-
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=sentx
-DB_USERNAME=sentx
-DB_PASSWORD=sentx123
-
-CACHE_DRIVER=redis
-QUEUE_CONNECTION=redis
-SESSION_DRIVER=redis
-
-BYBIT_TESTNET=true
-BYBIT_API_KEY=
-BYBIT_API_SECRET=
-
-OPENAI_API_KEY=
-GEMINI_API_KEY=
-GROK_API_KEY=
-
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_CHAT_ID=
+# Logo
+print_logo() {
+    echo -e "${CYAN}"
+    cat << "EOF"
+  ███████╗███████╗███╗   ██╗████████╗██╗███╗   ██╗███████╗███╗   ██╗████████╗██╗  ██╗
+  ██╔════╝██╔════╝████╗  ██║╚══██╔══╝██║████╗  ██║██╔════╝████╗  ██║╚══██╔══╝╚██╗██╔╝
+  ███████╗█████╗  ██╔██╗ ██║   ██║   ██║██╔██╗ ██║█████╗  ██╔██╗ ██║   ██║    ╚███╔╝ 
+  ╚════██║██╔══╝  ██║╚██╗██║   ██║   ██║██║╚██╗██║██╔══╝  ██║╚██╗██║   ██║    ██╔██╗ 
+  ███████║███████╗██║ ╚████║   ██║   ██║██║ ╚████║███████╗██║ ╚████║   ██║   ██╔╝ ██╗
+  ╚══════╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝
+        AI-Powered Cryptocurrency Trading System v2.1.0
 EOF
-fi
+    echo -e "${NC}"
+}
 
-# Create .env file
-cp .env.example .env
-php artisan key:generate --force
-
-# Configure .env with user inputs
-echo "🔧 Creating .env file with collected API keys..."
-
-# Create clean .env file from template
-cat > .env << 'ENVEOF'
-APP_NAME=SentinentX
-APP_ENV=production
-APP_KEY=
-APP_DEBUG=false
-APP_TIMEZONE=Europe/Istanbul
-APP_URL=http://localhost
-APP_LOCALE=en
-APP_FALLBACK_LOCALE=en
-
-LOG_CHANNEL=json
-LOG_LEVEL=info
-
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=sentx
-DB_USERNAME=sentx
-DB_PASSWORD=sentx123
-
-CACHE_DRIVER=redis
-QUEUE_CONNECTION=redis
-SESSION_DRIVER=redis
-SESSION_LIFETIME=120
-
-REDIS_HOST=127.0.0.1
-REDIS_PASSWORD=null
-REDIS_PORT=6379
-
-BYBIT_TESTNET=true
-BYBIT_BASE_URL=https://api-testnet.bybit.com
-BYBIT_API_KEY=
-BYBIT_API_SECRET=
-
-OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4o-mini
-
-GEMINI_API_KEY=
-GEMINI_MODEL=gemini-2.0-flash-exp
-GEMINI_BASE_URL=https://generativelanguage.googleapis.com
-
-GROK_API_KEY=
-GROK_MODEL=grok-2-1212
-GROK_BASE_URL=https://api.x.ai/v1
-
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_CHAT_ID=
-
-TRADING_MAX_LEVERAGE=75
-TRADING_MODE_ONE_WAY=true
-TRADING_MARGIN_MODE=cross
-
-COINGECKO_BASE_URL=https://api.coingecko.com/api/v3
-COINGECKO_TIMEOUT=15
-ENVEOF
-
-# Generate Laravel application key
-php artisan key:generate --force
-
-# Update .env with collected API keys using echo append method
-echo "" >> .env
-echo "# Generated API Keys" >> .env
-echo "BYBIT_API_KEY=${BYBIT_API_KEY}" >> .env
-echo "BYBIT_API_SECRET=${BYBIT_API_SECRET}" >> .env
-echo "OPENAI_API_KEY=${OPENAI_API_KEY}" >> .env  
-echo "GEMINI_API_KEY=${GEMINI_API_KEY}" >> .env
-echo "GROK_API_KEY=${GROK_API_KEY}" >> .env
-echo "TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}" >> .env
-echo "TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}" >> .env
-
-# Clean up duplicate entries by using proper key=value parsing
-awk -F'=' '!seen[$1]++ {print}' .env > .env.tmp && mv .env.tmp .env
-
-echo -e "${GREEN}✅ Laravel configured${NC}"
-
-# Step 11: Database Migration
-echo -e "${CYAN}🗄️ STEP 11/12: Running Database Migration${NC}"
-php artisan migrate --force
-echo -e "${GREEN}✅ Database tables created${NC}"
-
-# Optimize Laravel (skip config:cache due to Closure issues)
-echo "🧹 Clearing caches..."
-php artisan config:clear
-php artisan cache:clear
-php artisan route:clear
-php artisan view:clear
-echo "⚠️ Skipping config:cache due to Closure in config files"
-
-# Step 12: Create System Services
-echo -e "${CYAN}🔄 STEP 12/12: Creating System Services${NC}"
-
-# Queue Worker Service
-cat > /etc/systemd/system/sentx-queue.service << EOF
-[Unit]
-Description=SentinentX Queue Worker
-After=network.target
-
-[Service]
-Type=simple
-User=www-data
-WorkingDirectory=/var/www/sentinentx
-ExecStart=/usr/bin/php /var/www/sentinentx/artisan queue:work --sleep=3 --tries=3 --max-time=3600
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Telegram Bot Service
-cat > /etc/systemd/system/sentx-telegram.service << EOF
-[Unit]
-Description=SentinentX Telegram Bot
-After=network.target
-
-[Service]
-Type=simple
-User=www-data
-WorkingDirectory=/var/www/sentinentx
-ExecStart=/usr/bin/php /var/www/sentinentx/artisan telegram:polling
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Scheduler Service (optional)
-cat > /etc/systemd/system/sentx-scheduler.service << EOF
-[Unit]
-Description=SentinentX Scheduler
-After=network.target
-
-[Service]
-Type=simple
-User=www-data
-WorkingDirectory=/var/www/sentinentx
-ExecStart=/usr/bin/php /var/www/sentinentx/artisan schedule:work
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Enable and start services
-systemctl daemon-reload
-systemctl enable sentx-queue sentx-telegram sentx-scheduler
-systemctl start sentx-queue sentx-telegram sentx-scheduler
-
-echo -e "${GREEN}✅ System services created and started${NC}"
-
-# Create Management Scripts
-echo -e "${CYAN}📜 Creating Management Scripts${NC}"
-
-cat > /var/www/sentinentx/start.sh << 'EOF'
-#!/bin/bash
-echo "🚀 Starting SentinentX services..."
-systemctl start sentx-queue sentx-telegram sentx-scheduler
-echo "✅ All services started!"
-systemctl status sentx-queue sentx-telegram sentx-scheduler --no-pager
-EOF
-
-cat > /var/www/sentinentx/stop.sh << 'EOF'
-#!/bin/bash
-echo "🛑 Stopping SentinentX services..."
-systemctl stop sentx-queue sentx-telegram sentx-scheduler
-echo "✅ All services stopped!"
-EOF
-
-cat > /var/www/sentinentx/status.sh << 'EOF'
-#!/bin/bash
-echo "📊 SentinentX System Status"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-# Service Status
-for service in sentx-queue sentx-telegram sentx-scheduler; do
-    if systemctl is-active --quiet $service; then
-        echo "✅ $service: Running"
-    else
-        echo "❌ $service: Stopped"
+# Check system requirements
+check_requirements() {
+    echo -e "${CYAN}🔍 Checking system requirements...${NC}"
+    
+    # Check PHP
+    if ! command -v php &> /dev/null; then
+        echo -e "${RED}❌ PHP is not installed. Please install PHP 8.2 or higher.${NC}"
+        exit 1
     fi
-done
-
-echo ""
-
-# Database Status
-DB_STATUS=$(cd /var/www/sentinentx && php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'Connected'; } catch(Exception \$e) { echo 'Error'; }" 2>/dev/null)
-echo "🗄️ Database: $DB_STATUS"
-
-# Redis Status
-REDIS_STATUS=$(redis-cli ping 2>/dev/null || echo 'Error')
-echo "🔴 Redis: $REDIS_STATUS"
-
-echo ""
-echo "📁 Project Path: /var/www/sentinentx"
-echo "📜 Log File: /var/log/sentinentx_install.log"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-EOF
-
-cat > /var/www/sentinentx/test.sh << 'EOF'
-#!/bin/bash
-echo "🧪 SentinentX System Test"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-cd /var/www/sentinentx
-
-echo "1️⃣ Testing system components..."
-php artisan sentx:system-check
-
-echo ""
-echo "2️⃣ Testing Telegram bot..."
-echo "💡 Send /start to your Telegram bot to test"
-
-echo ""
-echo "3️⃣ Available commands:"
-echo "• php artisan sentx:risk-profile    - Set risk level"
-echo "• php artisan sentx:lab-start       - Start LAB simulation"
-echo "• php artisan sentx:scan            - Run market scan"
-echo "• php artisan sentx:lab-monitor     - Monitor LAB performance"
-
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-EOF
-
-chmod +x /var/www/sentinentx/*.sh
-
-echo -e "${GREEN}✅ Management scripts created${NC}"
-
-# System Tests
-echo -e "${CYAN}🔍 Running System Tests${NC}"
-
-# Test database connection
-if php artisan tinker --execute="DB::connection()->getPdo(); echo 'OK';" 2>/dev/null | grep -q "OK"; then
-    echo -e "${GREEN}✅ Database connection: OK${NC}"
-else
-    echo -e "${RED}❌ Database connection: Failed${NC}"
-fi
-
-# Test Redis connection
-if redis-cli ping 2>/dev/null | grep -q "PONG"; then
-    echo -e "${GREEN}✅ Redis connection: OK${NC}"
-else
-    echo -e "${RED}❌ Redis connection: Failed${NC}"
-fi
-
-# Service status check
-echo -e "${CYAN}📊 Service Status:${NC}"
-for service in sentx-queue sentx-telegram sentx-scheduler; do
-    if systemctl is-active --quiet $service; then
-        echo -e "${GREEN}✅ $service: Running${NC}"
-    else
-        echo -e "${RED}❌ $service: Failed${NC}"
+    
+    PHP_VERSION=$(php -v | head -n1 | cut -d' ' -f2 | cut -c1-3)
+    if [[ $(echo "$PHP_VERSION < 8.2" | bc -l 2>/dev/null || echo "1") -eq 1 ]]; then
+        echo -e "${RED}❌ PHP 8.2 or higher is required. Current version: $PHP_VERSION${NC}"
+        exit 1
     fi
-done
+    echo -e "${GREEN}✅ PHP $PHP_VERSION${NC}"
+    
+    # Check Composer
+    if ! command -v composer &> /dev/null; then
+        echo -e "${RED}❌ Composer is not installed. Please install Composer.${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ Composer$(composer --version | cut -d' ' -f3)${NC}"
+    
+    # Check Node.js (optional)
+    if command -v node &> /dev/null; then
+        echo -e "${GREEN}✅ Node.js $(node --version)${NC}"
+    fi
+    
+    # Check required PHP extensions
+    REQUIRED_EXTENSIONS=("curl" "json" "mbstring" "openssl" "pdo" "tokenizer" "xml" "bcmath" "redis")
+    for ext in "${REQUIRED_EXTENSIONS[@]}"; do
+        if php -m | grep -q "^$ext$"; then
+            echo -e "${GREEN}✅ PHP $ext extension${NC}"
+        else
+            echo -e "${RED}❌ PHP $ext extension is missing${NC}"
+            exit 1
+        fi
+    done
+}
 
-# Final Success Message
-echo ""
-echo -e "${PURPLE}╔═══════════════════════════════════════════════════════════════╗"
-echo -e "║                    🎉 INSTALLATION COMPLETED!                ║"
-echo -e "╚═══════════════════════════════════════════════════════════════╝${NC}"
-echo ""
-echo -e "${GREEN}🚀 SentinentX has been successfully installed and configured!${NC}"
-echo ""
-echo -e "${CYAN}📋 NEXT STEPS:${NC}"
-echo -e "${YELLOW}1️⃣ Set risk profile:${NC} php artisan sentx:risk-profile"
-echo -e "${YELLOW}2️⃣ Start LAB simulation:${NC} php artisan sentx:lab-start --days=15 --initial-balance=1000"
-echo -e "${YELLOW}3️⃣ Test Telegram bot:${NC} Send /start message to your bot"
-echo -e "${YELLOW}4️⃣ Run first market scan:${NC} php artisan sentx:scan"
-echo ""
-echo -e "${CYAN}🔧 MANAGEMENT COMMANDS:${NC}"
-echo -e "${YELLOW}• Start services:${NC} ./start.sh"
-echo -e "${YELLOW}• Stop services:${NC} ./stop.sh"
-echo -e "${YELLOW}• Check status:${NC} ./status.sh"
-echo -e "${YELLOW}• Run tests:${NC} ./test.sh"
-echo ""
-echo -e "${CYAN}📁 PROJECT LOCATION:${NC} /var/www/sentinentx"
-echo -e "${CYAN}📜 INSTALLATION LOG:${NC} $LOGFILE"
-echo -e "${CYAN}🌐 REPOSITORY:${NC} https://github.com/emiryucelweb/SentinentX"
-echo ""
-echo -e "${GREEN}✨ Ready for testnet trading! Good luck! ✨${NC}"
-echo ""
+# Generate secure keys
+generate_keys() {
+    echo -e "${CYAN}🔑 Generating secure keys...${NC}"
+    
+    # Generate 32-byte base64 keys
+    ENCRYPTION_KEY=$(openssl rand -base64 32)
+    HMAC_KEY=$(openssl rand -base64 32)
+    BYBIT_HMAC_KEY=$(openssl rand -base64 32)
+    
+    echo -e "${GREEN}✅ Security keys generated${NC}"
+}
 
-# Run final status check
-cd /var/www/sentinentx
-./status.sh
+# Setup environment
+setup_environment() {
+    echo -e "${CYAN}⚙️ Setting up environment...${NC}"
+    
+    # Copy environment template
+    if [ ! -f .env ]; then
+        if [ -f env.example.template ]; then
+            cp env.example.template .env
+            echo -e "${GREEN}✅ Environment file created from template${NC}"
+        else
+            echo -e "${RED}❌ env.example.template not found${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${YELLOW}⚠️ .env file already exists, backing up...${NC}"
+        cp .env .env.backup.$(date +%Y%m%d_%H%M%S)
+    fi
+    
+    # Replace placeholders with generated keys
+    sed -i "s|PLACEHOLDER_TO_BE_REPLACED|${ENCRYPTION_KEY}|g" .env
+    sed -i "s|HMAC_SECRET_PLACEHOLDER|${HMAC_KEY}|g" .env
+    sed -i "s|BYBIT_HMAC_PLACEHOLDER|${BYBIT_HMAC_KEY}|g" .env
+    
+    # Generate Laravel app key
+    php artisan key:generate --force
+    
+    echo -e "${GREEN}✅ Environment configured${NC}"
+}
 
-exit 0
+# Install dependencies
+install_dependencies() {
+    echo -e "${CYAN}📦 Installing dependencies...${NC}"
+    
+    # Install PHP dependencies
+    composer install --no-dev --optimize-autoloader
+    
+    # Install Node.js dependencies (if package.json exists)
+    if [ -f package.json ]; then
+        if command -v npm &> /dev/null; then
+            npm install
+        elif command -v yarn &> /dev/null; then
+            yarn install
+        fi
+    fi
+    
+    echo -e "${GREEN}✅ Dependencies installed${NC}"
+}
+
+# Setup database
+setup_database() {
+    echo -e "${CYAN}🗄️ Setting up database...${NC}"
+    
+    # Create storage directories
+    mkdir -p storage/app/public
+    mkdir -p storage/framework/cache
+    mkdir -p storage/framework/sessions
+    mkdir -p storage/framework/views
+    mkdir -p storage/logs
+    
+    # Set permissions
+    chmod -R 755 storage
+    chmod -R 755 bootstrap/cache
+    
+    # Run migrations
+    php artisan migrate --force
+    
+    echo -e "${GREEN}✅ Database setup complete${NC}"
+}
+
+# Setup optimization
+setup_optimization() {
+    echo -e "${CYAN}⚡ Optimizing application...${NC}"
+    
+    # Clear all caches
+    php artisan cache:clear
+    php artisan config:clear
+    php artisan route:clear
+    php artisan view:clear
+    
+    # Cache configurations
+    php artisan config:cache
+    php artisan route:cache
+    php artisan view:cache
+    
+    # Create storage link
+    php artisan storage:link
+    
+    echo -e "${GREEN}✅ Optimization complete${NC}"
+}
+
+# Final checks
+run_final_checks() {
+    echo -e "${CYAN}🔍 Running final checks...${NC}"
+    
+    # Test database connection
+    if php artisan migrate:status &> /dev/null; then
+        echo -e "${GREEN}✅ Database connection working${NC}"
+    else
+        echo -e "${RED}❌ Database connection failed${NC}"
+        exit 1
+    fi
+    
+    # Test basic functionality
+    if php artisan tinker --execute="echo 'System check: OK';" | grep -q "OK"; then
+        echo -e "${GREEN}✅ Application working${NC}"
+    else
+        echo -e "${RED}❌ Application check failed${NC}"
+        exit 1
+    fi
+}
+
+# Display completion message
+show_completion_message() {
+    echo ""
+    echo -e "${GREEN}🎉 SentinentX installation completed successfully!${NC}"
+    echo ""
+    echo -e "${CYAN}📋 Next Steps:${NC}"
+    echo -e "${YELLOW}1. Configure your .env file with:${NC}"
+    echo "   - Database credentials (DB_*)"
+    echo "   - Redis settings (REDIS_*)"
+    echo "   - AI provider API keys (OPENAI_API_KEY, etc.)"
+    echo "   - Bybit API credentials (BYBIT_*)"
+    echo "   - Telegram bot token (TELEGRAM_BOT_TOKEN)"
+    echo ""
+    echo -e "${YELLOW}2. Start the services:${NC}"
+    echo "   ./start.sh"
+    echo ""
+    echo -e "${YELLOW}3. Check system status:${NC}"
+    echo "   ./status.sh"
+    echo ""
+    echo -e "${YELLOW}4. Run your first LAB test:${NC}"
+    echo "   php artisan lab:run"
+    echo ""
+    echo -e "${YELLOW}5. Start trading:${NC}"
+    echo "   php artisan trading:scan"
+    echo ""
+    echo -e "${CYAN}📚 Documentation:${NC}"
+    echo "   - Main config: .env"
+    echo "   - AI settings: config/ai.php"
+    echo "   - Risk profiles: config/risk_profiles.php"
+    echo "   - Trading settings: config/trading.php"
+    echo ""
+    echo -e "${CYAN}🆘 Support:${NC}"
+    echo "   - View logs: tail -f storage/logs/laravel.log"
+    echo "   - Run tests: php artisan test"
+    echo "   - Health check: curl http://localhost:8000/health"
+    echo ""
+    echo -e "${GREEN}Happy trading! 🚀💰${NC}"
+}
+
+# Main installation process
+main() {
+    print_logo
+    echo -e "${CYAN}Starting SentinentX installation...${NC}"
+    echo ""
+    
+    check_requirements
+    generate_keys
+    setup_environment
+    install_dependencies
+    setup_database
+    setup_optimization
+    run_final_checks
+    show_completion_message
+}
+
+# Run installation
+main

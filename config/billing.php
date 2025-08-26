@@ -34,6 +34,10 @@ return [
                 'symbols' => 3,
                 'api_requests' => 1000,
             ],
+            'api_rate_limits' => [
+                'requests' => 10,
+                'minutes' => 1,
+            ],
         ],
 
         'starter' => [
@@ -54,6 +58,10 @@ return [
                 'trades_per_month' => 500,
                 'symbols' => 10,
                 'api_requests' => 10000,
+            ],
+            'api_rate_limits' => [
+                'requests' => 60,
+                'minutes' => 1,
             ],
         ],
 
@@ -79,6 +87,10 @@ return [
                 'symbols' => 50,
                 'api_requests' => 50000,
                 'custom_strategies' => 5,
+            ],
+            'api_rate_limits' => [
+                'requests' => 300,
+                'minutes' => 1,
             ],
         ],
 
@@ -106,6 +118,10 @@ return [
                 'symbols' => -1,
                 'api_requests' => -1,
                 'custom_strategies' => -1,
+            ],
+            'api_rate_limits' => [
+                'requests' => 1000,
+                'minutes' => 1,
             ],
         ],
     ],

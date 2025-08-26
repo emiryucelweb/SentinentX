@@ -65,6 +65,50 @@ return [
         'retry_attempts' => 1,
     ],
     'symbols' => ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT'],
+    
+    // 4 Ana Coin Özel Ayarları
+    'symbol_configs' => [
+        'BTCUSDT' => [
+            'display_name' => 'Bitcoin',
+            'symbol' => 'BTC',
+            'priority' => 1,                    // En yüksek öncelik
+            'min_notional' => 5.0,             // Min $5 işlem
+            'tick_size' => 0.1,                // $0.1 fiyat adımı
+            'qty_precision' => 6,              // 0.000001 BTC hassasiyeti
+            'max_leverage' => 75,              // Max 75x kaldıraç
+            'funding_check_enabled' => true,   // Funding kontrolü aktif
+        ],
+        'ETHUSDT' => [
+            'display_name' => 'Ethereum', 
+            'symbol' => 'ETH',
+            'priority' => 2,
+            'min_notional' => 5.0,
+            'tick_size' => 0.01,               // $0.01 fiyat adımı
+            'qty_precision' => 5,              // 0.00001 ETH hassasiyeti
+            'max_leverage' => 75,
+            'funding_check_enabled' => true,
+        ],
+        'SOLUSDT' => [
+            'display_name' => 'Solana',
+            'symbol' => 'SOL', 
+            'priority' => 3,
+            'min_notional' => 5.0,
+            'tick_size' => 0.001,              // $0.001 fiyat adımı
+            'qty_precision' => 4,              // 0.0001 SOL hassasiyeti
+            'max_leverage' => 50,              // Max 50x kaldıraç
+            'funding_check_enabled' => true,
+        ],
+        'XRPUSDT' => [
+            'display_name' => 'Ripple',
+            'symbol' => 'XRP',
+            'priority' => 4,
+            'min_notional' => 5.0,
+            'tick_size' => 0.0001,             // $0.0001 fiyat adımı
+            'qty_precision' => 3,              // 0.001 XRP hassasiyeti
+            'max_leverage' => 50,
+            'funding_check_enabled' => true,
+        ],
+    ],
     'lab' => [
         'testnet_duration_days' => 15,
         'mainnet_thresholds' => ['pf' => 1.2, 'max_dd_pct' => 15.0, 'sharpe' => 0.8],

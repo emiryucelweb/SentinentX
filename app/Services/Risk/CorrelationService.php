@@ -14,7 +14,7 @@ final class CorrelationService implements CorrelationServiceInterface
 
     /** @return array<string,array<string,float>> simetrik korelasyon matrisi */
     /**
-     * @param array<string> $symbols
+     * @param  array<string>  $symbols
      * @return array<string, mixed>
      */
     public function matrix(array $symbols, int $bars = 60, string $interval = '5', ?string $category = 'linear'): array
@@ -35,7 +35,7 @@ final class CorrelationService implements CorrelationServiceInterface
     }
 
     /**
-     * @param array<string> $openSymbols
+     * @param  array<string>  $openSymbols
      */
     public function isHighlyCorrelated(
         array $openSymbols,

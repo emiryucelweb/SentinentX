@@ -1,85 +1,247 @@
 # Laravel
-*.log
-.DS_Store
-.env*
-.env.backup*
-.env.production*
-.env.testing
-.phpactor.json
-.phpunit.result.cache
-.phpunit.cache
-.php-cs-fixer.cache
-/.fleet
-/.idea
-/.nova
-/.vscode
-/.zed
-/auth.json
-/node_modules
-/public/build
+/vendor/
+/node_modules/
 /public/hot
 /public/storage
 /storage/*.key
-/storage/pail
-/vendor
-Homestead.json
-Homestead.yaml
-Thumbs.db
+/storage/logs/*.log
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/bootstrap/cache/*.php
 
-# Development & Testing
-/coverage*.xml
-/coverage*.txt
-/phpstan_errors.json
-/psr12_violations.txt
-/infection_report.txt
-/junit.xml
-/tests/coverage/
-*.cache
-*.tmp
-*.temp
+# Environment files
+.env
+.env.backup
+.env.production
+.env.local
+.env.testing
 
-# Security & Sensitive Data
-/EVIDENCE/
-/security-audit-*/
-/patches/
-/quality/
-/drills/
-/saas_isolation/
-/sbom/
-
-# Deployment & Infrastructure
-/k8s/
-/monitoring/
-/docker/
-/scripts/
-/backup/
-
-# Documentation (keep main docs)
-/docs/
-/kb_snapshot/
-/Sentx_Test/
-/APPENDIX/
-
-# Reports & Analysis
-/storage/app/reports/
-/storage/logs/
-*.json.backup
-*.sql.backup
-
-# Binaries & Archives
-*.tgz
-*.tar.gz
-*.zip
-ngrok*
-
-# IDE & Editor
+# IDE
+.vscode/
+.idea/
 *.swp
 *.swo
 *~
-.vimrc
-.editorconfig
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# next.js build output
+.next
+
+# nuxt.js build output
+.nuxt
+
+# vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Composer
+composer.phar
+/vendor/
+
+# PHPUnit
+/phpunit.xml
+/.phpunit.result.cache
+
+# Laravel specific
+Homestead.json
+Homestead.yaml
+auth.json
+.vagrant/
+
+# Security sensitive files
+/config/secrets.php
+/config/production.php
+/.env.production
+/storage/oauth-private.key
+/storage/oauth-public.key
+
+# Temporary files
 *.tmp
+*.temp
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Testing artifacts
+/coverage-html/
+/coverage.xml
+/.phpunit.cache
+
+# Generated documentation
+/docs/api/
+/public/docs/
+
+# Cache files
+*.cache
+.sass-cache/
+
+# Build artifacts
+/public/build/
+/public/mix-manifest.json
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Sensitive configuration
+/config/app.php.backup
+/database/database.sqlite
+/database/database.sqlite-journal
+
+# API keys and tokens (double protection)
+*api_key*
+*secret*
+*token*
+*password*
+*.pem
+*.key
+*.crt
+
+# Trading specific
+/storage/trading_logs/
+/storage/backtest_data/
+/storage/ai_responses/
+
+# Monitoring and logs
+/storage/monitoring/
+/var/log/
+*.error.log
+*.access.log
+
+# Generated files
+*.generated.*
+auto_*
+generated_*
+
+# Deployment artifacts
+.deployment/
+deployment.zip
+release.tar.gz
+
+# Package files
+*.tar.gz
+*.zip
+*.rar
+
+# Editor backup files
+*~
+*.orig
+*.rej
+.#*
+
+# Python (if any Python scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Ruby (if any Ruby scripts)
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+
+# Project specific
+/docs/knowledge/temp/
+/patches/applied/
+/monitoring/temp/
+/k8s/secrets/
+/scripts/temp/
+/backup/temp/
+
+# Large files that shouldn't be in git
+*.dump
+*.sql.gz
+*.tar.xz
+*.7z
+
+# Terraform (if using infrastructure as code)
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Kubernetes secrets
+*-secret.yaml
+*-secrets.yaml
+
+# CI/CD sensitive files
+.github/secrets/
+.gitlab-ci-local/
+.circleci/config.local.yml

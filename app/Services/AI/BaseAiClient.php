@@ -43,7 +43,7 @@ abstract class BaseAiClient
     }
 
     /**
-     * @param array<string, mixed> $decoded
+     * @param  array<string, mixed>  $decoded
      * @return array<string, mixed>
      */
     protected function normalize(array $decoded): array

@@ -27,8 +27,8 @@ final class TakeProfitLadderService
      * @return array ['ok' => bool, 'tp_orders' => array, 'details' => array]
      */
     /**
-     * @param array<string, mixed> $tpLevels
-     * @param array<string, mixed> $opts
+     * @param  array<string, mixed>  $tpLevels
+     * @param  array<string, mixed>  $opts
      * @return array<string, mixed>
      */
     public function setupTpLadder(

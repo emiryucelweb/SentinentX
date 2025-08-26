@@ -36,7 +36,7 @@ final class ChangeDetectionCommand extends Command
     }
 
     /**
-     * @param array<string> $paths
+     * @param  array<string>  $paths
      * @return array<string, array{status: string, previous_hash: mixed, current_hash: string, detected_at: string}>
      */
     private function detectChanges(array $paths): array
@@ -74,6 +74,7 @@ final class ChangeDetectionCommand extends Command
     {
         if (File::isFile($path)) {
             $hash = md5_file($path);
+
             return $hash !== false ? $hash : '';
         }
 
@@ -92,7 +93,7 @@ final class ChangeDetectionCommand extends Command
     }
 
     /**
-     * @param array<string, array{status: string, previous_hash: mixed, current_hash: string, detected_at: string}> $changes
+     * @param  array<string, array{status: string, previous_hash: mixed, current_hash: string, detected_at: string}>  $changes
      */
     private function displayChanges(array $changes): void
     {

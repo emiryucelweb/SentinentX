@@ -6,12 +6,23 @@ namespace App\Services\AI;
 
 use App\Contracts\AiProvider;
 use App\DTO\AiDecision;
+use App\Services\Reliability\CircuitBreakerService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 
 final class OpenAIClient implements AiProvider
 {
-    public function __construct(private PromptFactory $pf) {}
+    private CircuitBreakerService $circuitBreaker;
+
+    public function __construct(private PromptFactory $pf)
+    {
+        $this->circuitBreaker = new CircuitBreakerService(
+            serviceName: 'openai',
+            failureThreshold: config('ai.providers.openai.circuit_breaker.threshold', 3),
+            recoveryTimeout: config('ai.providers.openai.circuit_breaker.recovery_timeout', 60),
+            timeout: config('ai.providers.openai.timeout_ms', 30000) / 1000
+        );
+    }
 
     public function name(): string
     {
@@ -58,11 +69,14 @@ final class OpenAIClient implements AiProvider
                 new \GuzzleHttp\Psr7\Response(200, [], json_encode($fakeResponse))
             );
         } else {
-            $resp = Http::baseUrl($cfg['base_url'] ?? 'https://api.openai.com/v1')
-                ->timeout(($cfg['timeout_ms'] ?? 30000) / 1000)
-                ->withToken($cfg['api_key'] ?? '')
-                ->post('chat/completions', $payload)
-                ->throw();
+            // Use circuit breaker for external API call
+            $resp = $this->circuitBreaker->call(function () use ($cfg, $payload) {
+                return Http::baseUrl($cfg['base_url'] ?? 'https://api.openai.com/v1')
+                    ->timeout(($cfg['timeout_ms'] ?? 30000) / 1000)
+                    ->withToken($cfg['api_key'] ?? '')
+                    ->post('chat/completions', $payload)
+                    ->throw();
+            });
         }
 
         $text = (string) Arr::get($resp->json(), 'choices.0.message.content', '');

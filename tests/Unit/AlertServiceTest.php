@@ -21,9 +21,10 @@ class AlertServiceTest extends TestCase
         {
             public array $sent = [];
 
-            public function send(string $level, string $code, string $message, array $context = [], ?string $dedupKey = null): void
+            public function send(string $level, string $code, string $message, array $context = [], ?string $dedupKey = null): array
             {
                 $this->sent[] = compact('level', 'code', 'message', 'context', 'dedupKey');
+                return ['success' => true, 'id' => uniqid()];
             }
 
             public function dispatch(Alert $alert): void

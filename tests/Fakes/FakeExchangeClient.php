@@ -93,4 +93,36 @@ class FakeExchangeClient implements ExchangeClientInterface
             ],
         ];
     }
+
+    public function getInstrumentInfo(string $symbol): array
+    {
+        return $this->responses['getInstrumentInfo'] ?? [
+            'success' => true,
+            'result' => [
+                'symbol' => $symbol,
+                'status' => 'Trading',
+                'baseCoin' => 'BTC',
+                'quoteCoin' => 'USDT',
+                'minOrderQty' => '0.001',
+                'maxOrderQty' => '100.0',
+                'tickSize' => '0.1',
+                'qtyStep' => '0.001',
+            ]
+        ];
+    }
+
+    public function closeReduceOnlyMarket(string $symbol, string $side, string $qty, string $orderLinkId): array
+    {
+        return $this->responses['closeReduceOnlyMarket'] ?? [
+            'success' => true,
+            'result' => [
+                'orderId' => 'close-' . uniqid(),
+                'orderLinkId' => $orderLinkId,
+                'symbol' => $symbol,
+                'side' => $side,
+                'qty' => $qty,
+                'reduceOnly' => true,
+            ]
+        ];
+    }
 }

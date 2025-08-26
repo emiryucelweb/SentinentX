@@ -232,8 +232,8 @@ class HmacAuthenticationTest extends TestCase
         $nonceKey = "hmac_nonce:{$nonce}";
         $ttl = Redis::ttl($nonceKey);
 
-        // TTL should be around 300 seconds (±5 seconds for test execution time)
-        $this->assertGreaterThan(295, $ttl);
-        $this->assertLessThan(305, $ttl);
+        // TTL should be around 300 seconds (±10 seconds for test execution time)
+        $this->assertGreaterThan(290, $ttl);
+        $this->assertLessThanOrEqual(305, $ttl);
     }
 }

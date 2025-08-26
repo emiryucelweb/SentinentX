@@ -11,43 +11,61 @@ final class PromptFactory
      * @return array{prompt:string,schema:array}
      */
     /**
-     * @param array<string, mixed> $ctx
+     * @param  array<string, mixed>  $ctx
      * @return array<string, mixed>
      */
     public function newPositionR1(array $ctx): array
     {
         $symbols = implode(', ', $this->allowedSymbols($ctx));
+        $riskProfile = $ctx['risk_profile'] ?? [];
+        $leverageRange = $this->getLeverageRange($riskProfile);
+        $profitTarget = $this->getProfitTarget($riskProfile);
+        
         $prompt = <<<TXT
 SENİN ROLÜN
-- Bybit vadeli işlemlerde tek bir sembol için (izinli: {$symbols}) yeni POZİSYON açmaya karar veren 
+- Bybit vadeli işlemlerde 4 coin (BTCUSDT, ETHUSDT, SOLUSDT, XRPUSDT) için yeni POZİSYON açmaya karar veren 
   risk-uyumlu bir al-sat analisti olarak davran.
-- Sadece kapanmış mum ve verilen metriklerle çalış. Yarım mum veya "tahmin" yok.
+- CoinGecko market verileri ve Bybit teknik analizini birleştirerek karar ver.
+- Kullanıcının risk profiline göre kaldıraç ve kar hedeflerini ayarla.
 
 GİRDİLER
-- Sembol: {symbol}
+- Analiz edilen coin: {symbol}
 - Son fiyat: {price}
-- Kapanmış mum özeti ve teknikler: {indicators}
-- Coingecko/sentiment özeti (varsa): {coingecko}
-- Açık pozisyon bilgisi: {open_positions}  (AÇIK POZİSYON VARSA YENİ AÇMA!)
-- USDT bakiyesi (normalize): {balance}
-- Risk parametreleri: max_daily_loss, liq_safety_k, default_leverage = {risk}
+- Bybit teknik veriler: {indicators}
+- CoinGecko market analizi: {coingecko}
+- Açık pozisyon durumu: {open_positions}
+- Kullanılabilir bakiye: {balance}
+- Risk profili: {risk_profile}
+- Kaldıraç aralığı: {$leverageRange}
+- Günlük kar hedefi: {$profitTarget}%
+- Günlük PnL durumu: {daily_pnl}
 
-GÖREV
-- Sadece şu 4 sembolden biri için karar ver: BTCUSDT, ETHUSDT, SOLUSDT, XRPUSDT.
-- Kararın: "LONG", "SHORT" veya "NO_TRADE".
-- Eğer "LONG/SHORT" dersen: kaldıraç 30–75 aralığında; TP ve SL **fiyat** öner.
-- Nedenini kısa teknik gerekçeyle yaz (indicator adları ve eşikleriyle).
-- **Yarım mumlara dayanma. Açık pozisyon varsa NO_TRADE.**
+ÖZEL KURALLAR
+1. Sadece 4 ana coin için karar ver: BTCUSDT, ETHUSDT, SOLUSDT, XRPUSDT
+2. CoinGecko reliability_score ve sentiment_score'u dikkate al
+3. Risk profiline uygun kaldıraç kullan: {$leverageRange}
+4. Günlük kar hedefini göz önünde bulundur: {$profitTarget}%
+5. Günlük PnL durumunu analiz et - hedef ulaşıldıysa daha konservatif ol
+6. Açık pozisyon varsa NO_TRADE (maksimum pozisyon kontrolü)
+7. Confidence >70 ise SL/TP fiyatlarını sen belirle
+8. Confidence <=70 ise risk profili varsayılan SL/TP oranlarını kullan
 
-ÇIKIŞ
-- Sadece aşağıdaki JSON'u döndür. Metin ekleme.
+SL/TP BELİRLEME (Confidence >70)
+- Stop Loss: Teknik analiz + ATR bazlı
+- Take Profit: Risk/reward oranını koruyarak günlük hedefi destekle
+- Fiyat seviyelerini mum kapanışlarına dayandır
+
+ÇIKIŞ FORMATI
+Sadece aşağıdaki JSON'u döndür:
 {
   "decision": "LONG | SHORT | NO_TRADE",
   "confidence": 0-100,
-  "leverage": 30-75,
-  "take_profit": <number>,   // fiyat
-  "stop_loss": <number>,     // fiyat
-  "reason": "kısa teknik gerekçe"
+  "leverage": {$leverageRange} aralığında,
+  "take_profit": fiyat_seviyesi,
+  "stop_loss": fiyat_seviyesi,
+  "reason": "CoinGecko + Bybit analiz özeti",
+  "coingecko_score": reliability_score,
+  "market_sentiment": sentiment_değeri
 }
 TXT;
 
@@ -57,8 +75,8 @@ TXT;
     }
 
     /**
-     * @param array<string, mixed> $ctx
-     * @param array<string, mixed> $r1
+     * @param  array<string, mixed>  $ctx
+     * @param  array<string, mixed>  $r1
      * @return array<string, mixed>
      */
     public function newPositionR2(array $ctx, array $r1): array
@@ -100,7 +118,7 @@ TXT;
     }
 
     /**
-     * @param array<string, mixed> $ctx
+     * @param  array<string, mixed>  $ctx
      * @return array<string, mixed>
      */
     public function manageR1(array $ctx): array
@@ -142,8 +160,8 @@ TXT;
     }
 
     /**
-     * @param array<string, mixed> $ctx
-     * @param array<string, mixed> $r1
+     * @param  array<string, mixed>  $ctx
+     * @param  array<string, mixed>  $r1
      * @return array<string, mixed>
      */
     public function manageR2(array $ctx, array $r1): array
@@ -243,9 +261,28 @@ TXT;
             '{open_positions}' => json_encode($ctx['open_positions'] ?? [], JSON_UNESCAPED_SLASHES),
             '{balance}' => json_encode($ctx['balance'] ?? [], JSON_UNESCAPED_SLASHES),
             '{risk}' => json_encode($ctx['risk'] ?? [], JSON_UNESCAPED_SLASHES),
+            '{risk_profile}' => json_encode($ctx['risk_profile'] ?? [], JSON_UNESCAPED_SLASHES),
+            '{daily_pnl}' => json_encode($ctx['daily_pnl'] ?? [], JSON_UNESCAPED_SLASHES),
             '{trade}' => json_encode($ctx['trade'] ?? [], JSON_UNESCAPED_SLASHES),
         ];
 
         return strtr($prompt, $r);
+    }
+
+    /**
+     * Risk profiline göre kaldıraç aralığını al
+     */
+    private function getLeverageRange(array $riskProfile): string
+    {
+        $leverage = $riskProfile['leverage'] ?? ['min' => 3, 'max' => 15];
+        return $leverage['min'] . '-' . $leverage['max'] . 'x';
+    }
+
+    /**
+     * Risk profiline göre günlük kar hedefini al
+     */
+    private function getProfitTarget(array $riskProfile): float
+    {
+        return $riskProfile['risk']['daily_profit_target_pct'] ?? 20.0;
     }
 }

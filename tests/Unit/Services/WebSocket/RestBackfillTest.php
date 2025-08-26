@@ -17,7 +17,7 @@ class RestBackfillTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->restBackfill = new RestBackfill();
+        $this->restBackfill = new RestBackfill;
     }
 
     public function test_backfill_executions_returns_processed_data()
@@ -39,7 +39,7 @@ class RestBackfillTest extends TestCase
                             'execPrice' => '50000.50',
                             'execQty' => '0.001',
                             'execTime' => '1640995200000',
-                            'side' => 'Buy'
+                            'side' => 'Buy',
                         ],
                         [
                             'symbol' => 'BTCUSDT',
@@ -47,11 +47,11 @@ class RestBackfillTest extends TestCase
                             'execPrice' => '50001.00',
                             'execQty' => '0.002',
                             'execTime' => '1640995260000',
-                            'side' => 'Sell'
-                        ]
-                    ]
-                ]
-            ], 200)
+                            'side' => 'Sell',
+                        ],
+                    ],
+                ],
+            ], 200),
         ]);
 
         $result = $this->restBackfill->backfillExecutions($symbol, $startTime, $endTime);
@@ -71,8 +71,8 @@ class RestBackfillTest extends TestCase
         Http::fake([
             'api-testnet.bybit.com/*' => Http::response([
                 'retCode' => 10001,
-                'retMsg' => 'parameter error'
-            ], 400)
+                'retMsg' => 'parameter error',
+            ], 400),
         ]);
 
         $result = $this->restBackfill->backfillExecutions($symbol, $startTime, $endTime);
@@ -89,7 +89,7 @@ class RestBackfillTest extends TestCase
 
         // Mock network failure
         Http::fake([
-            'api-testnet.bybit.com/*' => Http::response('', 500)
+            'api-testnet.bybit.com/*' => Http::response('', 500),
         ]);
 
         $result = $this->restBackfill->backfillExecutions($symbol, $startTime, $endTime);
@@ -115,9 +115,9 @@ class RestBackfillTest extends TestCase
                 'retCode' => 0,
                 'retMsg' => 'OK',
                 'result' => [
-                    'list' => []
-                ]
-            ], 200)
+                    'list' => [],
+                ],
+            ], 200),
         ]);
 
         $result = $this->restBackfill->backfillExecutions($symbol, $startTime, $endTime);

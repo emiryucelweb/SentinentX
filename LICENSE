@@ -1,0 +1,148 @@
+MIT License
+
+Copyright (c) 2025 SentinentX - AI-Powered Cryptocurrency Trading Bot
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Third-Party Licenses and Acknowledgments
+
+This software includes components from various open-source projects:
+
+### Laravel Framework
+- **License**: MIT License
+- **Copyright**: Taylor Otwell and the Laravel contributors
+- **Source**: https://github.com/laravel/laravel
+
+### PHP Dependencies
+- **GuzzleHttp/Guzzle**: MIT License
+- **PHPUnit/PHPUnit**: BSD-3-Clause License
+- **Monolog/Monolog**: MIT License
+- **Symfony Components**: MIT License
+
+### AI Service Integrations
+- **OpenAI API**: Subject to OpenAI Terms of Service
+- **Google Gemini API**: Subject to Google Cloud Terms of Service
+- **Grok API**: Subject to xAI Terms of Service
+
+### Market Data Services
+- **CoinGecko API**: Subject to CoinGecko Terms of Service
+- **Bybit API**: Subject to Bybit Terms of Service
+
+### JavaScript Dependencies
+- **Node.js**: MIT License
+- **Vite**: MIT License
+- **Tailwind CSS**: MIT License
+
+## Disclaimer
+
+### Trading Risk Warning
+
+CRYPTOCURRENCY TRADING INVOLVES SUBSTANTIAL RISK OF LOSS AND IS NOT SUITABLE 
+FOR ALL INVESTORS. THE VALUATION OF CRYPTOCURRENCIES AND FUTURES MAY FLUCTUATE, 
+AND, AS A RESULT, CLIENTS MAY LOSE MORE THAN THEIR ORIGINAL INVESTMENT.
+
+THE IMPACT OF SEASONAL AND GEOPOLITICAL EVENTS IS ALREADY FACTORED INTO MARKET 
+PRICES. THE HIGHLY LEVERAGED NATURE OF FUTURES TRADING MEANS THAT SMALL MARKET 
+MOVEMENTS WILL HAVE A GREAT IMPACT ON YOUR TRADING ACCOUNT AND THIS CAN WORK 
+AGAINST YOU, LEADING TO LARGE LOSSES OR CAN WORK FOR YOU, LEADING TO LARGE GAINS.
+
+THE POSSIBILITY EXISTS THAT YOU COULD SUSTAIN A LOSS OF SOME OR ALL OF YOUR 
+INITIAL INVESTMENT AND THEREFORE YOU SHOULD NOT INVEST MONEY THAT YOU CANNOT 
+AFFORD TO LOSE. YOU SHOULD BE AWARE OF ALL THE RISKS ASSOCIATED WITH 
+CRYPTOCURRENCY TRADING AND SEEK ADVICE FROM AN INDEPENDENT FINANCIAL ADVISOR 
+IF YOU HAVE ANY DOUBTS.
+
+### AI-Generated Decisions Disclaimer
+
+THIS SOFTWARE USES ARTIFICIAL INTELLIGENCE TO GENERATE TRADING DECISIONS. 
+AI-GENERATED CONTENT MAY BE INACCURATE, INCOMPLETE, OR BIASED. THE AI MODELS 
+ARE TRAINED ON HISTORICAL DATA AND MAY NOT ACCURATELY PREDICT FUTURE MARKET 
+CONDITIONS.
+
+USERS SHOULD:
+- VERIFY ALL AI-GENERATED TRADING RECOMMENDATIONS
+- USE APPROPRIATE RISK MANAGEMENT STRATEGIES
+- NEVER INVEST MORE THAN THEY CAN AFFORD TO LOSE
+- CONSIDER AI RECOMMENDATIONS AS ONE FACTOR AMONG MANY IN TRADING DECISIONS
+
+### No Financial Advice
+
+THE SOFTWARE AND ITS OUTPUT DO NOT CONSTITUTE FINANCIAL, INVESTMENT, TRADING, 
+OR OTHER TYPES OF ADVICE OR RECOMMENDATIONS. THE SOFTWARE IS PROVIDED FOR 
+INFORMATIONAL AND EDUCATIONAL PURPOSES ONLY.
+
+### Data Privacy
+
+This software may collect and process personal and financial data. Users are 
+responsible for ensuring compliance with applicable data protection regulations 
+including but not limited to GDPR, CCPA, and other local privacy laws.
+
+### API Terms Compliance
+
+Users must comply with the terms of service of all integrated APIs including:
+- Bybit Exchange API Terms
+- CoinGecko API Terms  
+- OpenAI API Terms
+- Google Cloud Terms
+- Any other third-party service terms
+
+### Security Notice
+
+While we implement security best practices, users are responsible for:
+- Securing their API keys and credentials
+- Implementing appropriate operational security measures
+- Regular security updates and monitoring
+- Backup and recovery procedures
+
+### Jurisdiction and Regulations
+
+Cryptocurrency trading regulations vary by jurisdiction. Users are responsible 
+for ensuring compliance with local laws and regulations regarding:
+- Cryptocurrency trading and investment
+- Automated trading systems
+- Financial services licensing
+- Tax obligations
+
+### Technical Limitations
+
+This software is provided "as is" and may have technical limitations including:
+- Potential bugs or vulnerabilities
+- Dependencies on third-party services
+- Network connectivity requirements
+- Hardware and software compatibility requirements
+
+### Support and Maintenance
+
+This is open-source software provided without warranty. While we strive to 
+maintain and improve the software, there is no guarantee of:
+- Continuous operation
+- Bug fixes or updates
+- Technical support
+- Compatibility with future versions of dependencies
+
+### Contribution License
+
+By contributing to this project, contributors agree that their contributions 
+will be licensed under the same MIT License that covers the project.
+
+---
+
+For questions regarding this license, please contact: legal@sentinentx.com

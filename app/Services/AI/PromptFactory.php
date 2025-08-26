@@ -30,20 +30,20 @@ CRITICAL RULES:
 POSITION SIZE: Use maximum 10% of portfolio balance for any single position.';
 
         if ($stage === 'STAGE2' && isset($snapshot['stage1_results'])) {
-            $system = $systemBase . '
+            $system = $systemBase.'
 
 STAGE 1 RESULTS FROM OTHER AIs:
 Review the initial decisions from other AI providers below and provide your refined analysis.';
         } else {
             $system = $systemBase;
         }
-        
+
         // Kullanıcı gerekçesi varsa AI'ya özel talimat ekle
         if (isset($snapshot['user_intent']['reason'])) {
             $system .= '
 
 USER SPECIFIC REQUEST:
-The user has specifically requested this position with the following reason: "' . $snapshot['user_intent']['reason'] . '"
+The user has specifically requested this position with the following reason: "'.$snapshot['user_intent']['reason'].'"
 Consider this user insight in your analysis, but maintain your independent judgment. If the user reason aligns with technical analysis, give it weight. If it conflicts with your analysis, explain why.';
         }
 
@@ -52,13 +52,13 @@ Consider this user insight in your analysis, but maintain your independent judgm
             'task' => 'Analyze market data and decide whether to open a leveraged perpetual position',
             'snapshot' => $snapshot,
         ];
-        
+
         // Kullanıcı gerekçesi varsa ekle
         if (isset($snapshot['user_intent']['reason'])) {
             $user['user_request'] = [
                 'reason' => $snapshot['user_intent']['reason'],
                 'type' => 'specific_position_request',
-                'message' => 'User specifically requested this position with reason: ' . $snapshot['user_intent']['reason']
+                'message' => 'User specifically requested this position with reason: '.$snapshot['user_intent']['reason'],
             ];
         }
 

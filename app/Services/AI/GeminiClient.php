@@ -6,12 +6,23 @@ namespace App\Services\AI;
 
 use App\Contracts\AiProvider;
 use App\DTO\AiDecision;
+use App\Services\Reliability\CircuitBreakerService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 
 final class GeminiClient implements AiProvider
 {
-    public function __construct(private PromptFactory $pf) {}
+    private CircuitBreakerService $circuitBreaker;
+
+    public function __construct(private PromptFactory $pf)
+    {
+        $this->circuitBreaker = new CircuitBreakerService(
+            serviceName: 'gemini',
+            failureThreshold: config('ai.providers.gemini.circuit_breaker.threshold', 3),
+            recoveryTimeout: config('ai.providers.gemini.circuit_breaker.recovery_timeout', 60),
+            timeout: config('ai.providers.gemini.timeout_ms', 30000) / 1000
+        );
+    }
 
     public function name(): string
     {

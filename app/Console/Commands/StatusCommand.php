@@ -104,7 +104,7 @@ class StatusCommand extends Command
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     private function displayTable(array $data): void
     {

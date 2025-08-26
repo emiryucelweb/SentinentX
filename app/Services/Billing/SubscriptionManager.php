@@ -21,7 +21,8 @@ class SubscriptionManager
 
     /**
      * Create new subscription for user
-     * @param array<string, mixed> $features
+     *
+     * @param  array<string, mixed>  $features
      */
     public function createSubscription(User $user, string $planId, array $features = []): Subscription
     {
@@ -69,6 +70,7 @@ class SubscriptionManager
 
     /**
      * Check usage limits
+     *
      * @return array<string, mixed>
      */
     public function checkUsageLimit(User $user, string $service, int $requestedAmount = 1): array
@@ -112,6 +114,7 @@ class SubscriptionManager
 
     /**
      * Get subscription analytics
+     *
      * @return array<string, mixed>
      */
     public function getAnalytics(User $user, ?string $period = 'current_month'): array

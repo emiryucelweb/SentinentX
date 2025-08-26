@@ -18,7 +18,8 @@ class SubscriptionService
 {
     /**
      * Tenant için subscription oluştur
-     * @param array<string, mixed> $features
+     *
+     * @param  array<string, mixed>  $features
      */
     public function createSubscription(
         Tenant $tenant,

@@ -20,10 +20,10 @@ final class OpenSpecificCommand extends Command
     {
         $targetSymbol = strtoupper((string) $this->argument('target_symbol'));
         $isDryRun = (bool) $this->option('dry');
-        
+
         $this->info("🎯 Hedef Symbol: {$targetSymbol}");
         $this->info("📊 4 coin analiz edilecek, sadece {$targetSymbol} için pozisyon açılacak");
-        
+
         if ($isDryRun) {
             $this->info('🔍 DRY RUN MODE - No actual trades will be executed');
         }
@@ -31,18 +31,21 @@ final class OpenSpecificCommand extends Command
         $path = (string) $this->option('snapshot');
         if (! $path || ! is_file($path)) {
             $this->error('--snapshot=/path/to/snapshot.json zorunlu');
+
             return self::FAILURE;
         }
 
         $snap = json_decode((string) file_get_contents($path), true);
         if (! is_array($snap)) {
             $this->error('Snapshot JSON okunamadı');
+
             return self::FAILURE;
         }
 
         // Snapshot validation
         if (! isset($snap['timestamp'], $snap['symbols'], $snap['market_data'])) {
             $this->error('Snapshot schema validation failed: missing required fields');
+
             return self::FAILURE;
         }
 
@@ -53,61 +56,63 @@ final class OpenSpecificCommand extends Command
 
         $this->line('');
         $this->info('🤖 AI Consensus başlatılıyor...');
-        $this->line('📋 Analiz edilecek coinler: ' . implode(', ', $allSymbols));
-        $this->line('🎯 Pozisyon açılacak coin: ' . $targetSymbol);
+        $this->line('📋 Analiz edilecek coinler: '.implode(', ', $allSymbols));
+        $this->line('🎯 Pozisyon açılacak coin: '.$targetSymbol);
         $this->line('');
 
         // Tüm coinler için analiz yap
         $allResults = [];
         foreach ($allSymbols as $symbol) {
             $this->line("📈 {$symbol} analiz ediliyor...");
-            
+
             // Her coin için ayrı snapshot
             $symbolSnap = $snap;
             $symbolSnap['current_symbol'] = $symbol;
             $symbolSnap['symbols'] = [$symbol]; // Consensus service tek symbol bekliyor
-            
+
             try {
                 $result = $consensus->decide($symbolSnap);
                 $allResults[$symbol] = $result;
-                
+
                 $action = $result['action'] ?? 'NO_TRADE';
                 $confidence = $result['confidence'] ?? 0;
                 $leverage = $result['leverage'] ?? 1;
-                
-                $emoji = match($action) {
+
+                $emoji = match ($action) {
                     'LONG' => '🟢',
-                    'SHORT' => '🔴', 
+                    'SHORT' => '🔴',
                     default => '⚪'
                 };
-                
+
                 $this->line("   {$emoji} {$symbol}: {$action} (Confidence: {$confidence}%, Leverage: {$leverage}x)");
-                
+
             } catch (\Exception $e) {
-                $this->error("   ❌ {$symbol}: " . $e->getMessage());
+                $this->error("   ❌ {$symbol}: ".$e->getMessage());
                 $allResults[$symbol] = ['action' => 'ERROR', 'error' => $e->getMessage()];
             }
         }
 
         $this->line('');
         $this->info('📊 Tüm analizler tamamlandı!');
-        
+
         // Hedef coin sonucunu kontrol et
-        if (!isset($allResults[$targetSymbol])) {
+        if (! isset($allResults[$targetSymbol])) {
             $this->error("❌ {$targetSymbol} analizi başarısız!");
+
             return self::FAILURE;
         }
-        
+
         $targetResult = $allResults[$targetSymbol];
         $targetAction = $targetResult['action'] ?? 'NO_TRADE';
-        
+
         if ($targetAction === 'NO_TRADE' || $targetAction === 'ERROR') {
             $this->warn("⚠️ {$targetSymbol} için pozisyon açılmayacak: {$targetAction}");
             $reason = $targetResult['reason'] ?? 'Bilinmeyen sebep';
             $this->line("📝 Sebep: {$reason}");
+
             return self::SUCCESS;
         }
-        
+
         // Pozisyon açma simülasyonu (gerçek implementasyon için TradeManager gerekli)
         if ($isDryRun) {
             $this->info("🎯 DRY RUN: {$targetSymbol} pozisyonu açılacaktı");
@@ -117,12 +122,12 @@ final class OpenSpecificCommand extends Command
         } else {
             $this->info("🚀 {$targetSymbol} pozisyonu açılıyor...");
             // TODO: Gerçek pozisyon açma kodu
-            $this->warn("⚠️ Gerçek pozisyon açma henüz implement edilmedi");
+            $this->warn('⚠️ Gerçek pozisyon açma henüz implement edilmedi');
         }
-        
+
         $this->line('');
         $this->info('✅ İşlem tamamlandı!');
-        
+
         return self::SUCCESS;
     }
 }

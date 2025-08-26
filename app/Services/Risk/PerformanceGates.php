@@ -103,6 +103,7 @@ class PerformanceGates
 
     /**
      * Calculate performance metrics
+     *
      * @param \\Illuminate\\Support\\Collection<int, \\App\\Models\\Trade> $trades
      * @return array<string, mixed>
      */

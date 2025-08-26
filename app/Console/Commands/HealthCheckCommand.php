@@ -252,7 +252,7 @@ class HealthCheckCommand extends Command
     }
 
     /**
-     * @param array<string, mixed> $results
+     * @param  array<string, mixed>  $results
      */
     private function displayResults(array $results): void
     {

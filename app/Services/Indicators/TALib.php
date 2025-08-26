@@ -7,7 +7,7 @@ namespace App\Services\Indicators;
 class TALib
 {
     /**
-     * @param array<int, float> $closes
+     * @param  array<int, float>  $closes
      * @return array<int, float>
      */
     public static function ema(array $closes, int $period): array
@@ -24,7 +24,7 @@ class TALib
     }
 
     /**
-     * @param array<int, float> $closes
+     * @param  array<int, float>  $closes
      * @return array<int, float>
      */
     public static function rsi(array $closes, int $period = 14): array
@@ -50,11 +50,11 @@ class TALib
             }
         }
 
-        return array_map(fn($v) => (float) ($v ?? 0), $rsi);
+        return array_map(fn ($v) => (float) ($v ?? 0), $rsi);
     }
 
     /**
-     * @param array<int, float> $closes
+     * @param  array<int, float>  $closes
      * @return array<string, array<int, float>>
      */
     public static function macd(array $closes, int $fast = 12, int $slow = 26, int $signal = 9): array
@@ -76,9 +76,9 @@ class TALib
     }
 
     /**
-     * @param array<int, float> $highs
-     * @param array<int, float> $lows
-     * @param array<int, float> $closes
+     * @param  array<int, float>  $highs
+     * @param  array<int, float>  $lows
+     * @param  array<int, float>  $closes
      * @return array<int, float>
      */
     public static function atr(array $highs, array $lows, array $closes, int $period = 14): array
@@ -117,11 +117,11 @@ class TALib
             $atr[$i] = $prev;
         }
 
-        return array_map(fn($v) => (float) ($v ?? 0), $atr);
+        return array_map(fn ($v) => (float) ($v ?? 0), $atr);
     }
 
     /**
-     * @param array<int, float> $closes
+     * @param  array<int, float>  $closes
      * @return array<string, array<int, float>>
      */
     public static function bollinger(array $closes, int $period = 20, float $mult = 2.0): array
@@ -153,9 +153,9 @@ class TALib
     }
 
     /**
-     * @param array<int, float> $highs
-     * @param array<int, float> $lows
-     * @param array<int, float> $closes
+     * @param  array<int, float>  $highs
+     * @param  array<int, float>  $lows
+     * @param  array<int, float>  $closes
      * @return array<string, array<int, float>>
      */
     public static function keltner(

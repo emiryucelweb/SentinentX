@@ -2,24 +2,30 @@
 
 namespace Tests\Unit\Services\Trading;
 
-use App\Services\Trading\TradeManager;
 use App\Contracts\Exchange\ExchangeClientInterface;
+use App\Contracts\Risk\RiskGuardInterface;
+use App\Services\Exchange\AccountService;
+use App\Services\Exchange\InstrumentInfoService;
 use App\Services\Trading\PositionSizer;
 use App\Services\Trading\StopCalculator;
-use App\Services\Exchange\InstrumentInfoService;
-use App\Services\Exchange\AccountService;
-use App\Contracts\Risk\RiskGuardInterface;
-use Tests\TestCase;
+use App\Services\Trading\TradeManager;
 use Mockery;
+use Tests\TestCase;
 
 class TradeManagerTest extends TestCase
 {
     private TradeManager $tradeManager;
+
     private $exchange;
+
     private $info;
+
     private $account;
+
     private $sizer;
+
     private $stopCalc;
+
     private $risk;
 
     protected function setUp(): void
@@ -65,8 +71,8 @@ class TradeManagerTest extends TestCase
                 'retMsg' => 'OK',
                 'result' => [
                     'orderId' => 'order123',
-                    'orderStatus' => 'New'
-                ]
+                    'orderStatus' => 'New',
+                ],
             ]);
 
         $result = $this->tradeManager->openWithFallback($symbol, $action, $price, $qty, $atrK);
@@ -89,7 +95,7 @@ class TradeManagerTest extends TestCase
             ->twice() // PostOnly + Market IOC attempts
             ->andReturn([
                 'ok' => false,
-                'error' => 'Insufficient balance'
+                'error' => 'Insufficient balance',
             ]);
 
         $result = $this->tradeManager->openWithFallback($symbol, $action, $price, $qty, $atrK);

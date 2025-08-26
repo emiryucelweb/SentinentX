@@ -15,7 +15,7 @@ final class BybitClient implements ExchangeClientInterface
     private array $cfg;
 
     /**
-     * @param array<string, mixed> $cfg
+     * @param  array<string, mixed>  $cfg
      */
     public function __construct(array $cfg = [])
     {
@@ -31,10 +31,40 @@ final class BybitClient implements ExchangeClientInterface
     }
 
     /**
+     * Get server time
+     *
+     * @return array<string, mixed>
+     */
+    public function serverTime(): array
+    {
+        $resp = $this->makeHttpRequest('GET', '/v5/market/time', [], []);
+        return $resp;
+    }
+
+    /**
+     * Get wallet balance
+     *
+     * @return array<string, mixed>
+     */
+    public function getWalletBalance(string $accountType = 'UNIFIED'): array
+    {
+        $params = [
+            'accountType' => $accountType,
+        ];
+
+        ksort($params);
+        $queryString = http_build_query($params);
+        $headers = $this->authHeadersForGet($queryString);
+
+        $resp = $this->makeHttpRequest('GET', '/v5/account/wallet-balance?' . $queryString, [], $headers);
+        return $resp;
+    }
+
+    /**
      * KALDIRAÇ AYARLAR. BU, EKSİK OLAN VE SORUNU ÇÖZECEK OLAN METODDUR.
      */
     /**
-     * @param array<string, mixed> $opts
+     * @param  array<string, mixed>  $opts
      * @return array<string, mixed>
      */
     public function setLeverage(string $symbol, int $leverage, array $opts = []): array
@@ -66,8 +96,9 @@ final class BybitClient implements ExchangeClientInterface
     /**
      * HTTP request with retry mechanism
      * Şartname: 1,2,4,8... saniyelik backoff ve jitter
-     * @param array<string, mixed> $body
-     * @param array<string, mixed> $headers
+     *
+     * @param  array<string, mixed>  $body
+     * @param  array<string, mixed>  $headers
      * @return array<string, mixed>
      */
     private function makeHttpRequest(string $method, string $endpoint, array $body = [], array $headers = []): array
@@ -172,7 +203,7 @@ final class BybitClient implements ExchangeClientInterface
     }
 
     /**
-     * @param array<string, mixed> $opts
+     * @param  array<string, mixed>  $opts
      * @return array<string, mixed>
      */
     public function createOrder(
@@ -582,6 +613,7 @@ final class BybitClient implements ExchangeClientInterface
 
     /**
      * Hesap bilgilerini al
+     *
      * @return array<string, mixed>
      */
     public function getAccountInfo(): array
@@ -593,18 +625,19 @@ final class BybitClient implements ExchangeClientInterface
         // Bybit API v5 için parametreleri alfabetik sırala
         ksort($params);
         $queryString = http_build_query($params);
-        
+
         // GET istekleri için query string ile imza oluştur
         $headers = $this->authHeadersForGet($queryString);
 
-        $resp = $this->makeHttpRequest('GET', '/v5/account/wallet-balance?' . $queryString, [], $headers);
+        $resp = $this->makeHttpRequest('GET', '/v5/account/wallet-balance?'.$queryString, [], $headers);
 
         return $resp;
     }
 
     /**
      * Pozisyon bilgilerini al
-     * @param string|null $symbol Belirli bir sembol için, null ise tüm pozisyonlar
+     *
+     * @param  string|null  $symbol  Belirli bir sembol için, null ise tüm pozisyonlar
      * @return array<string, mixed>
      */
     public function getPositions(?string $symbol = null): array
@@ -623,20 +656,19 @@ final class BybitClient implements ExchangeClientInterface
         // Bybit API v5 için parametreleri alfabetik sırala
         ksort($params);
         $queryString = http_build_query($params);
-        
+
         // GET istekleri için query string ile imza oluştur
         $headers = $this->authHeadersForGet($queryString);
 
-        $resp = $this->makeHttpRequest('GET', '/v5/position/list?' . $queryString, [], $headers);
+        $resp = $this->makeHttpRequest('GET', '/v5/position/list?'.$queryString, [], $headers);
 
         return $resp;
     }
 
     /**
      * Pozisyonu kapat
-     * @param string $symbol
-     * @param string $side Buy/Sell
-     * @param float $qty
+     *
+     * @param  string  $side  Buy/Sell
      * @return array<string, mixed>
      */
     public function closePosition(string $symbol, string $side, float $qty): array
@@ -664,9 +696,7 @@ final class BybitClient implements ExchangeClientInterface
 
     /**
      * Stop Loss ve Take Profit ayarla
-     * @param string $symbol
-     * @param float|null $stopLoss
-     * @param float|null $takeProfit
+     *
      * @return array<string, mixed>
      */
     public function setStopLossTakeProfit(string $symbol, ?float $stopLoss = null, ?float $takeProfit = null): array
@@ -719,10 +749,10 @@ final class BybitClient implements ExchangeClientInterface
         $recv = (string) ($this->cfg['recv_window'] ?? 15000);
         $apiKey = (string) ($this->cfg['api_key'] ?? '');
         $secret = (string) ($this->cfg['api_secret'] ?? '');
-        
+
         // Bybit API v5 GET istekleri için: timestamp + api_key + recv_window + query_string
         // Hata mesajından anlaşıldığı üzere: origin_string[timestamp+api_key+recv_window+query_string]
-        $signString = $ts . $apiKey . $recv . $queryString;
+        $signString = $ts.$apiKey.$recv.$queryString;
         $sign = hash_hmac('sha256', $signString, $secret);
 
         return [
@@ -733,8 +763,6 @@ final class BybitClient implements ExchangeClientInterface
             'X-BAPI-RECV-WINDOW' => $recv,
         ];
     }
-
-
 
     /**
      * Close position with reduce-only market order
@@ -759,7 +787,7 @@ final class BybitClient implements ExchangeClientInterface
         }
 
         $headers = $this->authHeaders($json);
-        $url = $this->baseUrl() . '/v5/order/create';
+        $url = $this->baseUrl().'/v5/order/create';
 
         try {
             $response = Http::withHeaders($headers)->post($url, $body);

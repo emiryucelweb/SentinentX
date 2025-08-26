@@ -21,6 +21,7 @@ final class AnnouncementWatcher
 
     /**
      * Announcement'ları izle
+     *
      * @return array<string, mixed>
      */
     public function watch(): array
@@ -53,6 +54,7 @@ final class AnnouncementWatcher
 
     /**
      * Announcement kontrolü yap
+     *
      * @return array<string, mixed>
      */
     private function checkAnnouncements(): array
@@ -96,7 +98,8 @@ final class AnnouncementWatcher
 
     /**
      * Tek kaynak kontrolü
-     * @param array<string, mixed> $config
+     *
+     * @param  array<string, mixed>  $config
      * @return array<string, mixed>
      */
     private function checkSource(string $source, array $config): array
@@ -136,7 +139,7 @@ final class AnnouncementWatcher
      * Bybit announcement kontrolü
      */
     /**
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      * @return array<string, mixed>
      */
     private function checkBybitAnnouncements(array $config): array
@@ -183,7 +186,7 @@ final class AnnouncementWatcher
      * Telegram announcement kontrolü
      */
     /**
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      * @return array<string, mixed>
      */
     private function checkTelegramAnnouncements(array $config): array

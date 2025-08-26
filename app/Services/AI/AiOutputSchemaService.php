@@ -10,7 +10,8 @@ final class AiOutputSchemaService
 {
     /**
      * AI çıkışını standart şemaya dönüştür
-     * @param array<string, mixed> $context
+     *
+     * @param  array<string, mixed>  $context
      * @return array<string, mixed>
      */
     public function standardizeOutput(AiDecision $decision, array $context = []): array
@@ -101,7 +102,8 @@ final class AiOutputSchemaService
 
     /**
      * Risk skoru hesapla (0-10 arası, 10 = yüksek risk)
-     * @param array<string, mixed> $context
+     *
+     * @param  array<string, mixed>  $context
      */
     private function calculateRiskScore(AiDecision $decision, array $context): int
     {
@@ -145,7 +147,8 @@ final class AiOutputSchemaService
 
     /**
      * Execution priority hesapla (1-5 arası, 1 = yüksek öncelik)
-     * @param array<string, mixed> $context
+     *
+     * @param  array<string, mixed>  $context
      */
     private function calculateExecutionPriority(AiDecision $decision, array $context): int
     {
@@ -179,8 +182,9 @@ final class AiOutputSchemaService
 
     /**
      * Çoklu AI çıkışını birleştir
-     * @param array<AiDecision> $decisions
-     * @param array<string, mixed> $context
+     *
+     * @param  array<AiDecision>  $decisions
+     * @param  array<string, mixed>  $context
      * @return array<string, mixed>
      */
     public function mergeMultipleOutputs(array $decisions, array $context = []): array
@@ -199,7 +203,7 @@ final class AiOutputSchemaService
 
         // En yüksek confidence'lı decision'ı seç
         $bestDecision = collect($decisions)->sortByDesc('confidence')->first();
-        
+
         // Null check for safety
         if ($bestDecision === null) {
             return $this->standardizeOutput(new AiDecision(

@@ -300,7 +300,7 @@ class BusinessMetricsService
     }
 
     /**
-     * @param mixed $query
+     * @param  mixed  $query
      * @return array<string, mixed>
      */
     private function getHourlyDistribution($query, string $period): array

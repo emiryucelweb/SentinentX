@@ -7,7 +7,6 @@ namespace App\Services\AI;
 use App\Contracts\AiProvider;
 use App\DTO\AiDecision;
 use App\Services\Logger\AiLogCreatorService;
-use App\Services\AI\ConsensusCalculationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -20,7 +19,7 @@ class ConsensusService
 
     /** @unused - Placeholder for future logging functionality */
     private ?AiLogCreatorService $logger = null;
-    
+
     private ?ConsensusCalculationService $calculator = null;
 
     // Rate-limit ve circuit breaker state
@@ -85,7 +84,7 @@ class ConsensusService
 
     /** @return array<string,mixed> */
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
     public function decide(array $payload): array
@@ -121,7 +120,7 @@ class ConsensusService
 
             // Stage-2: Stage 1 sonuçlarını ekleyerek sağlayıcılardan topla
             $r2 = [];
-            
+
             // Stage 1 sonuçlarını payload'a ekle
             $stage1Results = [];
             foreach ($r1 as $i => $decision) {
@@ -131,13 +130,13 @@ class ConsensusService
                     'confidence' => $decision->confidence,
                     'reason' => $decision->reason,
                     'stop_loss' => $decision->stopLoss,
-                    'take_profit' => $decision->takeProfit
+                    'take_profit' => $decision->takeProfit,
                 ];
             }
-            
+
             $payloadStage2 = $payload;
             $payloadStage2['stage1_results'] = $stage1Results;
-            
+
             foreach ($this->providers as $idx => $p) {
                 $name = (string) $p->name(); // AiProvider interface garantee
                 $res = $p->decide($payloadStage2, 'STAGE2', $symbol);
@@ -189,7 +188,7 @@ class ConsensusService
 
             // AI'ların seçtiği kaldıraçların ortalamasını al
             $lev = $this->calculateAverageLeverage($r2, $payload);
-            
+
             // Weighted median kararı
             if ($this->calculator) {
                 $final = $this->calculator->calculateWeightedMedian($r2, $wmap);
@@ -380,8 +379,8 @@ class ConsensusService
 
     /** @param AiDecision[] $decisions */
     /**
-     * @param array<int, AiDecision> $decisions
-     * @param array<string, float> $weights
+     * @param  array<int, AiDecision>  $decisions
+     * @param  array<string, float>  $weights
      */
     private function pickFinal(array $decisions, array $weights): AiDecision
     {
@@ -412,7 +411,7 @@ class ConsensusService
         foreach ($decisions as $i => $d) {
             // Use index-based weights lookup with fallback
             $w = 1.0; // Default weight
-            if (!empty($weights)) {
+            if (! empty($weights)) {
                 $w = (float) (array_values($weights)[$i] ?? 1.0);
             }
             $s = $w * (float) $d->confidence;
@@ -464,9 +463,10 @@ class ConsensusService
      * Konsensüs değerlerinin sapma kontrolünü yapar.
      *
      * @param  AiDecision[]  $decisions  Konsensüs kararları.
-     * @param array<int, AiDecision> $decisions
+     * @param  array<int, AiDecision>  $decisions
      * @param  float  $threshold  Sapma eşiği (örn: 0.20).
      * @return array{ok: bool, reason: string, details: array<string, mixed>}
+     *
      * @unused Legacy method - kept for reference
      */
     private function validateConsensusValues(array $decisions, float $threshold): array
@@ -589,6 +589,7 @@ class ConsensusService
 
     /**
      * Rate-limited response oluştur
+     *
      * @return array<string, mixed>
      */
     private function createRateLimitedResponse(string $symbol, string $cycle, float $startTime): array
@@ -622,6 +623,7 @@ class ConsensusService
 
     /**
      * Rate-limit bilgilerini al
+     *
      * @return array<string, mixed>
      */
     private function getRateLimitInfo(string $symbol): array
@@ -641,7 +643,8 @@ class ConsensusService
 
     /**
      * Dinamik sapma eşiği hesapla
-     * @param array<string, mixed> $payload
+     *
+     * @param  array<string, mixed>  $payload
      */
     private function getDynamicDeviationThreshold(array $payload): float
     {
@@ -701,8 +704,9 @@ class ConsensusService
 
     /**
      * Gelişmiş validation ve veto kontrolü
-     * @param array<int, AiDecision> $decisions
-     * @param array<string, mixed> $payload
+     *
+     * @param  array<int, AiDecision>  $decisions
+     * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
     private function validateConsensusValuesAdvanced(array $decisions, float $threshold, array $payload): array
@@ -767,7 +771,8 @@ class ConsensusService
     /**
      * NONE yüksek güven vetosu kontrolü
      * Şartname: %90 güven üstündeki NONE => NO_TRADE
-     * @param array<int, AiDecision> $decisions
+     *
+     * @param  array<int, AiDecision>  $decisions
      * @return array<string, mixed>
      */
     private function validateNoneVeto(array $decisions): array
@@ -800,7 +805,8 @@ class ConsensusService
 
     /**
      * Schema validation
-     * @param array<int, AiDecision> $decisions
+     *
+     * @param  array<int, AiDecision>  $decisions
      * @return array<string, mixed>
      */
     private function validateSchema(array $decisions): array
@@ -1062,27 +1068,27 @@ class ConsensusService
         $riskContext = $payload['risk_context'] ?? [];
         $minLeverage = $riskContext['min_leverage'] ?? 3;
         $maxLeverage = $riskContext['max_leverage'] ?? 15;
-        
+
         foreach ($decisions as $decision) {
             // AI'dan gelen kaldıraç değerini al (raw response'dan)
             $leverage = $decision->raw['leverage'] ?? null;
-            
+
             if ($leverage && is_numeric($leverage)) {
                 // Risk aralığında olduğundan emin ol
                 $leverage = max($minLeverage, min($maxLeverage, (int) $leverage));
                 $leverages[] = $leverage;
             }
         }
-        
+
         if (empty($leverages)) {
             // Hiç AI kaldıraç seçmediyse minimum kullan
             return $minLeverage;
         }
-        
+
         // Ortalama hesapla ve yukarı yuvarla (32.5 -> 33)
         $average = array_sum($leverages) / count($leverages);
         $averageLeverage = (int) ceil($average);
-        
+
         // Risk aralığında tut
         return max($minLeverage, min($maxLeverage, $averageLeverage));
     }

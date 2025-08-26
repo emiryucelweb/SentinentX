@@ -58,8 +58,6 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-
-
         // Consensus Repository binding
         $this->app->bind(
             \App\Domain\Consensus\ConsensusRepository::class,

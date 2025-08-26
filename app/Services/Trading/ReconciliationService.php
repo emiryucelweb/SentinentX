@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Trading;
 
-use App\Services\Notifier\AlertDispatcher;
 use App\Models\Trade;
+use App\Services\Notifier\AlertDispatcher;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 

@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Services\Billing\SubscriptionService;
 use App\Services\Security\VaultService;
-use App\Services\Trading\GapReconciliationService;
+use App\Services\Analytics\BusinessMetricsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -21,16 +21,16 @@ class SaasDashboardController extends Controller
 
     private VaultService $vaultService;
 
-    private GapReconciliationService $reconciliationService;
+    private BusinessMetricsService $metricsService;
 
     public function __construct(
         SubscriptionService $subscriptionService,
         VaultService $vaultService,
-        GapReconciliationService $reconciliationService
+        BusinessMetricsService $metricsService
     ) {
         $this->subscriptionService = $subscriptionService;
         $this->vaultService = $vaultService;
-        $this->reconciliationService = $reconciliationService;
+        $this->metricsService = $metricsService;
     }
 
     /**

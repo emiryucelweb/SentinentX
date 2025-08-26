@@ -12,6 +12,7 @@ final class PerformanceMonitorService
 {
     /**
      * LAB run performansını izle ve uyarıları tetikle
+     *
      * @return array<string, mixed>
      */
     public function monitorLabRun(int $labRunId): array
@@ -47,6 +48,7 @@ final class PerformanceMonitorService
 
     /**
      * LAB run metriklerini hesapla
+     *
      * @return array<string, mixed>
      */
     private function calculateRunMetrics(LabRun $labRun): array
@@ -117,7 +119,8 @@ final class PerformanceMonitorService
 
     /**
      * Performans uyarılarını kontrol et
-     * @param array<string, mixed> $metrics
+     *
+     * @param  array<string, mixed>  $metrics
      * @return array<string, mixed>
      */
     private function checkPerformanceAlerts(array $metrics, LabRun $labRun): array
@@ -192,7 +195,8 @@ final class PerformanceMonitorService
 
     /**
      * LAB run durumunu belirle
-     * @param array<string, mixed> $metrics
+     *
+     * @param  array<string, mixed>  $metrics
      */
     private function determineRunStatus(array $metrics): string
     {
@@ -211,7 +215,8 @@ final class PerformanceMonitorService
 
     /**
      * Sharpe ratio hesapla
-     * @param array<int, float> $returns
+     *
+     * @param  array<int, float>  $returns
      */
     private function calculateSharpe(array $returns): ?float
     {
@@ -238,6 +243,7 @@ final class PerformanceMonitorService
 
     /**
      * LAB run özet raporu oluştur
+     *
      * @return array<string, mixed>
      */
     public function generateRunSummary(int $labRunId): array

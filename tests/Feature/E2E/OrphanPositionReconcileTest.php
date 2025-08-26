@@ -57,7 +57,7 @@ class OrphanPositionReconcileTest extends TestCase
                 'size' => '1.0',
                 'avgPrice' => '50000',
                 'unrealisedPnl' => '500.00',
-            ]
+            ],
         ];
         $result = $reconciliationService->reconcile($exchangePositions);
 
@@ -115,7 +115,7 @@ class OrphanPositionReconcileTest extends TestCase
 
         $reconciliationService = app(ReconciliationService::class);
 
-        // Use reconcile with empty exchange positions (positions closed externally) 
+        // Use reconcile with empty exchange positions (positions closed externally)
         $result = $reconciliationService->reconcile([]);
 
         $this->assertIsArray($result);

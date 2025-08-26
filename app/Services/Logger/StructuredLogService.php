@@ -11,7 +11,7 @@ class StructuredLogService
      * Log a structured message with context
      */
     /**
-     * @param array<string, mixed> $context
+     * @param  array<string, mixed>  $context
      */
     public function log(string $channel, string $level, string $message, array $context = []): void
     {
@@ -24,7 +24,7 @@ class StructuredLogService
      * Log trading related events
      */
     /**
-     * @param array<string, mixed> $context
+     * @param  array<string, mixed>  $context
      */
     public function trading(string $message, array $context = []): void
     {
@@ -35,7 +35,7 @@ class StructuredLogService
      * Log AI related events
      */
     /**
-     * @param array<string, mixed> $context
+     * @param  array<string, mixed>  $context
      */
     public function ai(string $message, array $context = []): void
     {
@@ -46,7 +46,7 @@ class StructuredLogService
      * Log risk related events
      */
     /**
-     * @param array<string, mixed> $context
+     * @param  array<string, mixed>  $context
      */
     public function risk(string $message, array $context = []): void
     {
@@ -57,7 +57,7 @@ class StructuredLogService
      * Log lab related events
      */
     /**
-     * @param array<string, mixed> $context
+     * @param  array<string, mixed>  $context
      */
     public function lab(string $message, array $context = []): void
     {
@@ -66,7 +66,8 @@ class StructuredLogService
 
     /**
      * Log with error level
-     * @param array<string, mixed> $context
+     *
+     * @param  array<string, mixed>  $context
      */
     public function error(string $channel, string $message, array $context = []): void
     {
@@ -75,7 +76,8 @@ class StructuredLogService
 
     /**
      * Log with warning level
-     * @param array<string, mixed> $context
+     *
+     * @param  array<string, mixed>  $context
      */
     public function warning(string $channel, string $message, array $context = []): void
     {
@@ -100,7 +102,8 @@ class StructuredLogService
 
     /**
      * Structure the context for better JSON logging
-     * @param array<string, mixed> $context
+     *
+     * @param  array<string, mixed>  $context
      * @return array<string, mixed>
      */
     protected function structureContext(array $context): array

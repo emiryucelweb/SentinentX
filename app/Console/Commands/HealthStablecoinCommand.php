@@ -130,7 +130,7 @@ final class HealthStablecoinCommand extends Command
     }
 
     /**
-     * @param array<string, mixed> $parityTest
+     * @param  array<string, mixed>  $parityTest
      * @return array<string, mixed>
      */
     private function checkDepegRisk(array $parityTest): array

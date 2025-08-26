@@ -14,10 +14,13 @@ final class ManageOpenPositionsRunner
 {
     /** @unused - Placeholder for future functionality */
     private ?object $lock = null;
+
     /** @unused - Placeholder for future functionality */
     private ?object $info = null;
+
     /** @unused - Placeholder for future functionality */
     private ?object $market = null;
+
     /** @unused - Placeholder for future functionality */
     private ?object $consensus = null;
 

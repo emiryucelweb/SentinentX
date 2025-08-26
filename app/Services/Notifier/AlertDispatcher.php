@@ -17,7 +17,7 @@ class AlertDispatcher implements AlertDispatcherInterface
     private const DEDUP_TTL = 120; // 120 seconds deduplication window
 
     /**
-     * @param array<string, mixed> $context
+     * @param  array<string, mixed>  $context
      */
     public function send(
         string $level,
@@ -104,7 +104,8 @@ class AlertDispatcher implements AlertDispatcherInterface
 
     /**
      * Dispatch alert to configured notification channels
-     * @param array<string, mixed> $context
+     *
+     * @param  array<string, mixed>  $context
      * @return array<string, mixed>
      */
     private function dispatchToChannels(string $level, string $service, string $message, array $context): array
@@ -164,8 +165,8 @@ class AlertDispatcher implements AlertDispatcherInterface
      * Dispatch to Telegram
      */
     /**
-     * @param array<string, mixed> $context
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $context
+     * @param  array<string, mixed>  $config
      * @return array<string, mixed>
      */
     private function dispatchToTelegram(string $level, string $service, string $message, array $context, array $config): array

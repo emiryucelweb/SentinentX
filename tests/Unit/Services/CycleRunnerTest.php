@@ -15,27 +15,36 @@ use App\Services\Risk\RiskGuardInterface;
 use App\Services\Trading\PositionSizer;
 use App\Services\Trading\StopCalculator;
 use App\Services\Trading\TradeManager;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Mockery;
+use Tests\TestCase;
 
 class CycleRunnerTest extends TestCase
 {
-
     private CycleRunner $cycleRunner;
 
     // Mocked dependencies
     private $consensusService;
+
     private $marketData;
+
     private $accountService;
+
     private $instrumentService;
+
     private $riskGuard;
+
     private $positionSizer;
+
     private $stopCalculator;
+
     private $tradeManager;
+
     private $fundingGuard;
+
     private $alertDispatcher;
+
     private $lockManager;
+
     private $correlationService;
 
     protected function setUp(): void

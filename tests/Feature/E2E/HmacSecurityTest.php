@@ -34,7 +34,7 @@ class HmacSecurityTest extends TestCase
         $response = $this->withHeaders([
             'X-Signature' => $wrongSignature,
             'X-Timestamp' => $timestamp,
-            'X-Nonce' => 'test-nonce-wrong-' . $timestamp,
+            'X-Nonce' => 'test-nonce-wrong-'.$timestamp,
         ])->getJson($this->endpoint);
 
         $response->assertStatus(401);
@@ -56,7 +56,7 @@ class HmacSecurityTest extends TestCase
         $response = $this->withHeaders([
             'X-Signature' => $signature,
             'X-Timestamp' => $expiredTimestamp,
-            'X-Nonce' => 'test-nonce-expired-' . $expiredTimestamp,
+            'X-Nonce' => 'test-nonce-expired-'.$expiredTimestamp,
         ])->getJson($this->endpoint);
 
         $response->assertStatus(401);
@@ -71,7 +71,7 @@ class HmacSecurityTest extends TestCase
         $this->markTestSkipped('HMAC signature calculation complexity - needs deeper debugging');
     }
 
-    #[Test] 
+    #[Test]
     public function valid_hmac_signature_returns_200_original()
     {
         $this->markTestSkipped('HMAC signature calculation complexity - deferred for later');

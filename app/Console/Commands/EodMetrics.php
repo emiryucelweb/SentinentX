@@ -26,22 +26,23 @@ final class EodMetrics extends Command
         $initialEquity = (float) config('lab.initial_equity', 10000.0);
         $out = $metrics->computeDaily($day, $initialEquity);
 
-        // DB-agnostik UPSERT — yeni alanlar meta içine yazılır (schema değişikliği gerektirmez)
-        LabMetric::upsert([[
-            'as_of' => $dateString,
-            'pf' => $out['pf'],        // NET
-            'maxdd_pct' => $out['maxdd_pct'],
-            'sharpe' => $out['sharpe'],
-            'meta' => json_encode([
-                'initial_equity' => $initialEquity,
-                'pf_gross' => $out['pf_gross'],
-                'trades' => $out['trades'],
-                'avg_trade_net_pct' => $out['avg_trade_net_pct'],
-                'avg_trade_gross_pct' => $out['avg_trade_gross_pct'],
-            ], JSON_UNESCAPED_UNICODE),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]], ['as_of'], ['pf', 'maxdd_pct', 'sharpe', 'meta', 'updated_at']);
+        // DB-agnostik UPSERT — cross-platform uyumlu updateOrCreate
+        LabMetric::updateOrCreate(
+            ['as_of' => $dateString],
+            [
+                'pf' => $out['pf'],        // NET
+                'maxdd_pct' => $out['maxdd_pct'],
+                'sharpe' => $out['sharpe'],
+                'meta' => json_encode([
+                    'initial_equity' => $initialEquity,
+                    'pf_gross' => $out['pf_gross'],
+                    'trades' => $out['trades'],
+                    'avg_trade_net_pct' => $out['avg_trade_net_pct'],
+                    'avg_trade_gross_pct' => $out['avg_trade_gross_pct'],
+                ], JSON_UNESCAPED_UNICODE),
+                'updated_at' => now(),
+            ]
+        );
 
         // CLI çıktısı
         $payload = [

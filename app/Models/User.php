@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\HasTenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -38,9 +39,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory;
-
-    use Notifiable;
+    use HasFactory, HasTenantScope, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -110,5 +109,38 @@ class User extends Authenticatable
     public function scopeByRole(\Illuminate\Database\Eloquent\Builder $query, string $role): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('role', $role);
+    }
+
+    /**
+     * Scope to get users with optimized loading
+     */
+    public function scopeWithOptimizedLoading($query)
+    {
+        return $query->with([
+            'tenant:id,name,active,settings',
+            'subscriptions' => function ($query) {
+                $query->where('status', 'active')
+                    ->select('id', 'user_id', 'plan', 'status', 'ends_at');
+            },
+        ]);
+    }
+
+    /**
+     * Get active subscription efficiently
+     */
+    public function activeSubscription()
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where('ends_at', '>', now())
+            ->first();
+    }
+
+    /**
+     * Get user trades with optimized loading
+     */
+    public function trades()
+    {
+        return $this->hasMany(Trade::class, 'tenant_id', 'tenant_id');
     }
 }

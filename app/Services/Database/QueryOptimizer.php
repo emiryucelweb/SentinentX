@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Database;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -18,9 +17,6 @@ class QueryOptimizer
 
     /**
      * Optimized query for active trades with eager loading
-     */
-    /**
-     * @return \Illuminate\Database\Query\Builder
      */
     public function getActiveTrades(?string $tenant = null): \Illuminate\Database\Query\Builder
     {
@@ -52,6 +48,7 @@ class QueryOptimizer
 
     /**
      * Performance metrics with database-level aggregation
+     *
      * @return array<string, mixed>
      */
     public function getPerformanceMetrics(?string $tenant = null, int $days = 30): array

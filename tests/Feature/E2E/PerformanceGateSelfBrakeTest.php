@@ -50,7 +50,7 @@ class PerformanceGateSelfBrakeTest extends TestCase
 
         $this->assertIsArray($metrics);
         $this->assertArrayHasKey('profit_factor', $metrics);
-        
+
         // With only 3 trades (< 10 minimum), should return insufficient_data=true
         if ($metrics['insufficient_data'] ?? false) {
             $this->assertEquals(0.0, $metrics['profit_factor']); // Insufficient data returns 0.0

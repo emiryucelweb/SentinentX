@@ -27,16 +27,27 @@ class HmacAuthMiddleware
             ], 401);
         }
 
-        // Check timestamp to prevent replay attacks (5 minute window)
+        // Check timestamp to prevent replay attacks (configurable window with jitter tolerance)
         $now = time();
         $requestTime = (int) $timestamp;
-        if (abs($now - $requestTime) > 300) {
+        $maxAge = config('security.hmac_ttl', 60); // Default 60 seconds, configurable
+        $jitterTolerance = 5; // Allow 5 seconds clock drift
+
+        if (abs($now - $requestTime) > ($maxAge + $jitterTolerance)) {
+            Log::warning('HMAC timestamp expired', [
+                'request_time' => $requestTime,
+                'current_time' => $now,
+                'age_seconds' => abs($now - $requestTime),
+                'max_allowed' => $maxAge + $jitterTolerance,
+            ]);
+
             return response()->json([
                 'error' => 'Request timestamp expired',
+                'max_age_seconds' => $maxAge,
             ], 401);
         }
 
-        // Nonce replay-cache check (Redis TTL=300s)
+        // Nonce replay-cache check (Redis TTL matches HMAC TTL)
         $nonce = $request->header('X-Nonce');
         if (! $nonce) {
             return response()->json([
@@ -51,13 +62,13 @@ class HmacAuthMiddleware
             ], 401);
         }
 
-        // Store nonce in Redis with TTL=300s
-        \Illuminate\Support\Facades\Redis::setex($nonceKey, 300, $timestamp);
+        // Store nonce in Redis with configurable TTL
+        \Illuminate\Support\Facades\Redis::setex($nonceKey, $maxAge + $jitterTolerance, $timestamp);
 
         Log::info('HMAC nonce stored in replay cache', [
             'nonce' => $nonce,
             'cache_key' => $nonceKey,
-            'ttl_seconds' => 300,
+            'ttl_seconds' => $maxAge + $jitterTolerance,
             'timestamp' => $timestamp,
         ]);
 

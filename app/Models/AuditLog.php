@@ -64,7 +64,7 @@ class AuditLog extends Model
      * Scope for filtering by action type
      */
     /**
-     * @param \Illuminate\Database\Eloquent\Builder<\App\Models\AuditLog> $query
+     * @param  \Illuminate\Database\Eloquent\Builder<\App\Models\AuditLog>  $query
      * @return \Illuminate\Database\Eloquent\Builder<\App\Models\AuditLog>
      */
     public function scopeByAction($query, string $action)
@@ -76,7 +76,7 @@ class AuditLog extends Model
      * Scope for filtering by resource type
      */
     /**
-     * @param \Illuminate\Database\Eloquent\Builder<\App\Models\AuditLog> $query
+     * @param  \Illuminate\Database\Eloquent\Builder<\App\Models\AuditLog>  $query
      * @return \Illuminate\Database\Eloquent\Builder<\App\Models\AuditLog>
      */
     public function scopeByResourceType($query, string $resourceType)
@@ -88,9 +88,9 @@ class AuditLog extends Model
      * Scope for filtering by date range
      */
     /**
-     * @param \Illuminate\Database\Eloquent\Builder<\App\Models\AuditLog> $query
-     * @param \Carbon\Carbon|string|null $startDate
-     * @param \Carbon\Carbon|string|null $endDate
+     * @param  \Illuminate\Database\Eloquent\Builder<\App\Models\AuditLog>  $query
+     * @param  \Carbon\Carbon|string|null  $startDate
+     * @param  \Carbon\Carbon|string|null  $endDate
      * @return \Illuminate\Database\Eloquent\Builder<\App\Models\AuditLog>
      */
     public function scopeByDateRange($query, $startDate, $endDate)

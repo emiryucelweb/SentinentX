@@ -22,7 +22,7 @@
         "giorgiosironi/eris": "^1.0",
         "infection/infection": "*",
         "larastan/larastan": "^3.6",
-        "laravel/pint": "^1.0",
+        "laravel/pint": "^1.24",
         "laravel/sail": "^1.18",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^8.0",

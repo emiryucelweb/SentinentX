@@ -17,7 +17,7 @@ class StablecoinDepegTest extends TestCase
     public function usdt_depeg_below_98_cents_blocks_trading()
     {
         $this->markTestSkipped('HTTP mock not intercepting StablecoinHealthCheck - complex service dependency');
-        
+
         // Original test code below (disabled)
         // Mock USDT price at 0.97 (depegged) - use wildcard pattern
         Http::fake([
@@ -48,7 +48,7 @@ class StablecoinDepegTest extends TestCase
     public function usdc_depeg_above_102_cents_blocks_trading()
     {
         $this->markTestSkipped('HTTP mock not intercepting StablecoinHealthCheck - complex service dependency');
-        
+
         // Original test code below (disabled)
         // Mock USDC price at 1.025 (depegged high)
         Http::fake([

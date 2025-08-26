@@ -73,4 +73,67 @@ final class FakeBybitClient implements ExchangeClientInterface
     {
         // Mock method for testing
     }
+
+    public function getInstrumentInfo(string $symbol): array
+    {
+        return $this->responses['getInstrumentInfo'] ?? [
+            'retCode' => 0,
+            'retMsg' => 'OK',
+            'result' => [
+                'category' => 'linear',
+                'symbol' => $symbol,
+                'contractType' => 'LinearPerpetual',
+                'status' => 'Trading',
+                'baseCoin' => 'BTC',
+                'quoteCoin' => 'USDT',
+                'launchTime' => '1585526400000',
+                'deliveryTime' => '0',
+                'deliveryFeeRate' => '',
+                'priceScale' => '2',
+                'leverageFilter' => [
+                    'minLeverage' => '1',
+                    'maxLeverage' => '100.00',
+                    'leverageStep' => '0.01'
+                ],
+                'priceFilter' => [
+                    'minPrice' => '0.10',
+                    'maxPrice' => '199999.80',
+                    'tickSize' => '0.10'
+                ],
+                'lotSizeFilter' => [
+                    'maxOrderQty' => '100.000',
+                    'maxMktOrderQty' => '100.000',
+                    'minOrderQty' => '0.001',
+                    'qtyStep' => '0.001',
+                    'postOnlyMaxOrderQty' => '1000.000',
+                    'minNotionalValue' => '5'
+                ]
+            ]
+        ];
+    }
+
+    public function closeReduceOnlyMarket(string $symbol, string $side, string $qty, string $orderLinkId): array
+    {
+        return $this->responses['closeReduceOnlyMarket'] ?? [
+            'retCode' => 0,
+            'retMsg' => 'OK',
+            'result' => [
+                'orderId' => 'close-' . uniqid(),
+                'orderLinkId' => $orderLinkId,
+                'symbol' => $symbol,
+                'side' => $side,
+                'orderType' => 'Market',
+                'qty' => $qty,
+                'reduceOnly' => true,
+                'timeInForce' => 'IOC',
+                'orderStatus' => 'Filled',
+                'avgPrice' => '43250.00',
+                'cumExecQty' => $qty,
+                'cumExecValue' => (float)$qty * 43250.00,
+                'cumExecFee' => '0.00432',
+                'createdTime' => now()->timestamp * 1000,
+                'updatedTime' => now()->timestamp * 1000
+            ]
+        ];
+    }
 }

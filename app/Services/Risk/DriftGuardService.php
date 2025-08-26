@@ -31,7 +31,7 @@ final class DriftGuardService
      * @return array ['ok' => bool, 'drift_pct' => float, 'risk_level' => string, 'actions' => array]
      */
     /**
-     * @param array<string, mixed> $opts
+     * @param  array<string, mixed>  $opts
      * @return array<string, mixed>
      */
     public function checkPositionDrift(

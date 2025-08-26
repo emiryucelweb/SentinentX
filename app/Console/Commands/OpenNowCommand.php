@@ -87,7 +87,7 @@ final class OpenNowCommand extends Command
      * Snapshot JSON schema validation
      */
     /**
-     * @param array<string, mixed> $snap
+     * @param  array<string, mixed>  $snap
      * @return array<string, mixed>
      */
     private function validateSnapshotSchema(array $snap): array

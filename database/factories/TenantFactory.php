@@ -13,18 +13,19 @@ class TenantFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => Str::uuid(),
             'name' => $this->faker->company(),
-            'slug' => $this->faker->slug(),
-            'plan' => $this->faker->randomElement(['starter', 'pro', 'enterprise']),
-            'limits' => json_encode([
-                'max_trades_per_day' => $this->faker->numberBetween(10, 1000),
-                'max_positions' => $this->faker->numberBetween(5, 50),
-                'max_api_calls_per_minute' => $this->faker->numberBetween(60, 600),
+            'domain' => $this->faker->domainName(),
+            'database' => null,
+            'settings' => json_encode([
+                'plan' => $this->faker->randomElement(['starter', 'pro', 'enterprise']),
+                'limits' => [
+                    'max_trades_per_day' => $this->faker->numberBetween(10, 1000),
+                    'max_positions' => $this->faker->numberBetween(5, 50),
+                    'max_api_calls_per_minute' => $this->faker->numberBetween(60, 600),
+                ],
             ]),
-            'status' => 'active',
-            'created_at' => now(),
-            'updated_at' => now(),
+            'active' => true,
+            'meta' => null,
         ];
     }
 }

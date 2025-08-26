@@ -22,7 +22,7 @@ class LabMetricTest extends TestCase
     {
         $labMetric = new LabMetric;
 
-        $expectedFillable = ['as_of', 'pf', 'maxdd_pct', 'sharpe', 'meta'];
+        $expectedFillable = ['lab_run_id', 'as_of', 'equity', 'pf', 'maxdd_pct', 'sharpe', 'win_rate', 'avg_trade_pct', 'meta'];
 
         $this->assertSame($expectedFillable, $labMetric->getFillable());
     }

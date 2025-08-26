@@ -151,7 +151,7 @@ class GdprService
      * Update user consent preferences
      */
     /**
-     * @param array<string, mixed> $preferences
+     * @param  array<string, mixed>  $preferences
      * @return array<string, mixed>
      */
     public function updateConsentPreferences(int $userId, array $preferences): array
@@ -181,7 +181,7 @@ class GdprService
      * Request data correction
      */
     /**
-     * @param array<string, mixed> $correctionData
+     * @param  array<string, mixed>  $correctionData
      * @return array<string, mixed>
      */
     public function requestDataCorrection(int $userId, array $correctionData): array

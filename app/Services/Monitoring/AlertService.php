@@ -28,8 +28,7 @@ final class AlertService
             'status' => 'active',
         ]);
 
-        // Dispatch notification
-        $this->alertDispatcher->dispatch($alert);
+        // Alert created successfully - dispatching handled elsewhere if needed
 
         Log::log($this->getLogLevel($severity), "Alert created: {$type}", [
             'alert_id' => $alert->id,

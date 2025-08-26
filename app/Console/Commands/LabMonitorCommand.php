@@ -74,7 +74,7 @@ final class LabMonitorCommand extends Command
     }
 
     /**
-     * @param array<string, mixed> $result
+     * @param  array<string, mixed>  $result
      */
     private function displayRunStatus(array $result): void
     {
@@ -116,8 +116,8 @@ final class LabMonitorCommand extends Command
     }
 
     /**
-     * @param mixed $run
-     * @param array<string, mixed> $result
+     * @param  mixed  $run
+     * @param  array<string, mixed>  $result
      */
     private function displayRunSummary($run, array $result): void
     {
