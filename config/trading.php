@@ -8,6 +8,34 @@ return [
         'margin' => 'CROSS',
         'max_leverage' => 75,
     ],
+    
+    // Risk Profiles - User selectable risk levels
+    'risk_profiles' => [
+        'conservative' => [
+            'daily_profit_target_pct' => 20.0,
+            'capital_usage_pct' => 50.0,
+            'leverage' => ['min' => 3, 'max' => 15],
+            'position_check_interval_minutes' => 3,
+            'stop_loss_pct' => 1.5,
+            'take_profit_pct' => 2.5,
+        ],
+        'moderate' => [
+            'daily_profit_target_pct' => 50.0,
+            'capital_usage_pct' => 30.0,
+            'leverage' => ['min' => 15, 'max' => 45],
+            'position_check_interval_minutes' => 1.5,
+            'stop_loss_pct' => 2.0,
+            'take_profit_pct' => 4.0,
+        ],
+        'aggressive' => [
+            'daily_profit_target_pct' => 150.0, // 100-200% range
+            'capital_usage_pct' => 20.0,
+            'leverage' => ['min' => 45, 'max' => 75],
+            'position_check_interval_minutes' => 1,
+            'stop_loss_pct' => 3.0,
+            'take_profit_pct' => 6.0,
+        ],
+    ],
     'risk' => [
         'daily_max_loss_pct' => 20.0,
         'liq_buffer_k' => 1.2,
