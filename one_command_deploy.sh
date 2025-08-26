@@ -234,9 +234,9 @@ fi
 
 # Read generated passwords from infrastructure installation
 CONFIG_PATHS=(
+    "/var/log/sentinentx_install_config"
     "/tmp/sentinentx_install/config"
     "/tmp/sentinentx_config"
-    "/var/log/sentinentx_install_config"
 )
 
 CONFIG_LOADED=false
