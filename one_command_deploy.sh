@@ -49,29 +49,38 @@ REPO_URL="https://github.com/emiryucelweb/SentinentX.git"
 INSTALL_DIR="/var/www/sentinentx"
 LOG_FILE="/tmp/sentinentx_deploy.log"
 
-# Enhanced logging
+# Enhanced logging with fallback
 log_info() {
-    echo -e "${GREEN}[INFO]${NC} $1" | tee -a "$LOG_FILE"
+    echo -e "${GREEN}[INFO]${NC} $1" | tee -a "$LOG_FILE" 2>/dev/null || echo -e "${GREEN}[INFO]${NC} $1"
 }
 
 log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1" | tee -a "$LOG_FILE"
+    echo -e "${YELLOW}[WARN]${NC} $1" | tee -a "$LOG_FILE" 2>/dev/null || echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1" | tee -a "$LOG_FILE"
+    echo -e "${RED}[ERROR]${NC} $1" | tee -a "$LOG_FILE" 2>/dev/null || echo -e "${RED}[ERROR]${NC} $1"
 }
 
 log_step() {
-    echo -e "${BLUE}[STEP]${NC} $1" | tee -a "$LOG_FILE"
+    echo -e "${BLUE}[STEP]${NC} $1" | tee -a "$LOG_FILE" 2>/dev/null || echo -e "${BLUE}[STEP]${NC} $1"
 }
 
 log_success() {
-    echo -e "${CYAN}[SUCCESS]${NC} $1" | tee -a "$LOG_FILE"
+    echo -e "${CYAN}[SUCCESS]${NC} $1" | tee -a "$LOG_FILE" 2>/dev/null || echo -e "${CYAN}[SUCCESS]${NC} $1"
 }
 
-# Create log file
-touch "$LOG_FILE"
+# Create log file with proper permissions
+mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
+touch "$LOG_FILE" 2>/dev/null || {
+    # Fallback to /var/log if /tmp fails
+    LOG_FILE="/var/log/sentinentx_deploy.log"
+    touch "$LOG_FILE" 2>/dev/null || {
+        # Final fallback to home directory
+        LOG_FILE="$HOME/sentinentx_deploy.log"
+        touch "$LOG_FILE"
+    }
+}
 
 # Header
 echo "🚀 SentinentX One-Command Complete Deployment"
@@ -287,6 +296,127 @@ sed -i "s/generate_with_openssl_rand_hex_32/$HMAC_SECRET/" .env
 
 # Set TESTNET mode for 15-day testing
 sed -i "s/BYBIT_TESTNET=false/BYBIT_TESTNET=true/" .env
+
+# Interactive Risk Profile Selection
+echo ""
+echo "🎯 RISK PROFILE SELECTION"
+echo "========================="
+echo ""
+echo "📊 Available Risk Profiles:"
+echo ""
+echo "1. 🟢 CONSERVATIVE (Low Risk)"
+echo "   • Daily Target: 20% profit"
+echo "   • Capital Usage: 50% of account"
+echo "   • Leverage: 3-15x"
+echo "   • Position Check: Every 3 minutes"
+echo "   • Recommended for: Stable, safe growth"
+echo ""
+echo "2. 🟡 MODERATE (Medium Risk)"
+echo "   • Daily Target: 50% profit"
+echo "   • Capital Usage: 30% of account"
+echo "   • Leverage: 15-45x"
+echo "   • Position Check: Every 1.5 minutes"
+echo "   • Recommended for: Balanced approach"
+echo ""
+echo "3. 🔴 AGGRESSIVE (High Risk)"
+echo "   • Daily Target: 100-200% profit"
+echo "   • Capital Usage: 20% of account"
+echo "   • Leverage: 45-75x"
+echo "   • Position Check: Every 1 minute"
+echo "   • Recommended for: Maximum growth potential"
+echo ""
+echo "4. 🚀 ALL PROFILES (Expert Mode)"
+echo "   • Run all 3 profiles simultaneously"
+echo "   • Portfolio diversification"
+echo "   • Maximum market coverage"
+echo ""
+
+while true; do
+    read -p "Select Risk Profile [1-4]: " risk_choice
+    case $risk_choice in
+        1)
+            RISK_PROFILE="conservative"
+            log_success "Selected: CONSERVATIVE Risk Profile"
+            break
+            ;;
+        2)
+            RISK_PROFILE="moderate"
+            log_success "Selected: MODERATE Risk Profile"
+            break
+            ;;
+        3)
+            RISK_PROFILE="aggressive"
+            log_success "Selected: AGGRESSIVE Risk Profile"
+            break
+            ;;
+        4)
+            RISK_PROFILE="all"
+            log_success "Selected: ALL PROFILES (Expert Mode)"
+            break
+            ;;
+        *)
+            echo "❌ Invalid choice. Please select 1, 2, 3, or 4."
+            ;;
+    esac
+done
+
+# Set risk profile in environment
+sed -i "s/RISK_PROFILE=moderate/RISK_PROFILE=$RISK_PROFILE/" .env
+
+# Configure Comprehensive Logging
+echo ""
+echo "📝 LOGGING CONFIGURATION"
+echo "========================"
+echo ""
+echo "🎯 Do you want comprehensive AI decision logging?"
+echo "This will log ALL AI decisions, entry/exit prices, reasons, PnL, etc."
+echo ""
+echo "1. ✅ YES - Full Logging (Recommended for 15-day test)"
+echo "   • AI decision logs with confidence scores"
+echo "   • Position entry/exit logs with exact prices"
+echo "   • PnL tracking with detailed breakdowns"
+echo "   • Reason explanations for each decision"
+echo "   • Complete backtest data collection"
+echo ""
+echo "2. ❌ NO - Minimal Logging"
+echo "   • Basic operation logs only"
+echo "   • Essential error logging"
+echo "   • Reduced disk usage"
+echo ""
+
+while true; do
+    read -p "Enable comprehensive logging? [1-2]: " log_choice
+    case $log_choice in
+        1)
+            ENABLE_COMPREHENSIVE_LOGS="true"
+            log_success "Comprehensive logging ENABLED"
+            break
+            ;;
+        2)
+            ENABLE_COMPREHENSIVE_LOGS="false"
+            log_success "Minimal logging selected"
+            break
+            ;;
+        *)
+            echo "❌ Invalid choice. Please select 1 or 2."
+            ;;
+    esac
+done
+
+# Set logging configuration
+sed -i "s/ENABLE_COMPREHENSIVE_LOGS=false/ENABLE_COMPREHENSIVE_LOGS=$ENABLE_COMPREHENSIVE_LOGS/" .env
+
+# Configure log levels based on choice
+if [[ "$ENABLE_COMPREHENSIVE_LOGS" == "true" ]]; then
+    sed -i "s/LOG_LEVEL=error/LOG_LEVEL=debug/" .env
+    sed -i "s/AI_DECISION_LOGGING=false/AI_DECISION_LOGGING=true/" .env
+    sed -i "s/POSITION_LOGGING=false/POSITION_LOGGING=true/" .env
+    sed -i "s/PNL_DETAILED_LOGGING=false/PNL_DETAILED_LOGGING=true/" .env
+    log_info "Configured for comprehensive logging and backtest data collection"
+else
+    sed -i "s/LOG_LEVEL=debug/LOG_LEVEL=warning/" .env
+    log_info "Configured for minimal logging"
+fi
 
 # Set secure permissions
 chown www-data:www-data .env
