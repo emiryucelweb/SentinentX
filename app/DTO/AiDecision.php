@@ -126,7 +126,7 @@ final class AiDecision
             'SELL', 'SELL_SHORT', 'SHORT_SELL', 'GO_SHORT', 'SHORT_POSITION' => 'SHORT',
             'WAIT', 'PASS', 'SKIP', 'STAY_PUT', 'NEUTRAL' => 'HOLD',
             'EXIT', 'CLOSE_POSITION', 'LIQUIDATE', 'CLOSE_ALL' => 'CLOSE',
-            'NO_ACTION', 'STAY', 'ABSTAIN', 'AVOID' => 'NO_TRADE',
+            'NO_ACTION', 'STAY', 'ABSTAIN', 'AVOID', 'NONE', 'NONE_ACTION' => 'NO_TRADE',
 
             // Fallback
             default => 'HOLD'

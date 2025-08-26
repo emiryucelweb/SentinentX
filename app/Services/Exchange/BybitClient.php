@@ -61,6 +61,38 @@ final class BybitClient implements ExchangeClientInterface
     }
 
     /**
+     * Get ticker information
+     *
+     * @return array<string, mixed>
+     */
+    public function getTicker(string $symbol): array
+    {
+        $params = [
+            'category' => 'linear',
+            'symbol' => $symbol,
+        ];
+        
+        return $this->makeHttpRequest('GET', '/v5/market/tickers', $params, []);
+    }
+
+    /**
+     * Get kline/candlestick data
+     *
+     * @return array<string, mixed>
+     */
+    public function getKline(string $symbol, string $interval = '1', int $limit = 1): array
+    {
+        $params = [
+            'category' => 'linear',
+            'symbol' => $symbol,
+            'interval' => $interval,
+            'limit' => $limit,
+        ];
+        
+        return $this->makeHttpRequest('GET', '/v5/market/kline', $params, []);
+    }
+
+    /**
      * KALDIRAÇ AYARLAR. BU, EKSİK OLAN VE SORUNU ÇÖZECEK OLAN METODDUR.
      */
     /**

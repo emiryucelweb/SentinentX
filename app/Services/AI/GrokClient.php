@@ -71,14 +71,13 @@ final class GrokClient implements AiProvider
             throw new \RuntimeException('Grok: geçersiz JSON çıktı');
         }
 
-        return new AiDecision(
-            action: $data['action'] ?? $data['decision'] ?? 'NO_TRADE',
-            confidence: $data['confidence'] ?? 0,
-            stopLoss: $data['stop_loss'] ?? 0.0,
-            takeProfit: $data['take_profit'] ?? 0.0,
-            reason: $data['reason'] ?? 'No reason provided',
-            qtyDeltaFactor: null,
-            raw: $data // Keep raw response for leverage extraction
-        );
+        return AiDecision::fromArray([
+            'action' => $data['action'] ?? $data['decision'] ?? 'NO_TRADE',
+            'confidence' => $data['confidence'] ?? 0,
+            'stop_loss' => $data['stop_loss'] ?? 0.0,
+            'take_profit' => $data['take_profit'] ?? 0.0,
+            'reason' => $data['reason'] ?? 'No reason provided',
+            'raw' => $data // Keep raw response for leverage extraction
+        ]);
     }
 }
