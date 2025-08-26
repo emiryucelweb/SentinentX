@@ -100,6 +100,51 @@ create_rollback() {
 }
 
 # ================================
+# VDS RESET AND CLEANUP
+# ================================
+
+reset_vds() {
+    log_header "🔄 VDS RESET - COMPLETE SYSTEM CLEANUP"
+    
+    log_step "Stopping all SentinentX services..."
+    systemctl stop sentinentx 2>/dev/null || true
+    systemctl stop nginx 2>/dev/null || true
+    systemctl stop postgresql 2>/dev/null || true
+    systemctl stop redis-server 2>/dev/null || true
+    systemctl stop php8.3-fpm 2>/dev/null || true
+    
+    log_step "Removing SentinentX project directory..."
+    rm -rf /var/www/sentinentx 2>/dev/null || true
+    rm -rf /var/www/html 2>/dev/null || true
+    
+    log_step "Removing systemd service files..."
+    rm -f /etc/systemd/system/sentinentx.service 2>/dev/null || true
+    systemctl daemon-reload
+    
+    log_step "Removing nginx configuration..."
+    rm -f /etc/nginx/sites-available/sentinentx 2>/dev/null || true
+    rm -f /etc/nginx/sites-enabled/sentinentx 2>/dev/null || true
+    rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
+    
+    log_step "Cleaning up logs..."
+    rm -f /var/log/sentinentx* 2>/dev/null || true
+    rm -f /tmp/sentinentx* 2>/dev/null || true
+    
+    log_step "Resetting PostgreSQL database..."
+    sudo -u postgres psql -c "DROP DATABASE IF EXISTS sentinentx;" 2>/dev/null || true
+    sudo -u postgres psql -c "DROP USER IF EXISTS sentinentx;" 2>/dev/null || true
+    
+    log_step "Flushing Redis cache..."
+    redis-cli FLUSHALL 2>/dev/null || true
+    
+    log_step "Cleaning up temp files..."
+    rm -rf /tmp/composer* 2>/dev/null || true
+    rm -rf /tmp/npm* 2>/dev/null || true
+    
+    log_success "✅ VDS completely reset and ready for fresh installation!"
+}
+
+# ================================
 # API KEY VALIDATION
 # ================================
 
@@ -1004,6 +1049,7 @@ main() {
     # Execute deployment steps
     validate_api_keys
     validate_system
+    reset_vds
     reset_system
     install_packages
     configure_postgresql
