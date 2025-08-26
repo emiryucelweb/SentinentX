@@ -428,18 +428,25 @@ install_nginx() {
     systemctl stop apache2 2>/dev/null || true
     systemctl disable apache2 2>/dev/null || true
     
-    # Install nginx with enhanced checks
+    # Install nginx with enhanced checks and full package set
     log_debug "Installing nginx package..."
-    if ! retry_command $MAX_RETRIES $RETRY_DELAY "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends nginx"; then
-        log_error "Failed to install nginx package"
+    
+    # First try: Full nginx package
+    if ! retry_command $MAX_RETRIES $RETRY_DELAY "DEBIAN_FRONTEND=noninteractive apt-get install -y nginx"; then
+        log_warn "Full nginx package failed, trying minimal installation..."
         
-        # Try alternative installation method
-        log_info "Trying alternative nginx installation..."
-        DEBIAN_FRONTEND=noninteractive apt-get install -y nginx-core nginx-common
-        
-        if ! command -v nginx &> /dev/null; then
-            log_error "Nginx installation completely failed"
-            exit 1
+        # Second try: Core packages only
+        if ! retry_command $MAX_RETRIES $RETRY_DELAY "DEBIAN_FRONTEND=noninteractive apt-get install -y nginx-core nginx-common"; then
+            log_warn "Core packages failed, trying individual installation..."
+            
+            # Third try: Individual packages
+            DEBIAN_FRONTEND=noninteractive apt-get install -y nginx-core || true
+            DEBIAN_FRONTEND=noninteractive apt-get install -y nginx-common || true
+            
+            if ! command -v nginx &> /dev/null; then
+                log_error "All nginx installation methods failed"
+                exit 1
+            fi
         fi
     fi
     
@@ -449,8 +456,133 @@ install_nginx() {
         exit 1
     fi
     
-    # Ensure nginx directories exist and fix configuration issues
-    mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
+    # Ensure nginx directories and main config exist
+    mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled /etc/nginx/conf.d /var/log/nginx
+    
+    # Create main nginx.conf if missing
+    if [[ ! -f "/etc/nginx/nginx.conf" ]]; then
+        log_warn "Creating missing nginx.conf..."
+        cat > /etc/nginx/nginx.conf << 'NGINXMAINEOF'
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+include /etc/nginx/modules-enabled/*.conf;
+
+events {
+    worker_connections 768;
+    # multi_accept on;
+}
+
+http {
+    ##
+    # Basic Settings
+    ##
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+    # server_tokens off;
+
+    # server_names_hash_bucket_size 64;
+    # server_name_in_redirect off;
+
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    ##
+    # SSL Settings
+    ##
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3; # Dropping SSLv3, ref: POODLE
+    ssl_prefer_server_ciphers on;
+
+    ##
+    # Logging Settings
+    ##
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+
+    ##
+    # Gzip Settings
+    ##
+    gzip on;
+
+    ##
+    # Virtual Host Configs
+    ##
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+}
+NGINXMAINEOF
+    fi
+    
+    # Create modules-enabled directory and basic mime.types
+    mkdir -p /etc/nginx/modules-enabled
+    
+    if [[ ! -f "/etc/nginx/mime.types" ]]; then
+        cat > /etc/nginx/mime.types << 'MIMEOF'
+types {
+    text/html                             html htm shtml;
+    text/css                              css;
+    text/xml                              xml;
+    image/gif                             gif;
+    image/jpeg                            jpeg jpg;
+    application/javascript                js;
+    application/atom+xml                  atom;
+    application/rss+xml                   rss;
+    text/plain                            txt;
+    image/png                             png;
+    image/x-icon                          ico;
+    image/x-jng                           jng;
+    image/wbmp                            wbmp;
+    application/java-archive              jar war ear;
+    application/json                      json;
+    application/mac-binhex40              hqx;
+    application/msword                    doc;
+    application/pdf                       pdf;
+    application/postscript                ps eps ai;
+    application/rtf                       rtf;
+    application/vnd.ms-excel              xls;
+    application/vnd.ms-powerpoint         ppt;
+    application/vnd.wap.wmlc              wmlc;
+    application/vnd.google-earth.kml+xml  kml;
+    application/vnd.google-earth.kmz      kmz;
+    application/x-7z-compressed           7z;
+    application/x-cocoa                   cco;
+    application/x-java-archive-diff       jardiff;
+    application/x-java-jnlp-file          jnlp;
+    application/x-makeself                run;
+    application/x-perl                    pl pm;
+    application/x-pilot                   prc pdb;
+    application/x-rar-compressed          rar;
+    application/x-redhat-package-manager  rpm;
+    application/x-sea                     sea;
+    application/x-shockwave-flash         swf;
+    application/x-stuffit                 sit;
+    application/x-tcl                     tcl tk;
+    application/x-x509-ca-cert            der pem crt;
+    application/x-xpinstall               xpi;
+    application/xhtml+xml                 xhtml;
+    application/zip                       zip;
+    audio/midi                            mid midi kar;
+    audio/mpeg                            mp3;
+    audio/ogg                             ogg;
+    audio/x-m4a                           m4a;
+    audio/x-realaudio                     ra;
+    video/3gpp                            3gpp 3gp;
+    video/mp4                             mp4;
+    video/mpeg                            mpeg mpg;
+    video/quicktime                       mov;
+    video/webm                            webm;
+    video/x-flv                           flv;
+    video/x-m4v                           m4v;
+    video/x-mng                           mng;
+    video/x-ms-asf                        asx asf;
+    video/x-ms-wmv                        wmv;
+    video/x-msvideo                       avi;
+}
+MIMEOF
+    fi
     
     # Fix any potential configuration issues
     nginx -t 2>/dev/null || {
