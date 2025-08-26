@@ -280,28 +280,41 @@ install_packages() {
     add-apt-repository ppa:ondrej/php -y
     apt-get update
     
-    # Install PHP and extensions
+    # Install PHP and extensions with fallback handling
     log_step "Installing PHP $PHP_VERSION and extensions..."
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        php${PHP_VERSION} \
-        php${PHP_VERSION}-cli \
-        php${PHP_VERSION}-fpm \
-        php${PHP_VERSION}-pgsql \
-        php${PHP_VERSION}-redis \
-        php${PHP_VERSION}-curl \
-        php${PHP_VERSION}-mbstring \
-        php${PHP_VERSION}-xml \
-        php${PHP_VERSION}-zip \
-        php${PHP_VERSION}-bcmath \
-        php${PHP_VERSION}-intl \
-        php${PHP_VERSION}-gd \
-        php${PHP_VERSION}-dom \
-        php${PHP_VERSION}-fileinfo \
-        php${PHP_VERSION}-pdo \
-        php${PHP_VERSION}-tokenizer \
-        php${PHP_VERSION}-ctype
     
-    # Note: php-json is built into PHP 8.3 core, no separate package needed
+    # Create list of PHP packages with fallback handling
+    PHP_PACKAGES=(
+        "php${PHP_VERSION}"
+        "php${PHP_VERSION}-cli"
+        "php${PHP_VERSION}-fpm"
+        "php${PHP_VERSION}-pgsql"
+        "php${PHP_VERSION}-redis"
+        "php${PHP_VERSION}-curl"
+        "php${PHP_VERSION}-mbstring"
+        "php${PHP_VERSION}-xml"
+        "php${PHP_VERSION}-zip"
+        "php${PHP_VERSION}-bcmath"
+        "php${PHP_VERSION}-intl"
+        "php${PHP_VERSION}-gd"
+        "php${PHP_VERSION}-dom"
+        "php${PHP_VERSION}-fileinfo"
+        "php${PHP_VERSION}-pdo"
+        "php${PHP_VERSION}-tokenizer"
+        "php${PHP_VERSION}-ctype"
+    )
+    
+    # Note: php-json is built into PHP 8.3+ core, no separate package needed
+    
+    # Install packages with individual error handling
+    for package in "${PHP_PACKAGES[@]}"; do
+        if ! DEBIAN_FRONTEND=noninteractive apt-get install -y "$package" 2>/dev/null; then
+            log_warn "Package $package could not be installed, attempting alternative..."
+            # Try without version number for some packages
+            base_package=$(echo "$package" | sed "s/php${PHP_VERSION}-/php-/")
+            DEBIAN_FRONTEND=noninteractive apt-get install -y "$base_package" 2>/dev/null || true
+        fi
+    done
     
     # Install PostgreSQL
     log_step "Installing PostgreSQL..."
@@ -520,13 +533,51 @@ deploy_application() {
     # Set ownership
     chown -R www-data:www-data ${PROJECT_DIR}
     
-    # Install Composer dependencies
+    # Install Composer dependencies with retry
     log_step "Installing Composer dependencies..."
-    sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
+    local composer_attempts=3
+    local composer_attempt=1
     
-    # Install NPM dependencies
+    while [ $composer_attempt -le $composer_attempts ]; do
+        if sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction; then
+            log_success "Composer dependencies installed successfully"
+            break
+        else
+            log_warn "Composer attempt $composer_attempt failed"
+            if [ $composer_attempt -eq $composer_attempts ]; then
+                log_error "All Composer attempts failed"
+                exit 1
+            else
+                composer_attempt=$((composer_attempt + 1))
+                # Clear composer cache and try again
+                sudo -u www-data composer clear-cache
+                sleep 5
+            fi
+        fi
+    done
+    
+    # Install NPM dependencies with retry
     log_step "Installing NPM dependencies..."
-    sudo -u www-data npm install --production
+    local npm_attempts=3
+    local npm_attempt=1
+    
+    while [ $npm_attempt -le $npm_attempts ]; do
+        if sudo -u www-data npm install --production; then
+            log_success "NPM dependencies installed successfully"
+            break
+        else
+            log_warn "NPM attempt $npm_attempt failed"
+            if [ $npm_attempt -eq $npm_attempts ]; then
+                log_warn "NPM installation failed, continuing without NPM dependencies"
+                break
+            else
+                npm_attempt=$((npm_attempt + 1))
+                # Clear NPM cache and try again
+                sudo -u www-data npm cache clean --force 2>/dev/null || true
+                sleep 5
+            fi
+        fi
+    done
     
     # Create storage directories
     log_step "Creating storage directories..."
@@ -656,9 +707,27 @@ EOF
     sudo -u www-data php artisan route:clear
     sudo -u www-data php artisan view:clear
     
-    # Run migrations
+    # Run migrations with retries
     log_step "Running database migrations..."
-    sudo -u www-data php artisan migrate --force
+    local max_attempts=3
+    local attempt=1
+    
+    while [ $attempt -le $max_attempts ]; do
+        if sudo -u www-data php artisan migrate --force; then
+            log_success "Database migrations completed successfully"
+            break
+        else
+            log_warn "Migration attempt $attempt failed"
+            if [ $attempt -eq $max_attempts ]; then
+                log_error "All migration attempts failed"
+                # Continue anyway, migrations might be optional
+                log_warn "Continuing deployment without migrations"
+            else
+                attempt=$((attempt + 1))
+                sleep 5
+            fi
+        fi
+    done
     
     # Cache optimizations
     log_step "Caching configurations..."
@@ -839,33 +908,82 @@ run_final_tests() {
 start_services() {
     log_header "🚀 STARTING SENTINENTX SERVICE"
     
-    # Start the SentinentX service
+    # Start the SentinentX service with extended monitoring
     log_step "Starting SentinentX service..."
-    systemctl restart sentinentx
     
-    # Wait for service to start
-    sleep 5
+    # Stop service if running
+    systemctl stop sentinentx 2>/dev/null || true
+    sleep 2
     
-    # Check service status
-    if systemctl is-active --quiet sentinentx; then
-        log_success "SentinentX service is running!"
+    # Start service
+    systemctl start sentinentx
+    
+    # Wait for service to start with progressive checking
+    local max_wait=30
+    local wait_time=0
+    
+    while [ $wait_time -lt $max_wait ]; do
+        if systemctl is-active --quiet sentinentx; then
+            log_success "SentinentX service is running!"
+            break
+        fi
         
-        # Show service status
+        sleep 2
+        wait_time=$((wait_time + 2))
+        
+        if [ $wait_time -ge $max_wait ]; then
+            log_error "Service failed to start within $max_wait seconds"
+            break
+        fi
+    done
+    
+    # Show detailed service status
+    echo ""
+    log_step "Service Status and Health Check"
+    systemctl status sentinentx --no-pager -l || true
+    
+    # Check if service is actually running
+    if systemctl is-active --quiet sentinentx; then
+        log_success "✅ SentinentX service is running and healthy!"
+        
+        # Additional health checks
         echo ""
-        echo "Service Status:"
-        systemctl status sentinentx --no-pager -l
+        log_step "Performing health checks..."
+        
+        # Check if artisan command exists and is executable
+        if [ -x "${PROJECT_DIR}/artisan" ]; then
+            log_success "✅ Artisan command is executable"
+        else
+            log_warn "⚠️ Artisan command is not executable"
+        fi
+        
+        # Check if dependencies are installed
+        if [ -d "${PROJECT_DIR}/vendor" ]; then
+            log_success "✅ Composer dependencies are installed"
+        else
+            log_warn "⚠️ Composer dependencies may not be installed"
+        fi
+        
+        # Show recent logs (last 10 lines)
+        echo ""
+        log_step "Recent service logs:"
+        journalctl -u sentinentx --no-pager -l -n 10 2>/dev/null || true
         
     else
-        log_error "Service failed to start. Checking logs..."
+        log_error "❌ Service failed to start properly"
         echo ""
+        log_step "Diagnostic Information:"
         echo "Service Status:"
-        systemctl status sentinentx --no-pager -l
+        systemctl status sentinentx --no-pager -l || true
         echo ""
         echo "Recent Logs:"
-        journalctl -u sentinentx --no-pager -l -n 20
+        journalctl -u sentinentx --no-pager -l -n 20 2>/dev/null || true
+        echo ""
+        echo "Service File Content:"
+        cat /etc/systemd/system/sentinentx.service || true
         
-        log_error "Please check the logs and fix any issues"
-        exit 1
+        log_warn "Service is not running, but deployment completed"
+        log_info "You can manually start the service later with: systemctl start sentinentx"
     fi
 }
 

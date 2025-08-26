@@ -1,32 +1,10 @@
 
 
-[1;37;40mCode Coverage Report:        [0m
-[1;37;40m  2025-08-26 11:18:10        [0m
-[1;37;40m                             [0m
-[1;37;40m Summary:                    [0m
-[37;41m  Classes:  1.56% (2/128)    [0m
-[37;41m  Methods:  1.29% (11/853)   [0m
-[37;41m  Lines:    1.47% (172/11728)[0m
+[1;37;40mCode Coverage Report:      [0m
+[1;37;40m  2025-08-26 18:26:17      [0m
+[1;37;40m                           [0m
+[1;37;40m Summary:                  [0m
+[37;41m  Classes:  0.00% (0/128)  [0m
+[37;41m  Methods:  0.00% (0/855)  [0m
+[37;41m  Lines:    0.00% (0/11747)[0m
 
-App\Models\Concerns\HasTenantScope
-  [37;41mMethods:  20.00% ( 1/ 5)[0m   [37;41mLines:   8.33% (  1/ 12)[0m
-App\Models\Concerns\TenantScope
-  [37;41mMethods:   0.00% ( 0/ 3)[0m   [30;43mLines:  52.00% ( 13/ 25)[0m
-App\Models\User
-  [37;41mMethods:  10.00% ( 1/10)[0m   [37;41mLines:  21.74% (  5/ 23)[0m
-App\Providers\AiServiceProvider
-  [37;41mMethods:   0.00% ( 0/ 1)[0m   [30;43mLines:  57.14% (  8/ 14)[0m
-App\Providers\AppServiceProvider
-  [37;41mMethods:  50.00% ( 1/ 2)[0m   [30;43mLines:  61.76% ( 21/ 34)[0m
-App\Providers\AuthServiceProvider
-  [30;42mMethods: 100.00% ( 1/ 1)[0m   [30;42mLines: 100.00% (  1/  1)[0m
-App\Providers\DatabaseServiceProvider
-  [37;41mMethods:  25.00% ( 1/ 4)[0m   [37;41mLines:  20.00% ( 10/ 50)[0m
-App\Providers\EventServiceProvider
-  [30;42mMethods: 100.00% ( 1/ 1)[0m   [30;42mLines: 100.00% (  1/  1)[0m
-App\Providers\ExchangeServiceProvider
-  [37;41mMethods:  33.33% ( 1/ 3)[0m   [30;43mLines:  76.47% ( 13/ 17)[0m
-App\Providers\NotifierServiceProvider
-  [37;41mMethods:   0.00% ( 0/ 1)[0m   [37;41mLines:  25.81% (  8/ 31)[0m
-App\Services\Trading\DailyPnLService
-  [37;41mMethods:  28.57% ( 4/14)[0m   [37;41mLines:  44.17% ( 91/206)[0m

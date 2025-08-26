@@ -52,8 +52,8 @@ return new class extends Migration
      */
     private function createPostgreSQLOptimizations(): void
     {
-        // Enable pg_stat_statements for query performance monitoring
-        DB::statement("CREATE EXTENSION IF NOT EXISTS pg_stat_statements");
+        // Skip pg_stat_statements extension (requires superuser privileges)
+        // DB::statement("CREATE EXTENSION IF NOT EXISTS pg_stat_statements");
 
         // Create tenant schemas if they don't exist
         DB::statement("CREATE SCHEMA IF NOT EXISTS tenant_default");
