@@ -27,14 +27,15 @@ PROJECT_DIR="/var/www/sentinentx"
 PHP_VERSION="8.3"
 
 # API Configurations - REPLACE WITH YOUR KEYS
-COINGECKO_API_KEY="YOUR_COINGECKO_API_KEY"
-BYBIT_API_KEY="YOUR_BYBIT_API_KEY"
-BYBIT_API_SECRET="YOUR_BYBIT_API_SECRET"
-OPENAI_API_KEY="YOUR_OPENAI_API_KEY"
-GROK_API_KEY="YOUR_GROK_API_KEY"
-GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
-TELEGRAM_BOT_TOKEN="YOUR_TELEGRAM_BOT_TOKEN"
-TELEGRAM_CHAT_ID="YOUR_TELEGRAM_CHAT_ID"
+# API Keys will be configured manually in .env after installation
+COINGECKO_API_KEY="PLACEHOLDER"
+BYBIT_API_KEY="PLACEHOLDER"
+BYBIT_API_SECRET="PLACEHOLDER"
+OPENAI_API_KEY="PLACEHOLDER"
+GROK_API_KEY="PLACEHOLDER"
+GEMINI_API_KEY="PLACEHOLDER"
+TELEGRAM_BOT_TOKEN="PLACEHOLDER"
+TELEGRAM_CHAT_ID="PLACEHOLDER"
 
 # Repository URLs with fallback
 REPO_URL_PRIMARY="https://github.com/emiryucelweb/SentinentX.git"
@@ -1209,10 +1210,266 @@ main() {
     echo -e "${GREEN}🚀 READY FOR 15-DAY TESTNET TRADING!${NC}"
     echo ""
     
+    # Create .env configuration template
+    create_env_template
+    
+    # Create startup script
+    create_startup_script
+    
+    echo -e "${BLUE}📝 CONFIGURATION REQUIRED:${NC}"
+    echo "   1. ✏️  Edit API keys: nano ${PROJECT_DIR}/.env"
+    echo "   2. 🚀 Start system: ${PROJECT_DIR}/start_sentinentx.sh"
+    echo ""
+    
     # Cleanup
     rm -f /tmp/sentinentx_rollback
     
     log_success "Deployment log saved to: $LOGFILE"
+}
+
+# ================================
+# CREATE .ENV CONFIGURATION TEMPLATE
+# ================================
+
+create_env_template() {
+    log_info "📝 Creating .env configuration template..."
+    
+    # Backup existing .env if present
+    if [[ -f "${PROJECT_DIR}/.env" ]]; then
+        cp "${PROJECT_DIR}/.env" "${PROJECT_DIR}/.env.backup.$(date +%s)"
+        log_info "Existing .env backed up"
+    fi
+    
+    # Create .env template with placeholders
+    cat > "${PROJECT_DIR}/.env" << EOF
+# ======================================
+# SENTINENTX AI TRADING BOT - CONFIGURATION
+# ======================================
+# ⚠️  EDIT THESE VALUES BEFORE STARTING THE SYSTEM!
+
+# Application Settings
+APP_NAME="SentinentX AI Trading Bot"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=http://localhost
+APP_TIMEZONE=UTC
+APP_KEY=
+
+# Database Configuration
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=sentinentx
+DB_USERNAME=${VDS_USER}
+DB_PASSWORD=${VDS_PASSWORD}
+
+# Cache Configuration
+CACHE_DRIVER=file
+SESSION_DRIVER=file
+QUEUE_CONNECTION=sync
+
+# Redis Configuration (Optional)
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=${VDS_PASSWORD}
+REDIS_PORT=6379
+
+# ======================================
+# API KEYS - REPLACE WITH YOUR REAL KEYS
+# ======================================
+
+# Bybit Exchange API (TESTNET)
+BYBIT_API_KEY="PUT_YOUR_BYBIT_TESTNET_API_KEY_HERE"
+BYBIT_API_SECRET="PUT_YOUR_BYBIT_TESTNET_SECRET_HERE"
+BYBIT_TESTNET=true
+
+# AI Providers
+OPENAI_API_KEY="PUT_YOUR_OPENAI_API_KEY_HERE"
+GEMINI_API_KEY="PUT_YOUR_GEMINI_API_KEY_HERE"
+GROK_API_KEY="PUT_YOUR_GROK_API_KEY_HERE"
+
+# CoinGecko (Optional)
+COINGECKO_API_KEY="PUT_YOUR_COINGECKO_API_KEY_HERE"
+
+# Telegram Bot
+TELEGRAM_BOT_TOKEN="PUT_YOUR_TELEGRAM_BOT_TOKEN_HERE"
+TELEGRAM_CHAT_ID="PUT_YOUR_TELEGRAM_CHAT_ID_HERE"
+
+# Trading Configuration
+TRADING_ENABLED=true
+LAB_MODE=true
+RISK_MANAGEMENT_ENABLED=true
+
+# Logging
+LOG_CHANNEL=stack
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=info
+
+EOF
+
+    chown www-data:www-data "${PROJECT_DIR}/.env"
+    chmod 640 "${PROJECT_DIR}/.env"
+    
+    log_success ".env template created at ${PROJECT_DIR}/.env"
+}
+
+# ================================
+# CREATE STARTUP SCRIPT
+# ================================
+
+create_startup_script() {
+    log_info "🚀 Creating startup script..."
+    
+    cat > "${PROJECT_DIR}/start_sentinentx.sh" << 'EOF'
+#!/bin/bash
+
+# SentinentX AI Trading Bot - Startup Script
+# ==========================================
+
+PROJECT_DIR="/var/www/sentinentx"
+LOGFILE="/tmp/sentinentx_startup.log"
+
+# Colors
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1" | tee -a $LOGFILE
+}
+
+log_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1" | tee -a $LOGFILE
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1" | tee -a $LOGFILE
+}
+
+log_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1" | tee -a $LOGFILE
+}
+
+echo ""
+echo "🤖 Starting SentinentX AI Trading Bot..."
+echo "========================================"
+
+# Check if running as root
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root"
+   exit 1
+fi
+
+cd $PROJECT_DIR
+
+# 1. Validate .env configuration
+log_info "1️⃣ Validating .env configuration..."
+
+if ! grep -q "PUT_YOUR_" .env; then
+    log_success ".env configuration appears to be complete"
+else
+    log_error ".env still contains placeholder values!"
+    echo ""
+    echo "⚠️  Please edit .env file first:"
+    echo "   nano $PROJECT_DIR/.env"
+    echo ""
+    echo "Replace all 'PUT_YOUR_*_HERE' with real API keys"
+    exit 1
+fi
+
+# 2. Generate app key if needed
+log_info "2️⃣ Checking application key..."
+if ! grep -q "APP_KEY=base64:" .env; then
+    log_info "Generating new application key..."
+    sudo -u www-data php artisan key:generate --force
+    log_success "Application key generated"
+else
+    log_success "Application key already exists"
+fi
+
+# 3. Run database migrations
+log_info "3️⃣ Running database migrations..."
+sudo -u www-data php artisan migrate --force
+if [[ $? -eq 0 ]]; then
+    log_success "Database migrations completed"
+else
+    log_error "Database migrations failed"
+    exit 1
+fi
+
+# 4. Clear and warm up cache
+log_info "4️⃣ Warming up application cache..."
+sudo -u www-data php artisan cache:clear
+sudo -u www-data php artisan config:cache
+sudo -u www-data php artisan route:cache
+sudo -u www-data php artisan view:cache
+log_success "Application cache warmed up"
+
+# 5. Test API connections
+log_info "5️⃣ Testing API connections..."
+sudo -u www-data php artisan sentx:health-check 2>/dev/null || log_warning "Health check completed with warnings"
+
+# 6. Stop existing services
+log_info "6️⃣ Stopping existing services..."
+systemctl stop sentinentx 2>/dev/null || true
+pkill -f "telegram:polling" 2>/dev/null || true
+log_success "Existing services stopped"
+
+# 7. Start SentinentX trading bot
+log_info "7️⃣ Starting SentinentX trading bot..."
+systemctl start sentinentx
+sleep 3
+
+if systemctl is-active --quiet sentinentx; then
+    log_success "SentinentX trading bot started successfully"
+else
+    log_error "Failed to start SentinentX trading bot"
+    echo "Check logs: journalctl -u sentinentx --no-pager -n 20"
+    exit 1
+fi
+
+# 8. Start Telegram bot polling
+log_info "8️⃣ Starting Telegram bot..."
+cd $PROJECT_DIR
+nohup sudo -u www-data php artisan telegram:polling-fixed > /tmp/telegram_bot.log 2>&1 &
+sleep 2
+
+if pgrep -f "telegram:polling" >/dev/null; then
+    log_success "Telegram bot started successfully"
+else
+    log_warning "Telegram bot may have issues, check /tmp/telegram_bot.log"
+fi
+
+# 9. Final status check
+echo ""
+log_info "🔍 Final System Status:"
+echo "======================================"
+echo "   🗄️  PostgreSQL: $(systemctl is-active postgresql)"
+echo "   🔴 Redis: $(systemctl is-active redis-server)"
+echo "   🐘 PHP-FPM: $(systemctl is-active php8.3-fpm)"
+echo "   🌐 Nginx: $(systemctl is-active nginx)"
+echo "   🤖 SentinentX: $(systemctl is-active sentinentx)"
+echo "   📱 Telegram Bot: $(pgrep -f telegram:polling >/dev/null && echo 'active' || echo 'inactive')"
+echo ""
+
+log_success "🎉 SentinentX AI Trading Bot is running!"
+echo ""
+echo "🎮 Control Commands:"
+echo "   Status:  systemctl status sentinentx"
+echo "   Logs:    journalctl -fu sentinentx"
+echo "   Stop:    systemctl stop sentinentx && pkill -f telegram:polling"
+echo "   Restart: $PROJECT_DIR/start_sentinentx.sh"
+echo ""
+echo "📱 Test your Telegram bot by sending: /status"
+echo ""
+
+EOF
+
+    chmod +x "${PROJECT_DIR}/start_sentinentx.sh"
+    chown root:root "${PROJECT_DIR}/start_sentinentx.sh"
+    
+    log_success "Startup script created at ${PROJECT_DIR}/start_sentinentx.sh"
 }
 
 # ================================
