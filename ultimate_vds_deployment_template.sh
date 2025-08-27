@@ -897,6 +897,9 @@ User=www-data
 Group=www-data
 WorkingDirectory=${PROJECT_DIR}
 ExecStart=/usr/bin/php ${PROJECT_DIR}/artisan trading:start --testnet --duration=15days
+Environment=APP_ENV=production
+Environment=BYBIT_TESTNET=true
+Environment=TRADING_ENABLED=true
 ExecReload=/bin/kill -HUP \$MAINPID
 Restart=on-failure
 RestartSec=10

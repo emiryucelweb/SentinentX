@@ -52,7 +52,15 @@ class TelegramWebhookController extends Controller
         if ($text === '/scan') {
             try {
                 // Use MultiCoinAnalysisService for real-time scanning
-                $user = User::factory()->create(['meta' => ['risk_profile' => 'moderate']]);
+                $user = User::where('email', 'telegram@sentinentx.com')->first();
+                if (!$user) {
+                    $user = User::create([
+                        'name' => 'Telegram User',
+                        'email' => 'telegram@sentinentx.com',
+                        'password' => bcrypt('telegram_user_' . time()),
+                        'meta' => ['risk_profile' => 'moderate', 'source' => 'telegram']
+                    ]);
+                }
                 $multiCoinService = app(\App\Services\AI\MultiCoinAnalysisService::class);
                 $result = $multiCoinService->analyzeAllCoins($user, "Telegram scan request");
                 
@@ -282,8 +290,9 @@ class TelegramWebhookController extends Controller
 
             // Risk profili ile snapshot oluştur
             $snapshot = [
-                'timestamp' => now()->toISOString(),
+                'symbol' => $symbol,
                 'symbols' => [$symbol],
+                'timestamp' => now()->toISOString(),
                 'user_intent' => [
                     'reason' => $userReason,
                     'request_type' => 'specific_position',
@@ -300,7 +309,7 @@ class TelegramWebhookController extends Controller
             ];
 
             // AI kararlarını al
-            $decision = $consensusService->makeDecision($symbol, $snapshot);
+            $decision = $consensusService->decide($snapshot);
 
             // AI kararlarını formatla
             $message = "🧠 <b>AI Ekibimin Kararları:</b>\n\n";
@@ -400,16 +409,20 @@ class TelegramWebhookController extends Controller
             $client = app(\App\Services\Exchange\BybitClient::class);
 
             // Son AI kararına göre pozisyon aç (burada basitleştirilmiş)
-            $result = $client->placeOrder([
-                'category' => 'linear',
-                'symbol' => $symbol,
-                'side' => 'Buy',
-                'orderType' => 'Market',
-                'qty' => '0.01',
-                'timeInForce' => 'IOC',
-            ]);
+            $result = $client->createOrder(
+                $symbol,
+                'Buy',
+                'Market',
+                0.01,
+                null, // price
+                [
+                    'category' => 'linear',
+                    'timeInForce' => 'IOC',
+                    'orderLinkId' => 'tg_' . uniqid() . '_' . time()
+                ]
+            );
 
-            if ($result['retCode'] === 0) {
+            if (isset($result['retCode']) && $result['retCode'] === 0) {
                 $orderId = $result['result']['orderId'] ?? 'N/A';
 
                 return "🎉 <b>Pozisyon Başarıyla Açıldı!</b>\n\n".
@@ -533,7 +546,7 @@ class TelegramWebhookController extends Controller
             $client = app('App\Services\Exchange\BybitClient');
 
             // Ticker bilgisini al
-            $ticker = $client->getTickers($symbol);
+            $ticker = $client->tickers($symbol);
 
             if ($ticker['retCode'] === 0 && ! empty($ticker['result']['list'])) {
                 $tickerData = $ticker['result']['list'][0];
@@ -752,8 +765,11 @@ class TelegramWebhookController extends Controller
                 }
                 $symbol = $trade->symbol;
             } else {
-                // Direkt sembol verilmiş (BTCUSDT gibi)
-                $symbol = strtoupper($symbolOrId).'USDT';
+                // Direkt sembol verilmiş (BTC gibi)
+                $symbol = strtoupper($symbolOrId);
+                if (! str_ends_with($symbol, 'USDT')) {
+                    $symbol .= 'USDT';
+                }
             }
 
             // Bybit'den mevcut pozisyonları kontrol et
