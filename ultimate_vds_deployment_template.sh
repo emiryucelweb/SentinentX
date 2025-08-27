@@ -1471,17 +1471,28 @@ else
     exit 1
 fi
 
-# 8. Start Telegram bot polling
-log_info "8️⃣ Starting Telegram bot..."
-cd $PROJECT_DIR
-nohup sudo -u www-data php artisan telegram:polling > /tmp/telegram_bot.log 2>&1 &
-sleep 2
+    # 8. Start Telegram bot polling
+    log_info "8️⃣ Starting Telegram bot..."
+    cd $PROJECT_DIR
+    
+    # Try multiple telegram command options
+    if sudo -u www-data php artisan list 2>/dev/null | grep -q "telegram:polling"; then
+        log_info "Using telegram:polling command..."
+        nohup sudo -u www-data php artisan telegram:polling > /tmp/telegram_bot.log 2>&1 &
+    elif sudo -u www-data php artisan list 2>/dev/null | grep -q "sentx:telegram-bot"; then
+        log_info "Using sentx:telegram-bot command..."
+        nohup sudo -u www-data php artisan sentx:telegram-bot > /tmp/telegram_bot.log 2>&1 &
+    else
+        log_warning "No telegram command found, skipping telegram bot..."
+    fi
+    
+    sleep 3
 
-if pgrep -f "telegram:polling" >/dev/null; then
-    log_success "Telegram bot started successfully"
-else
-    log_warning "Telegram bot may have issues, check /tmp/telegram_bot.log"
-fi
+    if pgrep -f "telegram" >/dev/null; then
+        log_success "Telegram bot started successfully"
+    else
+        log_warning "Telegram bot may have issues, check /tmp/telegram_bot.log"
+    fi
 
 # 9. Final status check
 echo ""
