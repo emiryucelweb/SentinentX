@@ -319,7 +319,8 @@ install_packages() {
         nano \
         tree \
         jq \
-        build-essential
+        build-essential \
+        net-tools
     
     # Add PHP repository
     log_step "Adding PHP repository..."
@@ -527,6 +528,15 @@ configure_php() {
 configure_nginx() {
     log_header "🌐 NGINX CONFIGURATION"
     
+    # Fix Apache2/Nginx port conflict automatically
+    log_info "🔧 Resolving Apache2/Nginx port conflict..."
+    if systemctl is-active --quiet apache2; then
+        log_info "Apache2 detected running - stopping and disabling..."
+        systemctl stop apache2 2>/dev/null || true
+        systemctl disable apache2 2>/dev/null || true
+        log_success "Apache2 stopped and disabled"
+    fi
+    
     # Remove default sites
     rm -f /etc/nginx/sites-enabled/default
     rm -f /etc/nginx/sites-available/default
@@ -586,9 +596,21 @@ EOF
     
     # Test configuration
     if nginx -t; then
+        # Ensure Apache2 is definitely stopped before starting Nginx
+        systemctl stop apache2 2>/dev/null || true
         systemctl restart nginx
         systemctl enable nginx
-        log_success "Nginx configured successfully"
+        
+        # Verify Nginx is running
+        if systemctl is-active --quiet nginx; then
+            log_success "Nginx configured successfully"
+        else
+            log_error "Nginx failed to start - checking for port conflicts..."
+            # Additional diagnostics
+            log_info "Checking what's using port 80:"
+            netstat -tlnp | grep ":80 " || true
+            exit 1
+        fi
     else
         log_error "Nginx configuration failed"
         exit 1
