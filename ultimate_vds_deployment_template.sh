@@ -895,6 +895,26 @@ EOF
     sudo -u www-data php artisan route:cache
     sudo -u www-data php artisan view:cache
     
+    # Create market snapshot for trading bot
+    log_step "Creating market snapshot for trading bot..."
+    sudo -u www-data php artisan tinker --execute="
+\$snapshot = [
+    'timestamp' => now(),
+    'symbols' => ['BTC', 'ETH', 'SOL', 'XRP'],
+    'market_data' => []
+];
+file_put_contents('${PROJECT_DIR}/market_snapshot.json', json_encode(\$snapshot));
+echo 'Market snapshot created';
+exit;
+" || log_warn "Snapshot creation failed - will create manually"
+
+    # Ensure snapshot exists
+    if [[ ! -f "${PROJECT_DIR}/market_snapshot.json" ]]; then
+        log_info "Creating fallback snapshot..."
+        echo '{"timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)'","symbols":["BTC","ETH","SOL","XRP"],"market_data":{}}' > "${PROJECT_DIR}/market_snapshot.json"
+        chown www-data:www-data "${PROJECT_DIR}/market_snapshot.json"
+    fi
+    
     log_success "Laravel configured successfully"
 }
 
@@ -919,7 +939,7 @@ Type=simple
 User=www-data
 Group=www-data
 WorkingDirectory=${PROJECT_DIR}
-ExecStart=/usr/bin/php ${PROJECT_DIR}/artisan trading:start --testnet --duration=15days
+ExecStart=/usr/bin/php ${PROJECT_DIR}/artisan sentx:open-now --symbols=BTC,ETH,SOL,XRP --snapshot=${PROJECT_DIR}/market_snapshot.json
 Environment=APP_ENV=production
 Environment=BYBIT_TESTNET=true
 Environment=TRADING_ENABLED=true
@@ -1454,7 +1474,7 @@ fi
 # 8. Start Telegram bot polling
 log_info "8️⃣ Starting Telegram bot..."
 cd $PROJECT_DIR
-nohup sudo -u www-data php artisan telegram:polling-fixed > /tmp/telegram_bot.log 2>&1 &
+nohup sudo -u www-data php artisan telegram:polling > /tmp/telegram_bot.log 2>&1 &
 sleep 2
 
 if pgrep -f "telegram:polling" >/dev/null; then
