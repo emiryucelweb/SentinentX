@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services\Trading;
 
-use App\Models\User;
 use App\Models\Trade;
+use App\Models\User;
 use App\Services\AI\ConsensusService;
 use App\Services\AI\SmartStopLossService;
 use App\Services\Market\BybitMarketData;
 use App\Services\Market\CoinGeckoService;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class PositionMonitoringService
 {
@@ -25,7 +25,6 @@ class PositionMonitoringService
     /**
      * Kullanıcının risk profiline göre pozisyon izleme
      *
-     * @param User $user
      * @return array<string, mixed>
      */
     public function monitorUserPositions(User $user): array
@@ -58,8 +57,8 @@ class PositionMonitoringService
         foreach ($openPositions as $position) {
             $result = $this->monitorSinglePosition($position, $riskProfile);
             $monitoringResults[] = $result;
-            
-            if (!empty($result['actions'])) {
+
+            if (! empty($result['actions'])) {
                 $totalActions += count($result['actions']);
             }
         }
@@ -77,8 +76,6 @@ class PositionMonitoringService
     /**
      * Tek pozisyon izleme
      *
-     * @param Trade $position
-     * @param array $riskProfile
      * @return array<string, mixed>
      */
     private function monitorSinglePosition(Trade $position, array $riskProfile): array
@@ -86,8 +83,8 @@ class PositionMonitoringService
         try {
             // Mevcut market verilerini al
             $currentPrice = $this->getCurrentPrice($position->symbol);
-            
-            if (!$currentPrice) {
+
+            if (! $currentPrice) {
                 return [
                     'position_id' => $position->id,
                     'symbol' => $position->symbol,
@@ -161,9 +158,6 @@ class PositionMonitoringService
 
     /**
      * Risk profiline göre kontrol aralığını belirle
-     *
-     * @param array $riskProfile
-     * @return float
      */
     private function getCheckInterval(array $riskProfile): float
     {
@@ -172,21 +166,18 @@ class PositionMonitoringService
 
     /**
      * Mevcut fiyatı al
-     *
-     * @param string $symbol
-     * @return float|null
      */
     private function getCurrentPrice(string $symbol): ?float
     {
         $cacheKey = "current_price_{$symbol}";
-        
+
         return Cache::remember($cacheKey, 30, function () use ($symbol) {
             $ticker = $this->bybitMarketData->getTicker($symbol);
-            
+
             if ($ticker['success'] ?? false) {
                 return (float) ($ticker['data']['last_price'] ?? 0.0);
             }
-            
+
             return null;
         });
     }
@@ -194,15 +185,13 @@ class PositionMonitoringService
     /**
      * PnL hesapla
      *
-     * @param Trade $position
-     * @param float $currentPrice
      * @return array<string, mixed>
      */
     private function calculatePnL(Trade $position, float $currentPrice): array
     {
         $entryPrice = (float) $position->entry_price;
         $qty = (float) $position->qty;
-        
+
         if ($position->side === 'LONG') {
             $pnl = ($currentPrice - $entryPrice) * $qty;
             $pnlPercentage = (($currentPrice - $entryPrice) / $entryPrice) * 100;
@@ -224,8 +213,6 @@ class PositionMonitoringService
     /**
      * Market context hazırla
      *
-     * @param string $symbol
-     * @param float $currentPrice
      * @return array<string, mixed>
      */
     private function buildMarketContext(string $symbol, float $currentPrice): array
@@ -234,7 +221,7 @@ class PositionMonitoringService
             // Bybit market data
             $klines = $this->bybitMarketData->getKlines($symbol, '1', 20);
             $orderbook = $this->bybitMarketData->getOrderbook($symbol, 10);
-            
+
             // CoinGecko data
             $coinGeckoData = $this->coinGeckoService->getCoinData($symbol);
 
@@ -262,10 +249,6 @@ class PositionMonitoringService
     /**
      * AI kararına göre aksiyonları belirle
      *
-     * @param Trade $position
-     * @param array $aiDecision
-     * @param array $riskProfile
-     * @param array $pnlData
      * @return array<string, mixed>
      */
     private function determineActions(Trade $position, array $aiDecision, array $riskProfile, array $pnlData): array
@@ -331,9 +314,6 @@ class PositionMonitoringService
     /**
      * Acil durum koşullarını kontrol et
      *
-     * @param Trade $position
-     * @param array $pnlData
-     * @param array $riskProfile
      * @return array<string, mixed>
      */
     private function checkEmergencyConditions(Trade $position, array $pnlData, array $riskProfile): array
@@ -380,22 +360,18 @@ class PositionMonitoringService
     /**
      * Kullanıcı risk profilini al
      *
-     * @param User $user
      * @return array<string, mixed>
      */
     private function getUserRiskProfile(User $user): array
     {
         $profileName = $user->meta['risk_profile'] ?? 'moderate';
         $profiles = config('risk_profiles.profiles', []);
-        
+
         return $profiles[$profileName] ?? $profiles['moderate'] ?? [];
     }
 
     /**
      * Zamanlı pozisyon izleme başlat
-     *
-     * @param User $user
-     * @return void
      */
     public function schedulePositionMonitoring(User $user): void
     {
@@ -405,7 +381,7 @@ class PositionMonitoringService
         // Cache'e bir sonraki kontrol zamanını kaydet
         $nextCheckKey = "next_position_check_{$user->id}";
         $nextCheckTime = now()->addMinutes($intervalMinutes);
-        
+
         Cache::put($nextCheckKey, $nextCheckTime->toISOString(), $intervalMinutes * 60 + 300); // +5dk buffer
 
         Log::info('Position monitoring scheduled', [
@@ -417,16 +393,13 @@ class PositionMonitoringService
 
     /**
      * Pozisyon izleme zamanı geldi mi?
-     *
-     * @param User $user
-     * @return bool
      */
     public function isMonitoringDue(User $user): bool
     {
         $nextCheckKey = "next_position_check_{$user->id}";
         $nextCheckTime = Cache::get($nextCheckKey);
 
-        if (!$nextCheckTime) {
+        if (! $nextCheckTime) {
             return true; // İlk kontrol
         }
 

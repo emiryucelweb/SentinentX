@@ -77,7 +77,7 @@ final class GrokClient implements AiProvider
             'stop_loss' => $data['stop_loss'] ?? 0.0,
             'take_profit' => $data['take_profit'] ?? 0.0,
             'reason' => $data['reason'] ?? 'No reason provided',
-            'raw' => $data // Keep raw response for leverage extraction
+            'raw' => $data, // Keep raw response for leverage extraction
         ]);
     }
 }

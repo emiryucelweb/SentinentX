@@ -8,19 +8,19 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * This migration is intentionally minimal to avoid privilege issues
      * and preserve the core trading bot functionality.
      */
     public function up(): void
     {
         // Migration disabled to preserve trading bot core schema
-        // All trading tables (trades, positions, ai_logs, lab_results, etc.) 
+        // All trading tables (trades, positions, ai_logs, lab_results, etc.)
         // remain unchanged and fully functional for backtest data storage
-        
+
         // No database changes are made to ensure:
         // ✅ Trading functionality preserved
-        // ✅ Backtest data storage working  
+        // ✅ Backtest data storage working
         // ✅ AI decision logging intact
         // ✅ No PostgreSQL privilege errors
         // ✅ Zero conflicts with existing schema

@@ -1,0 +1,79 @@
+[Unit]
+Description=SentinentX AI Trading Bot - Task Scheduler
+Documentation=https://github.com/sentinentx/sentinentx
+After=network-online.target postgresql.service redis-server.service sentinentx.service
+Wants=network-online.target
+Requires=postgresql.service redis-server.service
+PartOf=sentinentx.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/sentinentx
+
+# Environment configuration
+Environment=APP_ENV=production
+Environment=APP_DEBUG=false
+Environment=LOG_CHANNEL=structured
+Environment=QUEUE_CONNECTION=redis
+Environment=BROADCAST_DRIVER=redis
+Environment=CACHE_DRIVER=redis
+Environment=SESSION_DRIVER=redis
+
+# Laravel Scheduler - runs every minute
+ExecStart=/usr/bin/php /var/www/sentinentx/artisan schedule:work --verbose
+
+# Process management
+Restart=always
+RestartSec=15
+StartLimitInterval=60
+StartLimitBurst=3
+KillMode=process
+KillSignal=SIGTERM
+TimeoutStartSec=60
+TimeoutStopSec=30
+
+# Resource limits optimized for scheduler workload
+LimitNOFILE=32768
+LimitNPROC=16384
+MemoryMax=512M
+CPUQuota=50%
+
+# Security hardening for Ubuntu 24.04 LTS
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/sentinentx/storage /var/log/sentinentx /tmp
+PrivateTmp=true
+PrivateDevices=true
+ProtectHostname=true
+ProtectClock=false
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RemoveIPC=true
+
+# Scheduler specific settings
+DynamicUser=false
+SupplementaryGroups=adm
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sentinentx-scheduler
+
+# Health monitoring
+WatchdogSec=120
+NotifyAccess=none
+
+[Install]
+WantedBy=multi-user.target
+RequiredBy=sentinentx.service

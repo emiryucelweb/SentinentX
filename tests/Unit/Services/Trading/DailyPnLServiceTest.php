@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\Trading;
 
-use App\Services\Trading\DailyPnLService;
-use App\Models\User;
 use App\Models\Trade;
+use App\Models\User;
+use App\Services\Trading\DailyPnLService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
-use Carbon\Carbon;
 use Tests\TestCase;
 
 class DailyPnLServiceTest extends TestCase
@@ -21,32 +20,32 @@ class DailyPnLServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new DailyPnLService();
+        $this->service = new DailyPnLService;
         Cache::flush();
     }
 
     public function test_calculates_daily_pnl_for_completed_trades(): void
     {
         $user = User::factory()->create([
-            'meta' => ['risk_profile' => 'moderate']
+            'meta' => ['risk_profile' => 'moderate'],
         ]);
 
         $today = now()->startOfDay();
 
         // Create completed trades for today
         Trade::factory()->create([
-            'user_id' => $user->id,
+            'tenant_id' => $user->tenant_id,
             'status' => 'CLOSED',
             'pnl' => 150.50,
-            'fees_paid' => 5.00,
+            'fees_total' => 5.00,
             'closed_at' => $today->copy()->addHours(10),
         ]);
 
         Trade::factory()->create([
-            'user_id' => $user->id,
+            'tenant_id' => $user->tenant_id,
             'status' => 'CLOSED',
             'pnl' => -75.25,
-            'fees_paid' => 3.50,
+            'fees_total' => 3.50,
             'closed_at' => $today->copy()->addHours(14),
         ]);
 
@@ -67,13 +66,13 @@ class DailyPnLServiceTest extends TestCase
 
         // Create open trade
         Trade::factory()->create([
-            'user_id' => $user->id,
+            'tenant_id' => $user->tenant_id,
             'status' => 'OPEN',
             'symbol' => 'BTCUSDT',
             'side' => 'LONG',
             'entry_price' => 43000.00,
             'qty' => 0.1,
-            'fees_paid' => 2.00,
+            'fees_total' => 2.00,
             'created_at' => $today->copy()->addHours(8),
         ]);
 
@@ -93,7 +92,7 @@ class DailyPnLServiceTest extends TestCase
 
         // Create position opened yesterday but still open
         Trade::factory()->create([
-            'user_id' => $user->id,
+            'tenant_id' => $user->tenant_id,
             'status' => 'OPEN',
             'symbol' => 'ETHUSDT',
             'side' => 'SHORT',
@@ -111,17 +110,17 @@ class DailyPnLServiceTest extends TestCase
     public function test_compares_against_daily_target(): void
     {
         $user = User::factory()->create([
-            'meta' => ['risk_profile' => 'conservative'] // 20% daily target
+            'meta' => ['risk_profile' => 'conservative'], // 20% daily target
         ]);
 
         $today = now()->startOfDay();
 
         // Create profitable trade that exceeds target
         Trade::factory()->create([
-            'user_id' => $user->id,
+            'tenant_id' => $user->tenant_id,
             'status' => 'CLOSED',
             'pnl' => 250.00, // Above 20% target
-            'fees_paid' => 5.00,
+            'fees_total' => 5.00,
             'closed_at' => $today->copy()->addHours(12),
         ]);
 
@@ -135,17 +134,17 @@ class DailyPnLServiceTest extends TestCase
     public function test_get_daily_pnl_for_ai_context(): void
     {
         $user = User::factory()->create([
-            'meta' => ['risk_profile' => 'moderate'] // 50% daily target
+            'meta' => ['risk_profile' => 'moderate'], // 50% daily target
         ]);
 
         $today = now()->startOfDay();
 
         // Create moderate profit
         Trade::factory()->create([
-            'user_id' => $user->id,
+            'tenant_id' => $user->tenant_id,
             'status' => 'CLOSED',
             'pnl' => 30.00,
-            'fees_paid' => 2.00,
+            'fees_total' => 2.00,
             'closed_at' => $today->copy()->addHours(10),
         ]);
 
@@ -162,15 +161,15 @@ class DailyPnLServiceTest extends TestCase
     public function test_risk_status_assessment(): void
     {
         $user = User::factory()->create([
-            'meta' => ['risk_profile' => 'aggressive'] // 150% daily target
+            'meta' => ['risk_profile' => 'aggressive'], // 150% daily target
         ]);
 
         // Test target reached status
         Trade::factory()->create([
-            'user_id' => $user->id,
+            'tenant_id' => $user->tenant_id,
             'status' => 'CLOSED',
             'pnl' => 160.00, // Above 150% target
-            'fees_paid' => 5.00,
+            'fees_total' => 5.00,
             'closed_at' => now()->startOfDay()->addHours(10),
         ]);
 
@@ -186,10 +185,10 @@ class DailyPnLServiceTest extends TestCase
         $user = User::factory()->create();
 
         Trade::factory()->create([
-            'user_id' => $user->id,
+            'tenant_id' => $user->tenant_id,
             'status' => 'CLOSED',
             'pnl' => -75.00, // Significant loss
-            'fees_paid' => 5.00,
+            'fees_total' => 5.00,
             'closed_at' => now()->startOfDay()->addHours(10),
         ]);
 
@@ -206,13 +205,13 @@ class DailyPnLServiceTest extends TestCase
 
         // Create trades for different days
         $startOfWeek = now()->startOfWeek();
-        
+
         for ($i = 0; $i < 3; $i++) {
             Trade::factory()->create([
-                'user_id' => $user->id,
+                'tenant_id' => $user->tenant_id,
                 'status' => 'CLOSED',
                 'pnl' => 50.00 * ($i + 1),
-                'fees_paid' => 2.00,
+                'fees_total' => 2.00,
                 'closed_at' => $startOfWeek->copy()->addDays($i)->addHours(12),
             ]);
         }
@@ -229,7 +228,7 @@ class DailyPnLServiceTest extends TestCase
         $user = User::factory()->create();
 
         Trade::factory()->create([
-            'user_id' => $user->id,
+            'tenant_id' => $user->tenant_id,
             'status' => 'CLOSED',
             'pnl' => 100.00,
             'closed_at' => now()->startOfDay()->addHours(10),
@@ -237,7 +236,7 @@ class DailyPnLServiceTest extends TestCase
 
         // First call
         $result1 = $this->service->calculateDailyPnL($user);
-        
+
         // Second call should use cache
         $result2 = $this->service->calculateDailyPnL($user);
 
@@ -252,7 +251,7 @@ class DailyPnLServiceTest extends TestCase
 
         foreach ($profiles as $index => $profile) {
             $user = User::factory()->create([
-                'meta' => ['risk_profile' => $profile]
+                'meta' => ['risk_profile' => $profile],
             ]);
 
             $result = $this->service->calculateDailyPnL($user);

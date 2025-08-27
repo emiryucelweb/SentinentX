@@ -149,19 +149,21 @@ Route::middleware(['auth:sanctum', 'throttle:1000,1'])->group(function () {
 // Admin/Enterprise routes (higher rate limits + security)
 Route::middleware([\App\Http\Middleware\HmacAuthMiddleware::class, 'throttle:60,1'])->prefix('admin')->group(function () {
 
-    // System health
+    // System health (comprehensive live checks)
     Route::get('/health', function () {
-        return response()->json([
-            'status' => 'healthy',
-            'services' => [
-                'database' => 'connected',
-                'cache' => 'working',
-                'ai_providers' => 'operational',
-                'exchange' => 'connected',
-            ],
-            'timestamp' => now()->toISOString(),
-        ]);
+        $healthService = app(\App\Services\Health\LiveHealthCheckService::class);
+        $results = $healthService->runAllChecks();
+
+        return response()->json($results, $results['overall_status'] === 'healthy' ? 200 : 503);
     })->name('api.admin.health');
+
+    // Specific health check
+    Route::get('/health/{check}', function (string $check) {
+        $healthService = app(\App\Services\Health\LiveHealthCheckService::class);
+        $result = $healthService->runSpecificCheck($check);
+
+        return response()->json($result, $result['status'] === 'healthy' ? 200 : 503);
+    })->name('api.admin.health.specific');
 
     // System metrics
     Route::get('/metrics', function () {

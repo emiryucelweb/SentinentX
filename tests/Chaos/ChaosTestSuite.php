@@ -40,8 +40,8 @@ class ChaosTestSuite extends TestCase
         // Test that system gracefully handles DB failures
         try {
             // Simulate database connection issues by using invalid connection
-            config(['database.connections.mysql.host' => 'invalid-host']);
-            DB::purge('mysql');
+            config(['database.connections.pgsql.host' => 'invalid-host']);
+            DB::purge('pgsql');
 
             // System should handle this gracefully
             $result = $this->attemptDatabaseOperation();
@@ -61,8 +61,8 @@ class ChaosTestSuite extends TestCase
         }
 
         // Restore database connection
-        config(['database.connections.mysql.host' => env('DB_HOST', '127.0.0.1')]);
-        DB::purge('mysql');
+        config(['database.connections.pgsql.host' => env('DB_HOST', '127.0.0.1')]);
+        DB::purge('pgsql');
 
         Log::info('Database failure resilience test completed');
     }

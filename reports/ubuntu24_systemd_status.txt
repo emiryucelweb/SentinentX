@@ -1,0 +1,12 @@
+○ sentinentx-test.service - SentinentX AI Trading Bot - Test Service (Ubuntu 24.04 LTS Smoke Test)
+     Loaded: loaded (/etc/systemd/system/sentinentx-test.service; enabled; preset: enabled)
+     Active: inactive (dead) since Wed 2025-08-27 16:41:02 +03; 8s ago
+   Duration: 448ms
+       Docs: https://github.com/sentinentx/sentinentx
+    Process: 185767 ExecStart=/usr/bin/php /home/emir/Desktop/sentinentx/artisan --version (code=exited, status=0/SUCCESS)
+   Main PID: 185767 (code=exited, status=0/SUCCESS)
+        CPU: 431ms
+
+Ağu 27 16:41:01 emir systemd[1]: Started sentinentx-test.service - SentinentX AI Trading Bot - Test Service (Ubuntu 24.04 LTS Smoke Test).
+Ağu 27 16:41:02 emir sentinentx-test[185767]: Laravel Framework 12.24.0
+Ağu 27 16:41:02 emir systemd[1]: sentinentx-test.service: Deactivated successfully.

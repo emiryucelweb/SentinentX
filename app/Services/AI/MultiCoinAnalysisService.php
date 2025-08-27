@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Services\AI;
 
 use App\Models\User;
-use App\Services\Market\CoinGeckoService;
 use App\Services\Market\BybitMarketData;
-use App\Services\AI\ConsensusService;
-use Illuminate\Support\Facades\Log;
+use App\Services\Market\CoinGeckoService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class MultiCoinAnalysisService
 {
     private const SUPPORTED_COINS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT'];
+
     private const CACHE_TTL = 180; // 3 dakika cache
 
     public function __construct(
@@ -25,14 +25,12 @@ class MultiCoinAnalysisService
     /**
      * 4 coin için paralel analiz yap ve en güvenilir olanı seç
      *
-     * @param User $user
-     * @param string|null $userReason
      * @return array<string, mixed>
      */
     public function analyzeAllCoins(User $user, ?string $userReason = null): array
     {
-        $cacheKey = "multi_coin_analysis_{$user->id}_" . md5($userReason ?? '');
-        
+        $cacheKey = "multi_coin_analysis_{$user->id}_".md5($userReason ?? '');
+
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user, $userReason) {
             Log::info('Starting multi-coin analysis', [
                 'user_id' => $user->id,
@@ -47,9 +45,9 @@ class MultiCoinAnalysisService
             $analysisResults = [];
             foreach (self::SUPPORTED_COINS as $symbol) {
                 $analysisResults[$symbol] = $this->analyzeSingleCoin(
-                    $symbol, 
-                    $marketData[$symbol] ?? [], 
-                    $user, 
+                    $symbol,
+                    $marketData[$symbol] ?? [],
+                    $user,
                     $userReason
                 );
             }
@@ -136,10 +134,6 @@ class MultiCoinAnalysisService
     /**
      * Tek coin için AI analizi yap
      *
-     * @param string $symbol
-     * @param array $marketData
-     * @param User $user
-     * @param string|null $userReason
      * @return array<string, mixed>
      */
     private function analyzeSingleCoin(string $symbol, array $marketData, User $user, ?string $userReason): array
@@ -196,9 +190,6 @@ class MultiCoinAnalysisService
 
     /**
      * En güvenilir coini seç
-     *
-     * @param array $analysisResults
-     * @return string|null
      */
     private function selectMostReliableCoin(array $analysisResults): ?string
     {
@@ -206,7 +197,7 @@ class MultiCoinAnalysisService
 
         foreach ($analysisResults as $symbol => $analysis) {
             $aiDecision = $analysis['ai_decision'] ?? [];
-            
+
             // Sadece AL/SAT kararları değerlendir
             if (($aiDecision['action'] ?? 'NONE') === 'NONE') {
                 continue;
@@ -226,6 +217,7 @@ class MultiCoinAnalysisService
 
         if (empty($validCandidates)) {
             Log::info('No valid trading candidates found');
+
             return null;
         }
 
@@ -235,7 +227,7 @@ class MultiCoinAnalysisService
         });
 
         $selectedSymbol = array_key_first($validCandidates);
-        
+
         Log::info('Most reliable coin selected', [
             'selected' => $selectedSymbol,
             'score' => $validCandidates[$selectedSymbol]['combined_score'],
@@ -248,10 +240,6 @@ class MultiCoinAnalysisService
 
     /**
      * Combined score hesapla (AI confidence + market reliability + sentiment)
-     *
-     * @param array $aiDecision
-     * @param array $marketData
-     * @return float
      */
     private function calculateCombinedScore(array $aiDecision, array $marketData): float
     {
@@ -271,14 +259,10 @@ class MultiCoinAnalysisService
 
     /**
      * Seçim gerekçesini oluştur
-     *
-     * @param array $analysisResults
-     * @param string|null $bestCoin
-     * @return string
      */
     private function buildSelectionReason(array $analysisResults, ?string $bestCoin): string
     {
-        if (!$bestCoin) {
+        if (! $bestCoin) {
             return 'Hiçbir coin için uygun trading sinyali bulunamadı. Tüm AI analizleri BEKLE kararı verdi.';
         }
 
@@ -291,7 +275,7 @@ class MultiCoinAnalysisService
         $coinName = config("trading.symbol_configs.{$bestCoin}.display_name", $bestCoin);
 
         $reason = "{$coinName} seçildi. ";
-        $reason .= "AI Güven: %{$confidence}, Combined Score: " . number_format($combined, 1) . ". ";
+        $reason .= "AI Güven: %{$confidence}, Combined Score: ".number_format($combined, 1).'. ';
         $reason .= "Karar: {$action}. ";
 
         if (isset($aiDecision['reason'])) {
@@ -304,7 +288,6 @@ class MultiCoinAnalysisService
     /**
      * Market genel durumu özeti
      *
-     * @param array $marketData
      * @return array<string, mixed>
      */
     private function buildMarketOverview(array $marketData): array
@@ -325,11 +308,11 @@ class MultiCoinAnalysisService
             if (isset($data['reliability_score'], $data['sentiment_score'])) {
                 $reliabilitySum += $data['reliability_score'];
                 $sentimentSum += $data['sentiment_score'];
-                
+
                 if ($data['sentiment_score'] > 55) {
                     $positiveCount++;
                 }
-                
+
                 $validCount++;
             }
         }
@@ -337,7 +320,7 @@ class MultiCoinAnalysisService
         if ($validCount > 0) {
             $overview['avg_reliability'] = $reliabilitySum / $validCount;
             $overview['avg_sentiment'] = $sentimentSum / $validCount;
-            
+
             if ($positiveCount >= ($validCount * 0.75)) {
                 $overview['market_trend'] = 'bullish';
             } elseif ($positiveCount <= ($validCount * 0.25)) {
@@ -351,21 +334,19 @@ class MultiCoinAnalysisService
     /**
      * Kullanıcı risk profilini al
      *
-     * @param User $user
      * @return array<string, mixed>
      */
     private function getUserRiskProfile(User $user): array
     {
         $profileName = $user->meta['risk_profile'] ?? 'moderate';
         $profiles = config('risk_profiles.profiles', []);
-        
+
         return $profiles[$profileName] ?? $profiles['moderate'] ?? [];
     }
 
     /**
      * Kullanıcı bakiyesini al (mock)
      *
-     * @param User $user
      * @return array<string, mixed>
      */
     private function getUserBalance(User $user): array
@@ -381,7 +362,6 @@ class MultiCoinAnalysisService
     /**
      * Açık pozisyonları al (mock)
      *
-     * @param User $user
      * @return array<string, mixed>
      */
     private function getOpenPositions(User $user): array

@@ -1,0 +1,24 @@
+🏥 Starting SentientX Live Health Checks...
+
+
+   TypeError 
+
+  App\Services\Exchange\BybitClient::createOrder(): Argument #1 ($symbol) must be of type string, array given, called in /home/emir/Desktop/sentinentx/app/Services/Health/LiveHealthCheckService.php on line 205
+
+  at app/Services/Exchange/BybitClient.php:244
+    240▕     /**
+    241▕      * @param  array<string, mixed>  $opts
+    242▕      * @return array<string, mixed>
+    243▕      */
+  ➜ 244▕     public function createOrder(
+    245▕         string $symbol,
+    246▕         string $side,
+    247▕         string $type,
+    248▕         float $qty,
+
+  1   app/Services/Health/LiveHealthCheckService.php:205
+      App\Services\Exchange\BybitClient::createOrder()
+
+  2   app/Services/Health/LiveHealthCheckService.php:36
+      App\Services\Health\LiveHealthCheckService::checkExchange()
+

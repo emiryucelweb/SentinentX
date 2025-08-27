@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
+use App\Services\Health\LiveHealthCheckService;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Redis;
 use PHPUnit\Framework\Attributes\Test;
@@ -28,6 +29,20 @@ class HmacAuthenticationTest extends TestCase
         // Use trait method for consistent Redis handling
         $this->requireRedis();
         $this->cleanRedis();
+
+        // Mock health check service to always return healthy
+        // This test is for HMAC auth, not health check functionality
+        $this->mock(LiveHealthCheckService::class, function ($mock) {
+            $mock->shouldReceive('runAllChecks')
+                ->andReturn([
+                    'overall_status' => 'healthy',
+                    'checks' => [
+                        'database' => ['status' => 'healthy'],
+                        'redis' => ['status' => 'healthy'],
+                    ],
+                    'timestamp' => now()->toISOString(),
+                ]);
+        });
     }
 
     #[Test]

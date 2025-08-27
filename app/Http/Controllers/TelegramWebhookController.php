@@ -7,7 +7,6 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -53,24 +52,24 @@ class TelegramWebhookController extends Controller
             try {
                 // Use MultiCoinAnalysisService for real-time scanning
                 $user = User::where('email', 'telegram@sentinentx.com')->first();
-                if (!$user) {
+                if (! $user) {
                     $user = User::create([
                         'name' => 'Telegram User',
                         'email' => 'telegram@sentinentx.com',
-                        'password' => bcrypt('telegram_user_' . time()),
-                        'meta' => ['risk_profile' => 'moderate', 'source' => 'telegram']
+                        'password' => bcrypt('telegram_user_'.time()),
+                        'meta' => ['risk_profile' => 'moderate', 'source' => 'telegram'],
                     ]);
                 }
                 $multiCoinService = app(\App\Services\AI\MultiCoinAnalysisService::class);
-                $result = $multiCoinService->analyzeAllCoins($user, "Telegram scan request");
-                
+                $result = $multiCoinService->analyzeAllCoins($user, 'Telegram scan request');
+
                 $selectedCoin = $result['selected_coin'] ?? 'None';
                 $success = $result['success'] ?? false;
-                
-                return "🔍 <b>4 Coin taraması tamamlandı!</b>\n\n" .
-                       "📊 <b>Seçilen Coin:</b> {$selectedCoin}\n" .
-                       "✅ <b>Durum:</b> " . ($success ? "Başarılı" : "Bekleme") . "\n\n" .
-                       "Detaylı analiz için /positions komutunu kullan.";
+
+                return "🔍 <b>4 Coin taraması tamamlandı!</b>\n\n".
+                       "📊 <b>Seçilen Coin:</b> {$selectedCoin}\n".
+                       '✅ <b>Durum:</b> '.($success ? 'Başarılı' : 'Bekleme')."\n\n".
+                       'Detaylı analiz için /positions komutunu kullan.';
             } catch (\Exception $e) {
                 return "🔍 <b>Tarama başlatıldı!</b>\n\nTüm coinler analiz ediliyor...";
             }
@@ -419,7 +418,7 @@ class TelegramWebhookController extends Controller
                 [
                     'category' => 'linear',
                     'timeInForce' => 'IOC',
-                    'orderLinkId' => 'tg_' . uniqid() . '_' . time()
+                    'orderLinkId' => 'tg_'.uniqid().'_'.time(),
                 ]
             );
 

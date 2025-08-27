@@ -27,13 +27,13 @@ class ApiRateLimitMiddleware
     public function handle(Request $request, Closure $next, string $limits = '60,1'): Response
     {
         $user = Auth::user();
-        
-        if (!$user || !$user->tenant_id) {
+
+        if (! $user || ! $user->tenant_id) {
             return $this->buildResponse('Rate limit requires authentication', 401);
         }
 
         $subscription = $user->activeSubscription();
-        if (!$subscription) {
+        if (! $subscription) {
             return $this->buildResponse('Active subscription required', 402);
         }
 
@@ -64,7 +64,7 @@ class ApiRateLimitMiddleware
     {
         // Check if plan has specific API rate limits
         $planLimits = config("billing.plans.{$plan}.api_rate_limits");
-        
+
         if ($planLimits) {
             return [$planLimits['requests'], $planLimits['minutes']];
         }
@@ -84,7 +84,7 @@ class ApiRateLimitMiddleware
     {
         $endpoint = $request->route()?->getName() ?? $request->path();
         $method = $request->method();
-        
+
         return "rate_limit:tenant:{$tenantId}:{$method}:{$endpoint}";
     }
 
@@ -94,7 +94,7 @@ class ApiRateLimitMiddleware
     private function buildRateLimitExceededResponse(string $key, int $requests, int $minutes): Response
     {
         $retryAfter = $this->limiter->availableIn($key);
-        
+
         Log::warning('API rate limit exceeded', [
             'key' => $key,
             'limit' => $requests,
@@ -121,7 +121,7 @@ class ApiRateLimitMiddleware
                     'window_minutes' => $minutes,
                     'retry_after_seconds' => $retryAfter,
                     'reset_time' => now()->addSeconds($retryAfter)->toISOString(),
-                ]
+                ],
             ]
         );
     }
@@ -149,7 +149,7 @@ class ApiRateLimitMiddleware
     private function buildResponse(string $message, int $status, array $headers = [], array $data = []): Response
     {
         $responseData = empty($data) ? ['message' => $message] : $data;
-        
+
         return new Response(
             json_encode($responseData),
             $status,

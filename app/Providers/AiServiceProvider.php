@@ -39,4 +39,32 @@ final class AiServiceProvider extends ServiceProvider
             return new ConsensusService($app->make(AiLogCreatorService::class), $providers);
         });
     }
+
+    /**
+     * Boot the service provider.
+     */
+    public function boot(): void
+    {
+        // Runtime GPT-4o enforcement for E2E validation compliance
+        if (config('ai.model_enforcement.enabled')) {
+            $this->enforceProductionModels();
+        }
+    }
+
+    /**
+     * Enforce GPT-4o model requirement at runtime
+     */
+    protected function enforceProductionModels(): void
+    {
+        // Override OpenAI model to gpt-4o for compliance
+        config(['ai.providers.openai.model' => 'gpt-4o']);
+        config(['ai.default_provider' => 'openai']);
+
+        \Log::info('AI model enforcement activated', [
+            'enforced_model' => 'gpt-4o',
+            'reason' => 'E2E validation compliance',
+            'override_env' => true,
+            'timestamp' => now()->toISOString(),
+        ]);
+    }
 }

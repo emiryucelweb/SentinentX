@@ -100,6 +100,11 @@ class User extends Authenticatable
         return $this->hasMany(Setting::class);
     }
 
+    public function positions(): HasMany
+    {
+        return $this->hasMany(Position::class);
+    }
+
     // Scopes
     public function scopeByTenant(\Illuminate\Database\Eloquent\Builder $query, int|string|null $tenantId): \Illuminate\Database\Eloquent\Builder
     {
@@ -132,7 +137,7 @@ class User extends Authenticatable
     {
         return $this->subscriptions()
             ->where('status', 'active')
-            ->where('ends_at', '>', now())
+            ->where('expires_at', '>', now())
             ->first();
     }
 

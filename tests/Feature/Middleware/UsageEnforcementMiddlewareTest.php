@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Middleware;
 
 use App\Http\Middleware\UsageEnforcementMiddleware;
+use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Tenant;
-use App\Models\User;
 use App\Models\UsageCounter;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -32,17 +33,18 @@ class UsageEnforcementMiddlewareTest extends TestCase
     {
         parent::setUp();
 
-        $this->middleware = new UsageEnforcementMiddleware();
+        $this->middleware = new UsageEnforcementMiddleware;
 
         $this->tenant = Tenant::factory()->create();
         $this->user = User::factory()->create([
             'tenant_id' => $this->tenant->id,
         ]);
+        $plan = Plan::factory()->starter()->create();
         $this->subscription = Subscription::factory()->create([
             'user_id' => $this->user->id,
-            'plan' => 'starter',
+            'plan_id' => $plan->id,
             'status' => 'active',
-            'ends_at' => now()->addMonth(),
+            'expires_at' => now()->addMonth(),
         ]);
 
         // Configure test billing plans
@@ -68,7 +70,7 @@ class UsageEnforcementMiddlewareTest extends TestCase
         }, 'api_requests');
 
         $this->assertEquals(400, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertEquals('Tenant context required', $responseData['error']);
         $this->assertEquals('TENANT_REQUIRED', $responseData['code']);
@@ -86,7 +88,7 @@ class UsageEnforcementMiddlewareTest extends TestCase
         }, 'api_requests');
 
         $this->assertEquals(402, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertEquals('Active subscription required', $responseData['error']);
         $this->assertEquals('SUBSCRIPTION_REQUIRED', $responseData['code']);
@@ -104,7 +106,7 @@ class UsageEnforcementMiddlewareTest extends TestCase
         }, 'api_requests');
 
         $this->assertEquals(500, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertEquals('Invalid subscription plan', $responseData['error']);
         $this->assertEquals('INVALID_PLAN', $responseData['code']);
@@ -155,7 +157,7 @@ class UsageEnforcementMiddlewareTest extends TestCase
         }, 'api_requests');
 
         $this->assertEquals(429, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertEquals('Usage limit exceeded', $responseData['error']);
         $this->assertEquals('USAGE_LIMIT_EXCEEDED', $responseData['code']);
@@ -194,9 +196,9 @@ class UsageEnforcementMiddlewareTest extends TestCase
 
         // Check that usage was incremented
         $usage = UsageCounter::where('tenant_id', $this->tenant->id)
-                            ->where('usage_type', 'api_requests')
-                            ->where('period_start', now()->startOfMonth())
-                            ->first();
+            ->where('usage_type', 'api_requests')
+            ->where('period_start', now()->startOfMonth())
+            ->first();
 
         $this->assertNotNull($usage);
         $this->assertEquals(1, $usage->count);
@@ -214,9 +216,9 @@ class UsageEnforcementMiddlewareTest extends TestCase
 
         // Check that usage was not incremented
         $usage = UsageCounter::where('tenant_id', $this->tenant->id)
-                            ->where('usage_type', 'api_requests')
-                            ->where('period_start', now()->startOfMonth())
-                            ->first();
+            ->where('usage_type', 'api_requests')
+            ->where('period_start', now()->startOfMonth())
+            ->first();
 
         $this->assertNull($usage);
     }
@@ -230,7 +232,7 @@ class UsageEnforcementMiddlewareTest extends TestCase
 
         foreach ($usageTypes as $usageType) {
             $request = Request::create('/api/test', 'POST');
-            
+
             $response = $this->middleware->handle($request, function () {
                 return new Response('OK', 200);
             }, $usageType);
@@ -242,9 +244,9 @@ class UsageEnforcementMiddlewareTest extends TestCase
         // Verify each usage type was tracked separately
         foreach ($usageTypes as $usageType) {
             $usage = UsageCounter::where('tenant_id', $this->tenant->id)
-                                ->where('usage_type', $usageType)
-                                ->first();
-            
+                ->where('usage_type', $usageType)
+                ->first();
+
             $this->assertNotNull($usage);
             $this->assertEquals(1, $usage->count);
         }
@@ -268,7 +270,7 @@ class UsageEnforcementMiddlewareTest extends TestCase
         }, 'api_requests');
 
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         // Should show usage as 0 for current month
         $this->assertEquals('0', $response->headers->get('X-Usage-Current'));
     }
@@ -298,7 +300,7 @@ class UsageEnforcementMiddlewareTest extends TestCase
         }, 'api_requests');
 
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         // Should aggregate to 500
         $this->assertEquals('500', $response->headers->get('X-Usage-Current'));
         $this->assertEquals('500', $response->headers->get('X-Usage-Remaining'));

@@ -3,6 +3,9 @@
 return [
     'enabled' => env('AI_ENABLED', true),
 
+    // Default AI provider - enforced to OpenAI for production compliance
+    'default_provider' => env('AI_PROVIDER', 'openai'),
+
     'consensus' => [
         'min_confidence' => env('AI_MIN_CONFIDENCE', 60),
         'timeout_seconds' => env('AI_TIMEOUT_SECONDS', 30),
@@ -41,9 +44,16 @@ return [
 
     'providers' => [
         'openai' => [
-            'enabled' => env('OPENAI_ENABLED', false),
+            'enabled' => env('OPENAI_ENABLED', true),
             'api_key' => env('OPENAI_API_KEY'),
-            'model' => env('OPENAI_MODEL', 'gpt-4'),
+            'model' => env('AI_MODEL', 'gpt-4o'),
+            // Runtime enforcement for production compliance
+            'enforce_model' => [
+                'enabled' => true,
+                'required_model' => 'gpt-4o',
+                'override_env' => true,
+                'compliance_reason' => 'E2E validation requirements',
+            ],
             'max_tokens' => env('OPENAI_MAX_TOKENS', 1000),
             'temperature' => env('OPENAI_TEMPERATURE', 0.1),
             'timeout_ms' => env('OPENAI_TIMEOUT_MS', 60000),
@@ -86,5 +96,19 @@ return [
         'enabled' => env('AI_FALLBACK_ENABLED', true),
         'fallback_provider' => env('AI_FALLBACK_PROVIDER', 'gemini'),
         'max_fallback_attempts' => env('AI_MAX_FALLBACK_ATTEMPTS', 2),
+    ],
+
+    // Production model enforcement
+    'model_enforcement' => [
+        'enabled' => env('AI_MODEL_ENFORCEMENT', true),
+        'required_models' => [
+            'openai' => 'gpt-4o',
+            'gemini' => 'gemini-pro',
+            'grok' => 'grok-1.5',
+        ],
+        'enforcement_level' => 'strict',
+        'fallback_behavior' => 'abort',
+        'audit_overrides' => true,
+        'compliance_mode' => 'production',
     ],
 ];

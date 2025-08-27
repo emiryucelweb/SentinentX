@@ -21,11 +21,7 @@ class BybitMarketData
     /**
      * Get kline/candlestick data
      *
-     * @param string $symbol
-     * @param string $interval (1|3|5|15|30|60|120|240|360|720|D|M|W)
-     * @param int $limit
-     * @param int|null $startTime
-     * @param int|null $endTime
+     * @param  string  $interval  (1|3|5|15|30|60|120|240|360|720|D|M|W)
      * @return array<string, mixed>
      */
     public function getKlines(
@@ -36,7 +32,7 @@ class BybitMarketData
         ?int $endTime = null
     ): array {
         $cacheKey = "klines_{$symbol}_{$interval}_{$limit}";
-        
+
         if ($startTime || $endTime) {
             $cacheKey .= "_{$startTime}_{$endTime}";
         }
@@ -60,16 +56,16 @@ class BybitMarketData
 
                 $response = $this->client->publicRequest('GET', 'v5/market/kline', $params);
 
-                if (!$response['success'] || !isset($response['result']['list'])) {
+                if (! $response['success'] || ! isset($response['result']['list'])) {
                     Log::warning('Failed to fetch klines', [
                         'symbol' => $symbol,
-                        'response' => $response
+                        'response' => $response,
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'data' => [],
-                        'error' => 'Failed to fetch klines'
+                        'error' => 'Failed to fetch klines',
                     ];
                 }
 
@@ -91,19 +87,19 @@ class BybitMarketData
                     'data' => $klines,
                     'symbol' => $symbol,
                     'interval' => $interval,
-                    'count' => count($klines)
+                    'count' => count($klines),
                 ];
 
             } catch (\Exception $e) {
                 Log::error('Klines API error', [
                     'symbol' => $symbol,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
 
                 return [
                     'success' => false,
                     'data' => [],
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ];
             }
         });
@@ -112,7 +108,6 @@ class BybitMarketData
     /**
      * Get current ticker information
      *
-     * @param string $symbol
      * @return array<string, mixed>
      */
     public function getTicker(string $symbol): array
@@ -123,19 +118,19 @@ class BybitMarketData
             try {
                 $response = $this->client->publicRequest('GET', 'v5/market/tickers', [
                     'category' => 'linear',
-                    'symbol' => $symbol
+                    'symbol' => $symbol,
                 ]);
 
-                if (!$response['success'] || !isset($response['result']['list'][0])) {
+                if (! $response['success'] || ! isset($response['result']['list'][0])) {
                     Log::warning('Failed to fetch ticker', [
                         'symbol' => $symbol,
-                        'response' => $response
+                        'response' => $response,
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'data' => null,
-                        'error' => 'Failed to fetch ticker'
+                        'error' => 'Failed to fetch ticker',
                     ];
                 }
 
@@ -154,19 +149,19 @@ class BybitMarketData
                         'high_24h' => (float) $ticker['highPrice24h'],
                         'low_24h' => (float) $ticker['lowPrice24h'],
                         'timestamp' => time(),
-                    ]
+                    ],
                 ];
 
             } catch (\Exception $e) {
                 Log::error('Ticker API error', [
                     'symbol' => $symbol,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
 
                 return [
                     'success' => false,
                     'data' => null,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ];
             }
         });
@@ -175,8 +170,6 @@ class BybitMarketData
     /**
      * Get orderbook data
      *
-     * @param string $symbol
-     * @param int $limit
      * @return array<string, mixed>
      */
     public function getOrderbook(string $symbol, int $limit = 25): array
@@ -188,19 +181,19 @@ class BybitMarketData
                 $response = $this->client->publicRequest('GET', 'v5/market/orderbook', [
                     'category' => 'linear',
                     'symbol' => $symbol,
-                    'limit' => min($limit, 500) // API limit
+                    'limit' => min($limit, 500), // API limit
                 ]);
 
-                if (!$response['success'] || !isset($response['result'])) {
+                if (! $response['success'] || ! isset($response['result'])) {
                     Log::warning('Failed to fetch orderbook', [
                         'symbol' => $symbol,
-                        'response' => $response
+                        'response' => $response,
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'data' => null,
-                        'error' => 'Failed to fetch orderbook'
+                        'error' => 'Failed to fetch orderbook',
                     ];
                 }
 
@@ -218,19 +211,19 @@ class BybitMarketData
                             return [(float) $ask[0], (float) $ask[1]];
                         }, $result['a']),
                         'update_id' => (int) $result['u'],
-                    ]
+                    ],
                 ];
 
             } catch (\Exception $e) {
                 Log::error('Orderbook API error', [
                     'symbol' => $symbol,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
 
                 return [
                     'success' => false,
                     'data' => null,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ];
             }
         });
@@ -239,24 +232,24 @@ class BybitMarketData
     /**
      * Get multiple symbols ticker data
      *
-     * @param array<string> $symbols
+     * @param  array<string>  $symbols
      * @return array<string, mixed>
      */
     public function getMultipleTickers(array $symbols): array
     {
-        $cacheKey = 'tickers_' . md5(implode(',', $symbols));
+        $cacheKey = 'tickers_'.md5(implode(',', $symbols));
 
         return Cache::remember($cacheKey, 15, function () use ($symbols) {
             try {
                 $response = $this->client->publicRequest('GET', 'v5/market/tickers', [
-                    'category' => 'linear'
+                    'category' => 'linear',
                 ]);
 
-                if (!$response['success'] || !isset($response['result']['list'])) {
+                if (! $response['success'] || ! isset($response['result']['list'])) {
                     return [
                         'success' => false,
                         'data' => [],
-                        'error' => 'Failed to fetch tickers'
+                        'error' => 'Failed to fetch tickers',
                     ];
                 }
 
@@ -277,19 +270,19 @@ class BybitMarketData
                 return [
                     'success' => true,
                     'data' => $tickers,
-                    'count' => count($tickers)
+                    'count' => count($tickers),
                 ];
 
             } catch (\Exception $e) {
                 Log::error('Multiple tickers API error', [
                     'symbols' => $symbols,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
 
                 return [
                     'success' => false,
                     'data' => [],
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ];
             }
         });
@@ -298,7 +291,6 @@ class BybitMarketData
     /**
      * Get symbol information
      *
-     * @param string $symbol
      * @return array<string, mixed>
      */
     public function getInstrumentInfo(string $symbol): array
@@ -309,14 +301,14 @@ class BybitMarketData
             try {
                 $response = $this->client->publicRequest('GET', 'v5/market/instruments-info', [
                     'category' => 'linear',
-                    'symbol' => $symbol
+                    'symbol' => $symbol,
                 ]);
 
-                if (!$response['success'] || !isset($response['result']['list'][0])) {
+                if (! $response['success'] || ! isset($response['result']['list'][0])) {
                     return [
                         'success' => false,
                         'data' => null,
-                        'error' => 'Failed to fetch instrument info'
+                        'error' => 'Failed to fetch instrument info',
                     ];
                 }
 
@@ -341,20 +333,20 @@ class BybitMarketData
                             'min_leverage' => (float) $info['leverageFilter']['minLeverage'],
                             'max_leverage' => (float) $info['leverageFilter']['maxLeverage'],
                             'leverage_step' => (float) $info['leverageFilter']['leverageStep'],
-                        ]
-                    ]
+                        ],
+                    ],
                 ];
 
             } catch (\Exception $e) {
                 Log::error('Instrument info API error', [
                     'symbol' => $symbol,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
 
                 return [
                     'success' => false,
                     'data' => null,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ];
             }
         });

@@ -1,0 +1,220 @@
+ ------ --------------------------------------------------------------------- 
+  Line   Console/Commands/HealthWorkersCommand.php                            
+ ------ --------------------------------------------------------------------- 
+  :155   Call to static method table() on an unknown class DB.                
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+ ------ --------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   Http/Controllers/SaasDashboardController.php                         
+ ------ --------------------------------------------------------------------- 
+  :141   Access to an undefined property                                      
+         App\Http\Controllers\SaasDashboardController::$reconciliationServic  
+         e.                                                                   
+         🪪  property.notFound                                                
+         💡  Learn more: https://phpstan.org/blog/solving-phpstan-access-to-u  
+         ndefined-property                                                    
+  :368   Call to static method connection() on an unknown class DB.           
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+ ------ --------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   Http/Kernel.php                                                      
+ ------ --------------------------------------------------------------------- 
+  :20    Class App\Http\Middleware\TrimStrings not found.                     
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :31    Class App\Http\Middleware\EncryptCookies not found.                  
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :41    Class                                                                
+         Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful    
+         not found.                                                           
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :54    Class App\Http\Middleware\Authenticate not found.                    
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :59    Class App\Http\Middleware\RedirectIfAuthenticated not found.         
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :62    Class App\Http\Middleware\ValidateSignature not found.               
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :66    Class                                                                
+         Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful    
+         not found.                                                           
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+ ------ --------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   Http/Middleware/UsageEnforcementMiddleware.php                       
+ ------ --------------------------------------------------------------------- 
+  :153   Call to static method raw() on an unknown class DB.                  
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+ ------ --------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   Providers/AiServiceProvider.php                                      
+ ------ --------------------------------------------------------------------- 
+  :27    Class App\Contracts\AI\AiProvider not found.                         
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+ ------ --------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------- 
+  Line   Providers/AppServiceProvider.php                              
+ ------ -------------------------------------------------------------- 
+  :34    Class App\Services\Notifier\AlertDispatcher does not have a   
+         constructor and must be instantiated without any parameters.  
+         🪪  new.noConstructor                                         
+ ------ -------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   Providers/ExchangeServiceProvider.php                                
+ ------ --------------------------------------------------------------------- 
+  :65    Call to static method warning() on an unknown class Log.             
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+ ------ --------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------- 
+  Line   Providers/NotifierServiceProvider.php                         
+ ------ -------------------------------------------------------------- 
+  :41    Class App\Services\Notifier\MailNotifier does not have a      
+         constructor and must be instantiated without any parameters.  
+         🪪  new.noConstructor                                         
+  :55    Class App\Services\Notifier\AlertDispatcher does not have a   
+         constructor and must be instantiated without any parameters.  
+         🪪  new.noConstructor                                         
+ ------ -------------------------------------------------------------- 
+
+ ------- ----------------------------------------------------------- 
+  Line    Services/AI/ConsensusService.php                           
+ ------- ----------------------------------------------------------- 
+  :1052   Call to static method critical() on an unknown class Log.  
+          🪪  class.notFound                                         
+          💡  Learn more at                                          
+          https://phpstan.org/user-guide/discovering-symbols         
+  :1055   Call to static method warning() on an unknown class Log.   
+          🪪  class.notFound                                         
+          💡  Learn more at                                          
+          https://phpstan.org/user-guide/discovering-symbols         
+  :1058   Call to static method info() on an unknown class Log.      
+          🪪  class.notFound                                         
+          💡  Learn more at                                          
+          https://phpstan.org/user-guide/discovering-symbols         
+ ------- ----------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------- 
+  Line   Services/AI/Contracts/AiProvider.php                                
+ ------ -------------------------------------------------------------------- 
+  :14    Method App\Services\AI\Contracts\AiProvider::analyze() has invalid  
+         return type App\Services\AI\Dto\AiDecision.                         
+         🪪  class.notFound                                                  
+ ------ -------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   Services/CycleRunner.php                                             
+ ------ --------------------------------------------------------------------- 
+  :74    Class App\Services\Risk\RiskGuardInterface not found.                
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+ ------ --------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   Services/Exchange/BybitClient.php                                    
+ ------ --------------------------------------------------------------------- 
+  :605   Call to static method warning() on an unknown class Log.             
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :641   Call to static method warning() on an unknown class Log.             
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :913   Call to static method warning() on an unknown class Log.             
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+ ------ --------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   Services/GDPR/DataExportService.php                                  
+ ------ --------------------------------------------------------------------- 
+  :72    Instantiated class App\Notifications\DataExportReady not found.      
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :79    Instantiated class App\Notifications\DataExportFailed not found.     
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+ ------ --------------------------------------------------------------------- 
+
+ ------ -------------------------------------------- 
+  Line   Services/Health/LiveHealthCheckService.php  
+ ------ -------------------------------------------- 
+  :206   Undefined variable: $testSymbol             
+         🪪  variable.undefined                      
+ ------ -------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   Services/ManageOpenPositionsRunner.php                               
+ ------ --------------------------------------------------------------------- 
+  :96    Access to an undefined property                                      
+         App\Services\ManageOpenPositionsRunner::$bybit.                      
+         🪪  property.notFound                                                
+         💡  Learn more: https://phpstan.org/blog/solving-phpstan-access-to-u  
+         ndefined-property                                                    
+ ------ --------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   Services/Monitoring/MonitoringService.php                            
+ ------ --------------------------------------------------------------------- 
+  :105   Call to static method connection() on an unknown class DB.           
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+ ------ --------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   Services/Trading/PositionSizer.php                                   
+ ------ --------------------------------------------------------------------- 
+  :101   Call to static method warning() on an unknown class Log.             
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :136   Call to static method warning() on an unknown class Log.             
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+ ------ --------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   Services/Trading/StopCalculator.php                                  
+ ------ --------------------------------------------------------------------- 
+  :24    Call to static method error() on an unknown class Log.               
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :30    Call to static method error() on an unknown class Log.               
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :73    Call to static method error() on an unknown class Log.               
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :86    Call to static method error() on an unknown class Log.               
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :104   Call to static method error() on an unknown class Log.               
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :117   Call to static method error() on an unknown class Log.               
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :163   Call to static method warning() on an unknown class Log.             
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+  :173   Call to static method warning() on an unknown class Log.             
+         🪪  class.notFound                                                   
+         💡  Learn more at https://phpstan.org/user-guide/discovering-symbols  
+ ------ --------------------------------------------------------------------- 
+
+ [ERROR] Found 39 errors                                                      
+

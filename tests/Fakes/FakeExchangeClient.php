@@ -107,7 +107,7 @@ class FakeExchangeClient implements ExchangeClientInterface
                 'maxOrderQty' => '100.0',
                 'tickSize' => '0.1',
                 'qtyStep' => '0.001',
-            ]
+            ],
         ];
     }
 
@@ -116,13 +116,13 @@ class FakeExchangeClient implements ExchangeClientInterface
         return $this->responses['closeReduceOnlyMarket'] ?? [
             'success' => true,
             'result' => [
-                'orderId' => 'close-' . uniqid(),
+                'orderId' => 'close-'.uniqid(),
                 'orderLinkId' => $orderLinkId,
                 'symbol' => $symbol,
                 'side' => $side,
                 'qty' => $qty,
                 'reduceOnly' => true,
-            ]
+            ],
         ];
     }
 }

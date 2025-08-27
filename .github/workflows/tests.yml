@@ -20,7 +20,7 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.3'
-        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql, redis, gd, curl, zip
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_pgsql, redis, gd, curl, zip
         coverage: none
 
     - name: Install dependencies
@@ -40,14 +40,16 @@ jobs:
     needs: code-quality
     
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: postgres:16
         env:
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: sentinentx_test
+          POSTGRES_DB: sentinentx_test
+          POSTGRES_USER: sentinentx
+          POSTGRES_PASSWORD: emir071028
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval=10s --health-timeout=5s --health-retries=5
 
       redis:
         image: redis:7-alpine
@@ -62,11 +64,18 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.3'
-        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql, redis, gd, curl, zip
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_pgsql, redis, gd, curl, zip
         coverage: xdebug
 
     - name: Copy .env
-      run: cp .env.example .env
+      run: |
+        cp .env.example .env
+        sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
+        sed -i 's/DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+        sed -i 's/DB_PORT=.*/DB_PORT=5432/' .env
+        sed -i 's/DB_DATABASE=.*/DB_DATABASE=sentinentx_test/' .env
+        sed -i 's/DB_USERNAME=.*/DB_USERNAME=sentinentx/' .env
+        sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=emir071028/' .env
 
     - name: Install dependencies
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
@@ -76,11 +85,6 @@ jobs:
 
     - name: Directory permissions
       run: chmod -R 777 storage bootstrap/cache
-
-    - name: Create database
-      run: |
-        mkdir -p database
-        touch database/database.sqlite
 
     - name: Run migrations
       run: php artisan migrate --force

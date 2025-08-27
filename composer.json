@@ -26,6 +26,7 @@
         "laravel/sail": "^1.18",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^8.0",
+        "nunomaduro/larastan": "*",
         "phpstan/phpstan": "*",
         "phpunit/phpunit": "^11.1",
         "psalm/plugin-laravel": "^3.0",
@@ -60,7 +61,6 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi"
         ],
         "dev": [

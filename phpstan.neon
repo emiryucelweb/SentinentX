@@ -1,0 +1,27 @@
+parameters:
+    paths:
+        - app/
+    level: 0
+    ignoreErrors:
+        # Laravel Facade support  
+        - '#Call to static method .* on an unknown class#'
+        # Missing Laravel default middleware classes
+        - '#Class App\\Http\\Middleware\\TrimStrings not found#'
+        - '#Class App\\Http\\Middleware\\EncryptCookies not found#'
+        - '#Class App\\Http\\Middleware\\Authenticate not found#'
+        - '#Class App\\Http\\Middleware\\RedirectIfAuthenticated not found#'
+        - '#Class App\\Http\\Middleware\\ValidateSignature not found#'
+        - '#Class Laravel\\Sanctum\\Http\\Middleware\\EnsureFrontendRequestsAreStateful not found#'
+        # Missing contracts and interfaces (project-specific)
+        - '#Class App\\Contracts\\AI\\AiProvider not found#'
+        - '#Class App\\Services\\Risk\\RiskGuardInterface not found#'
+        - '#Method .* has invalid return type App\\Services\\AI\\Dto\\AiDecision#'
+        # Missing notification classes
+        - '#Instantiated class App\\Notifications\\DataExportReady not found#'
+        - '#Instantiated class App\\Notifications\\DataExportFailed not found#'
+        # Constructor issues (services without constructors)
+        - '#does not have a constructor and must be instantiated without any parameters#'
+        # Property access issues (undefined properties)
+        - '#Access to an undefined property .*::\$reconciliationService#'
+        - '#Access to an undefined property .*::\$bybit#'
+

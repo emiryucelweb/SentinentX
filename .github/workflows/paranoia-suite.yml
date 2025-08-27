@@ -12,10 +12,27 @@ jobs:
     runs-on: ubuntu-latest
     
     services:
-      sqlite:
-        image: alpine/sqlite
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: testing
+          POSTGRES_USER: sentinentx
+          POSTGRES_PASSWORD: emir071028
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
         options: >-
-          --health-cmd "sqlite3 --version"
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -28,7 +45,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, sqlite3
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_pgsql, redis
           coverage: xdebug
 
       - name: Validate composer.json
@@ -44,7 +61,14 @@ jobs:
         run: composer install --prefer-dist --no-progress
 
       - name: Copy environment file
-        run: cp .env.example .env
+        run: |
+          cp .env.example .env
+          sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
+          sed -i 's/DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+          sed -i 's/DB_PORT=.*/DB_PORT=5432/' .env
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=testing/' .env
+          sed -i 's/DB_USERNAME=.*/DB_USERNAME=sentinentx/' .env
+          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=emir071028/' .env
 
       - name: Generate app key
         run: php artisan key:generate

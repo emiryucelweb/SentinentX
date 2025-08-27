@@ -121,6 +121,140 @@ chmod +x deploy.sh && ./deploy.sh
 
 ---
 
+## 🐧 **Ubuntu 24.04 LTS Deployment (Recommended)**
+
+### **🚀 Automated Installation**
+
+For **production deployments** on Ubuntu 24.04 LTS with enterprise-grade configuration:
+
+```bash
+# Download the Ubuntu 24.04 LTS installer
+curl -fsSL https://raw.githubusercontent.com/sentinentx/sentinentx/main/deploy/ubuntu24/install.sh -o install.sh
+
+# Review the script (recommended)
+cat install.sh
+
+# Run installation
+chmod +x install.sh
+sudo ./install.sh
+```
+
+### **📦 What Gets Installed**
+
+| Component | Version | Purpose |
+|-----------|---------|---------|
+| **PHP** | 8.3+ | Application runtime with OPcache |
+| **PostgreSQL** | 16+ | Primary database with performance tuning |
+| **Redis** | 7+ | Cache & queue management |
+| **Nginx** | Latest | Web server with security headers |
+| **Node.js** | 20+ | Frontend asset compilation |
+| **systemd** | Native | Service management & monitoring |
+
+### **⚙️ systemd Services**
+
+After installation, manage SentinentX with these services:
+
+```bash
+# Main application service
+sudo systemctl start sentinentx
+sudo systemctl status sentinentx
+
+# Individual service management
+sudo systemctl start sentinentx-queue      # Queue worker
+sudo systemctl start sentinentx-scheduler  # Task scheduler  
+sudo systemctl start sentinentx-ws         # WebSocket server
+
+# View service logs
+sudo journalctl -f -u sentinentx
+sudo journalctl -f -u sentinentx-queue
+```
+
+### **🔧 Configuration**
+
+1. **Configure environment file:**
+```bash
+sudo nano /var/www/sentinentx/.env
+```
+
+2. **Essential settings to update:**
+```env
+# AI Provider Keys
+OPENAI_API_KEY=sk-your-openai-key
+GEMINI_API_KEY=your-gemini-key  
+GROK_API_KEY=your-grok-key
+
+# Trading Configuration
+BYBIT_API_KEY=your-bybit-key
+BYBIT_API_SECRET=your-bybit-secret
+BYBIT_TESTNET=true
+
+# Telegram Notifications
+TELEGRAM_BOT_TOKEN=your-bot-token
+TELEGRAM_CHAT_ID=your-chat-id
+
+# Allowed Trading Pairs
+ALLOWED_SYMBOLS=BTCUSDT,ETHUSDT,SOLUSDT,XRPUSDT
+```
+
+3. **Start the services:**
+```bash
+sudo systemctl enable --now sentinentx
+sudo systemctl enable --now sentinentx-scheduler
+sudo systemctl enable --now sentinentx-queue
+sudo systemctl enable --now sentinentx-ws
+```
+
+### **📊 Health Monitoring**
+
+```bash
+# Comprehensive health check
+cd /var/www/sentinentx
+php artisan sentx:health-check
+
+# Service status overview
+sudo systemctl status sentinentx*
+
+# Resource monitoring
+htop
+df -h
+free -h
+```
+
+### **🔒 Security Features**
+
+The Ubuntu 24.04 deployment includes:
+- ✅ **systemd security hardening** (NoNewPrivileges, PrivateTmp, etc.)
+- ✅ **UFW firewall** configuration
+- ✅ **fail2ban** intrusion prevention
+- ✅ **Resource limits** (memory, CPU, file descriptors)
+- ✅ **Service isolation** and sandboxing
+- ✅ **Automatic restart** on failure
+
+### **📋 Quick Verification**
+
+```bash
+# Test web interface
+curl http://localhost/api/health
+
+# Test database connection
+sudo -u www-data php /var/www/sentinentx/artisan migrate:status
+
+# Test Redis
+redis-cli ping
+
+# View application logs
+tail -f /var/www/sentinentx/storage/logs/laravel.log
+```
+
+### **📖 Detailed Documentation**
+
+For comprehensive deployment instructions, troubleshooting, and maintenance:
+- 📖 **[Ubuntu 24.04 Deployment Guide](deploy/ubuntu24/DEPLOYMENT_GUIDE.md)**
+- 🔧 **[Service Configuration](deploy/ubuntu24/)**
+- 🚨 **[Emergency Procedures](RUNBOOK.md)**
+
+---
+
 ## 🎮 **Post-Deployment Control**
 
 ### **Service Management**

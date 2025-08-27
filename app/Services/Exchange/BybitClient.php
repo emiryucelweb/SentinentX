@@ -6,6 +6,7 @@ namespace App\Services\Exchange;
 
 use App\Contracts\Exchange\ExchangeClientInterface;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 final class BybitClient implements ExchangeClientInterface
 {
@@ -38,6 +39,7 @@ final class BybitClient implements ExchangeClientInterface
     public function serverTime(): array
     {
         $resp = $this->makeHttpRequest('GET', '/v5/market/time', [], []);
+
         return $resp;
     }
 
@@ -56,7 +58,8 @@ final class BybitClient implements ExchangeClientInterface
         $queryString = http_build_query($params);
         $headers = $this->authHeadersForGet($queryString);
 
-        $resp = $this->makeHttpRequest('GET', '/v5/account/wallet-balance?' . $queryString, [], $headers);
+        $resp = $this->makeHttpRequest('GET', '/v5/account/wallet-balance?'.$queryString, [], $headers);
+
         return $resp;
     }
 
@@ -71,7 +74,7 @@ final class BybitClient implements ExchangeClientInterface
             'category' => 'linear',
             'symbol' => $symbol,
         ];
-        
+
         return $this->makeHttpRequest('GET', '/v5/market/tickers', $params, []);
     }
 
@@ -88,7 +91,7 @@ final class BybitClient implements ExchangeClientInterface
             'interval' => $interval,
             'limit' => $limit,
         ];
-        
+
         return $this->makeHttpRequest('GET', '/v5/market/kline', $params, []);
     }
 
@@ -864,7 +867,7 @@ final class BybitClient implements ExchangeClientInterface
                     $ticker['markPrice'] = (string) $indexPrice;
                     $ticker['bid1Price'] = (string) ($indexPrice * 0.9995);
                     $ticker['ask1Price'] = (string) ($indexPrice * 1.0005);
-                    
+
                     if (isset($ticker['prevPrice24h']) && $ticker['prevPrice24h'] > 0) {
                         $prevPrice = (float) $ticker['prevPrice24h'];
                         if ($prevPrice > $indexPrice * 1.5) {
@@ -874,6 +877,7 @@ final class BybitClient implements ExchangeClientInterface
                 }
             }
         }
+
         return $response;
     }
 
@@ -885,18 +889,18 @@ final class BybitClient implements ExchangeClientInterface
         if (isset($response['result']['list']) && is_array($response['result']['list'])) {
             foreach ($response['result']['list'] as &$position) {
                 $symbol = $position['symbol'] ?? '';
-                
+
                 if ($symbol && isset($position['markPrice']) && $position['markPrice'] > 0) {
                     try {
                         $params = ['category' => 'linear', 'symbol' => $symbol];
                         $tickerResp = $this->makeHttpRequest('GET', '/v5/market/tickers?'.http_build_query($params));
-                        
+
                         if (isset($tickerResp['result']['list'][0]['indexPrice'])) {
                             $indexPrice = (float) $tickerResp['result']['list'][0]['indexPrice'];
-                            
+
                             if ($indexPrice > 0) {
                                 $position['markPrice'] = (string) $indexPrice;
-                                
+
                                 if (isset($position['avgPrice']) && $position['avgPrice'] > 0) {
                                     $avgPrice = (float) $position['avgPrice'];
                                     if ($avgPrice > $indexPrice * 1.5) {
@@ -911,6 +915,7 @@ final class BybitClient implements ExchangeClientInterface
                 }
             }
         }
+
         return $response;
     }
 }

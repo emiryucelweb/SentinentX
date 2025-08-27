@@ -6,8 +6,8 @@ namespace Tests\Feature\PropertyBased;
 
 use App\Services\AI\ConsensusService;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 use Tests\Fakes\FakeAiProvider;
+use Tests\TestCase;
 
 /**
  * Consensus Service Invariant Tests
@@ -35,7 +35,7 @@ class ConsensusInvariantsTest extends TestCase
         ]);
 
         $consensus = new ConsensusService([$ai1, $ai2]);
-        
+
         $testContext = [
             'symbol' => 'BTCUSDT',
             'price' => 43250.0,
@@ -67,7 +67,7 @@ class ConsensusInvariantsTest extends TestCase
         ]);
 
         $consensus = new ConsensusService([$ai1, $ai2]);
-        
+
         $result = $consensus->decide([
             'symbol' => 'BTCUSDT',
             'price' => 43250.0,
@@ -87,12 +87,12 @@ class ConsensusInvariantsTest extends TestCase
         ]);
 
         $ai2 = new FakeAiProvider('ai2', [
-            'action' => 'LONG', 
+            'action' => 'LONG',
             'confidence' => 85,
         ]);
 
         $consensus = new ConsensusService([$ai1, $ai2]);
-        
+
         $result = $consensus->decide([
             'symbol' => 'BTCUSDT',
             'price' => 43250.0,
@@ -119,7 +119,7 @@ class ConsensusInvariantsTest extends TestCase
         ]);
 
         $consensus = new ConsensusService([$ai1, $ai2]);
-        
+
         $result = $consensus->decide([
             'symbol' => 'BTCUSDT',
             'price' => 43250.0,
@@ -128,7 +128,7 @@ class ConsensusInvariantsTest extends TestCase
         // Should trigger NONE veto or range validation
         $this->assertEquals('NO_TRADE', $result['action']);
         $this->assertTrue(
-            str_contains(strtolower($result['reason']), 'veto') || 
+            str_contains(strtolower($result['reason']), 'veto') ||
             str_contains(strtolower($result['reason']), 'range') ||
             str_contains(strtolower($result['reason']), 'validation')
         );
@@ -144,7 +144,7 @@ class ConsensusInvariantsTest extends TestCase
         ]);
 
         $consensus = new ConsensusService([$ai1]);
-        
+
         $result = $consensus->decide([
             'symbol' => 'BTCUSDT',
             'price' => 43250.0,
@@ -176,7 +176,7 @@ class ConsensusInvariantsTest extends TestCase
         ]);
 
         $consensus = new ConsensusService([$ai1, $ai2, $ai3]);
-        
+
         $result = $consensus->decide([
             'symbol' => 'BTCUSDT',
             'price' => 43250.0,

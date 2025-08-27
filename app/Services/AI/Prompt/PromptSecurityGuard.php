@@ -137,12 +137,12 @@ final class PromptSecurityGuard
         }
 
         // Check for hex encoding patterns
-        if (preg_match('/\\\\x[0-9a-fA-F]{2}{10,}/', $prompt)) {
+        if (preg_match('/(\\\\x[0-9a-fA-F]{2}){10,}/', $prompt)) {
             $violations[] = 'Potential hex encoding detected';
         }
 
         // Check for unicode escape patterns
-        if (preg_match('/\\\\u[0-9a-fA-F]{4}{5,}/', $prompt)) {
+        if (preg_match('/(\\\\u[0-9a-fA-F]{4}){5,}/', $prompt)) {
             $violations[] = 'Potential unicode escape sequence detected';
         }
     }

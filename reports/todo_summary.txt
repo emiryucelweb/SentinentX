@@ -1,0 +1,19 @@
+SentinentX TODO Sweeper Summary
+================================
+
+Generated: 2025-08-27 12:28:24
+Scanner Version: 1.0.0
+
+Statistics:
+-----------
+Files Scanned: 419/419
+TODO Comments: 1
+Violations: 2228
+Compliance Rate: -222700%
+
+Violation Summary:
+------------------
+- Non compliant: 2227
+- Expired todo: 1
+
+Status: FAILED

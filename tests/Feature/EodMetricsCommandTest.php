@@ -77,7 +77,7 @@ final class EodMetricsCommandTest extends TestCase
             ->assertExitCode(0);
 
         $this->assertDatabaseHas('lab_metrics', [
-            'as_of' => $customDate . ' 00:00:00', // Match the stored datetime format
+            'as_of' => $customDate.' 00:00:00', // Match the stored datetime format
             'pf' => 1.15,
             'maxdd_pct' => 12.0,
             'sharpe' => 0.9,
@@ -211,7 +211,7 @@ final class EodMetricsCommandTest extends TestCase
 
         // Null değerler kaydedilmiş olmalı (upsert çalışıyor)
         $this->assertDatabaseHas('lab_metrics', [
-            'as_of' => now()->toDateString() . ' 00:00:00',
+            'as_of' => now()->toDateString().' 00:00:00',
         ]);
     }
 
@@ -285,7 +285,7 @@ final class EodMetricsCommandTest extends TestCase
 
         // Kayıt güncellenmiş olmalı
         $this->assertDatabaseHas('lab_metrics', [
-            'as_of' => $testDate . ' 00:00:00',
+            'as_of' => $testDate.' 00:00:00',
             'pf' => 1.3,
             'maxdd_pct' => 12.0,
             'sharpe' => 1.1,
@@ -293,7 +293,7 @@ final class EodMetricsCommandTest extends TestCase
 
         // Upsert sonrası kayıt güncellenmiş olmalı
         $this->assertDatabaseHas('lab_metrics', [
-            'as_of' => $testDate . ' 00:00:00',
+            'as_of' => $testDate.' 00:00:00',
             'pf' => 1.3,
             'maxdd_pct' => 12.0,
             'sharpe' => 1.1,

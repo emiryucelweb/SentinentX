@@ -1,0 +1,318 @@
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_position_sizing_basic_functionality(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_stop_calculator_basic_functionality(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_bcmath_precision(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_zero_division_protection(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_overflow_protection(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_negative_value_protection(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_risk_calculation_consistency(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_leverage_constraints(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\E2E\MultiTenantDataIsolationTest::tenant_a_cannot_access_tenant_b_trades(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\E2E\MultiTenantDataIsolationTest::rls_policies_are_enforced_at_database_level(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\E2E\MultiTenantDataIsolationTest::cross_tenant_update_attempts_fail(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+PHPUnit 11.5.33 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.6 with Xdebug 3.4.5
+Configuration: /home/emir/Desktop/sentinentx/phpunit.xml
+Random Seed:   1756302862
+
+
+   PASS  Tests\Feature\E2E\PerformanceGateSelfBrakeTest
+  ✓ performance above threshold allows trading                           2.63s  
+  ✓ profit factor below threshold triggers self brake                    0.15s  
+
+   WARN  Tests\Feature\Risk\PerformanceGatesTest
+  - profit factor below threshold triggers halt → Database schema issues - users table missing for PerformanceGates tests
+  - manage only mode is documented → Database schema issues - users table missing for PerformanceGates tests
+  - halt expires after duration → Database schema issues - users table missing for PerformanceGates tests
+  - insufficient trades allows trading → Database schema issues - users table missing for PerformanceGates tests
+  - good performance allows trading → Database schema issues - users table missing for PerformanceGates tests
+  - sharpe ratio below threshold triggers halt → Database schema issues - users table missing for PerformanceGates tests
+  - halt can be manually lifted → Database schema issues - users table missing for PerformanceGates tests
+  - both pf and sharpe below threshold triggers halt → Database schema issues - users table missing for PerformanceGates tests
+
+   PASS  Tests\Feature\FundingGuardTest
+  ✓ allows outside window or low bps                                     0.15s  
+  ✓ blocks inside window with high bps                                   0.11s  
+
+   PASS  Tests\Feature\CiToolsTest
+  ✓ lab log channel exists                                               0.11s  
+  ✓ json log channel exists                                              0.09s  
+  ✓ performance logging                                                  0.11s  
+  ✓ structured logging service                                           0.09s  
+  ✓ ai log channel exists                                                0.11s  
+  ✓ risk logging                                                         0.10s  
+  ✓ business event logging                                               0.10s  
+  ✓ trading log channel exists                                           0.10s  
+  ✓ ai logging                                                           0.10s  
+  ✓ risk log channel exists                                              0.10s  
+
+   PASS  Tests\Feature\CorrelationGuardRiskGateTest
+  ✓ correlation block when above threshold                               0.18s  
+  ✓ correlation allow when no open positions                             0.11s  
+
+   PASS  Tests\Feature\E2E\WebsocketGapBackfillTest
+  ✓ duplicate oco attach prevention during backfill                      0.13s  
+  ✓ websocket gap 30 seconds triggers rest backfill                      0.10s  
+
+   PASS  Tests\Feature\TradeCloserTest
+  ✓ close market reduce only                                             0.12s  
+
+   PASS  Tests\Feature\OpenNowCommandTest
+  ✓ command handles symbols with spaces                                  2.06s  
+  ✓ command with missing required fields                                 1.96s  
+  ✓ command with invalid snapshot file                                   1.99s  
+  ✓ command handles empty symbols list                                   1.92s  
+  ✓ command with multiple symbols                                        2.04s  
+  ✓ command outputs consensus result                                     1.96s  
+  ✓ command with valid snapshot dry run                                  1.96s  
+  ✓ command with symbols option override                                 2.02s  
+  ✓ command includes trading config                                      1.96s  
+  ✓ command with invalid json snapshot                                   2.20s  
+  ✓ command requires snapshot file                                       2.10s  
+
+   PASS  Tests\Feature\TradingWorkflowIntegrationTest
+  ✓ position sizing respects im caps                                     2.78s  
+  ✓ none veto blocks high confidence none                                2.66s  
+  ✓ funding guard blocks high funding near window                        2.58s  
+  ✓ full trading workflow long position                                  2.44s  
+  ✓ consensus deviation veto blocks trade                                2.31s  
+  ✓ correlation guard blocks correlated positions                        2.09s  
+  ✓ risk guard blocks unsafe leverage                                    2.00s  
+
+   PASS  Tests\Feature\E2E\SpreadWideIocTwapTest
+  ✓ wide spread triggers ioc partial fill then twap                      0.14s  
+
+   PASS  Tests\Feature\AppKeyTest
+  ✓ app key is set                                                       0.10s  
+
+   PASS  Tests\Feature\FundingGuardRiskGateTest
+  ✓ funding rate block when above threshold                              0.11s  
+  ✓ funding rate allow when below threshold                              0.10s  
+
+   PASS  Tests\Feature\ManagePositionsCommandTest
+  ✓ command ignores closed positions                                     2.11s  
+  ✓ command with valid snapshot no open positions                        2.02s  
+  ✓ command with invalid snapshot file                                   1.96s  
+  ✓ command handles position manager errors                              1.90s  
+  ✓ command handles large number of positions                            2.01s  
+  ✓ command with empty snapshot                                          2.04s  
+  ✓ command requires snapshot file                                       1.89s  
+  ✓ command outputs json format                                          1.99s  
+  ✓ command with invalid json snapshot                                   6.09s  
+  ✓ command with valid snapshot and open positions                       7.44s  
+
+   WARN  Tests\Feature\E2E\HmacSecurityTest
+  ✓ invalid hmac signature returns 401 with event log                    0.23s  
+  ✓ expired timestamp returns 401                                        0.11s  
+  - valid hmac signature returns 200 original → HMAC signature calculat… 0.10s  
+  - valid hmac signature returns 200 → HMAC signature calculation compl… 0.10s  
+
+   PASS  Tests\Feature\TradeManagerTest
+  ✓ open with twap                                                       0.14s  
+  ✓ twap price calculation                                               0.10s  
+  ✓ twap with different chunks                                           0.15s  
+  ✓ postonly falls back to market ioc and sets tpsl                      0.13s  
+
+   PASS  Tests\Feature\BybitClientTest
+  ✓ create order signs and sends                                         0.11s  
+
+   PASS  Tests\Feature\RiskGuardTest
+  ✓ ok to open returns correct details for successful check              0.11s  
+  ✓ ok to open rejects invalid parameters                                0.09s  
+  ✓ ok to open rejects if sl too close to liquidation                    0.09s  
+
+   WARN  Tests\Feature\InstrumentInfoServiceTest
+  - parses filters → InstrumentInfoService HTTP mock issues
+
+   PASS  Tests\Feature\Notifier\AlertDeduplicationTest
+  ✓ auto generated dedup keys work correctly                             0.17s  
+  ✓ dedup stats return correct information                               0.16s  
+  ✓ restart scenario behavior documented                                 0.22s  
+  ✓ alert deduplication expires after ttl                                0.18s  
+  ✓ three identical alerts result in one dispatch two deduplicated       0.17s  
+  ✓ different dedup keys are not deduplicated                            0.16s  
+  ✓ dedup key normalization works                                        0.16s  
+
+   WARN  Tests\Feature\E2E\StablecoinDepegTest
+  - usdt depeg below 98 cents blocks trading → HTTP mock not intercepti… 0.13s  
+  - usdc depeg above 102 cents blocks trading → HTTP mock not intercept… 0.09s  
+
+   FAIL  Tests\Feature\LoadTestingTest
+  ✓ concurrent api requests                                              7.25s  
+  ✓ resource cleanup under load                                          9.87s  
+  ✓ system stability under prolonged load                               41.22s  
+  ✓ memory usage under load                                             12.02s  
+  ✓ concurrent trade creation                                           11.72s  
+  ✓ concurrent position management                                      11.91s  
+  ✓ high frequency ai consensus                                         11.51s  
+  ✓ cache performance under load                                        12.00s  
+  ✓ stress test risk management                                         11.52s  
+  ✓ failover performance under load                                     11.22s  
+  ⨯ database performance under load                                     42.47s  
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\LoadTestingTest > database performance under load      
+  Failed asserting that 30.674203872680664 is less than 10.0.
+
+  at tests/Feature/LoadTestingTest.php:162
+    158▕         // Verify data integrity
+    159▕         $this->assertCount($largeDataset, $openPositions);
+    160▕ 
+    161▕         // Performance should be reasonable for test environment
+  ➜ 162▕         $this->assertLessThan(10.0, $createTime); // Create 1000 records in < 10 seconds (realistic for test env)
+    163▕         $this->assertLessThan(2.0, $queryTime); // Query in < 2.0 seconds (realistic for test env)
+    164▕     }
+    165▕ 
+    166▕     public function test_cache_performance_under_load()
+
+  1   tests/Feature/LoadTestingTest.php:162
+
+
+  Tests:    1 failed, 13 skipped, 78 passed, [2m1247 pending[22m (1535 assertions)
+  Duration: 261.82s
+  Random Order Seed: 1756302862
+
+Time: 04:21.027, Memory: 90.50 MB
+
+Alert Deduplication (Tests\Feature\Notifier\AlertDeduplication)
+ ✔ Three identical alerts result in one dispatch two deduplicated
+ ✔ Alert deduplication expires after ttl
+ ✔ Different dedup keys are not deduplicated
+ ✔ Auto generated dedup keys work correctly
+ ✔ Dedup key normalization works
+ ✔ Dedup stats return correct information
+ ✔ Restart scenario behavior documented
+
+App Key (Tests\Feature\AppKey)
+ ✔ App key is set
+
+Bybit Client (Tests\Feature\BybitClient)
+ ✔ Create order signs and sends
+
+Ci Tools (Tests\Feature\CiTools)
+ ✔ Structured logging service
+ ✔ Ai logging
+ ✔ Risk logging
+ ✔ Performance logging
+ ✔ Business event logging
+ ✔ Json log channel exists
+ ✔ Trading log channel exists
+ ✔ Ai log channel exists
+ ✔ Risk log channel exists
+ ✔ Lab log channel exists
+
+Correlation Guard Risk Gate (Tests\Feature\CorrelationGuardRiskGate)
+ ✔ Correlation block when above threshold
+ ✔ Correlation allow when no open positions
+
+Funding Guard (Tests\Feature\FundingGuard)
+ ✔ Blocks inside window with high bps
+ ✔ Allows outside window or low bps
+
+Funding Guard Risk Gate (Tests\Feature\FundingGuardRiskGate)
+ ✔ Funding rate block when above threshold
+ ✔ Funding rate allow when below threshold
+
+Hmac Security (Tests\Feature\E2E\HmacSecurity)
+ ✔ Invalid hmac signature returns 401 with event log
+ ✔ Expired timestamp returns 401
+ ↩ Valid hmac signature returns 200
+ ↩ Valid hmac signature returns 200 original
+
+Load Testing (Tests\Feature\LoadTesting)
+ ✔ Concurrent trade creation
+ ✔ High frequency ai consensus
+ ✔ Concurrent position management
+ ✘ Database performance under load
+   │
+   │ Failed asserting that 30.674203872680664 is less than 10.0.
+   │
+   │ /home/emir/Desktop/sentinentx/tests/Feature/LoadTestingTest.php:162
+   │
+ ✔ Cache performance under load
+ ✔ Memory usage under load
+ ✔ Concurrent api requests
+ ✔ Stress test risk management
+ ✔ System stability under prolonged load
+ ✔ Failover performance under load
+ ✔ Resource cleanup under load
+
+Manage Positions Command (Tests\Feature\ManagePositionsCommand)
+ ✔ Command requires snapshot file
+ ✔ Command with invalid snapshot file
+ ✔ Command with invalid json snapshot
+ ✔ Command with valid snapshot no open positions
+ ✔ Command with valid snapshot and open positions
+ ✔ Command handles position manager errors
+ ✔ Command outputs json format
+ ✔ Command ignores closed positions
+ ✔ Command handles large number of positions
+ ✔ Command with empty snapshot
+
+Open Now Command (Tests\Feature\OpenNowCommand)
+ ✔ Command requires snapshot file
+ ✔ Command with invalid snapshot file
+ ✔ Command with invalid json snapshot
+ ✔ Command with missing required fields
+ ✔ Command with valid snapshot dry run
+ ✔ Command with multiple symbols
+ ✔ Command with symbols option override
+ ✔ Command includes trading config
+ ✔ Command outputs consensus result
+ ✔ Command handles empty symbols list
+ ✔ Command handles symbols with spaces
+
+Performance Gate Self Brake (Tests\Feature\E2E\PerformanceGateSelfBrake)
+ ✔ Profit factor below threshold triggers self brake
+ ✔ Performance above threshold allows trading
+
+Risk Guard (Tests\Feature\RiskGuard)
+ ✔ Ok to open rejects if sl too close to liquidation
+ ✔ Ok to open rejects invalid parameters
+ ✔ Ok to open returns correct details for successful check
+
+Spread Wide Ioc Twap (Tests\Feature\E2E\SpreadWideIocTwap)
+ ✔ Wide spread triggers ioc partial fill then twap
+
+Stablecoin Depeg (Tests\Feature\E2E\StablecoinDepeg)
+ ↩ Usdt depeg below 98 cents blocks trading
+ ↩ Usdc depeg above 102 cents blocks trading
+
+Trade Closer (Tests\Feature\TradeCloser)
+ ✔ Close market reduce only
+
+Trade Manager (Tests\Feature\TradeManager)
+ ✔ Postonly falls back to market ioc and sets tpsl
+ ✔ Open with twap
+ ✔ Twap price calculation
+ ✔ Twap with different chunks
+
+Trading Workflow Integration (Tests\Feature\TradingWorkflowIntegration)
+ ✔ Full trading workflow long position
+ ✔ Consensus deviation veto blocks trade
+ ✔ None veto blocks high confidence none
+ ✔ Risk guard blocks unsafe leverage
+ ✔ Position sizing respects im caps
+ ✔ Correlation guard blocks correlated positions
+ ✔ Funding guard blocks high funding near window
+
+Websocket Gap Backfill (Tests\Feature\E2E\WebsocketGapBackfill)
+ ✔ Websocket gap 30 seconds triggers rest backfill
+ ✔ Duplicate oco attach prevention during backfill
+
+FAILURES!
+Tests: 92, Assertions: 1535, Failures: 1, PHPUnit Deprecations: 11, Skipped: 13.
+
+Generating code coverage report in Clover XML format ... done [00:00.345]
+
+Generating code coverage report in HTML format ... done [00:02.039]

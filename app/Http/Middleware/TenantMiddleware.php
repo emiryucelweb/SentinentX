@@ -81,15 +81,16 @@ class TenantMiddleware
         // Database connection'ı tenant'a göre ayarla
         if ($tenant->database_name) {
             config(['database.connections.tenant' => [
-                'driver' => 'mysql',
-                'host' => config('database.connections.mysql.host'),
-                'port' => config('database.connections.mysql.port'),
+                'driver' => 'pgsql',
+                'host' => config('database.connections.pgsql.host'),
+                'port' => config('database.connections.pgsql.port'),
                 'database' => $tenant->database_name,
-                'username' => config('database.connections.mysql.username'),
-                'password' => config('database.connections.mysql.password'),
-                'charset' => 'utf8mb4',
-                'collation' => 'utf8mb4_unicode_ci',
+                'username' => config('database.connections.pgsql.username'),
+                'password' => config('database.connections.pgsql.password'),
+                'charset' => 'utf8',
                 'prefix' => '',
+                'search_path' => 'public',
+                'sslmode' => 'prefer',
             ]]);
 
             DB::setDefaultConnection('tenant');

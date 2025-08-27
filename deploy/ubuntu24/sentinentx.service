@@ -1,0 +1,79 @@
+[Unit]
+Description=SentinentX AI Trading Bot - Main Service
+Documentation=https://github.com/sentinentx/sentinentx
+After=network-online.target postgresql.service redis-server.service
+Wants=network-online.target
+Requires=postgresql.service redis-server.service
+
+[Service]
+Type=forking
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/sentinentx
+
+# Environment configuration
+Environment=APP_ENV=production
+Environment=APP_DEBUG=false
+Environment=LOG_CHANNEL=structured
+Environment=QUEUE_CONNECTION=redis
+Environment=BROADCAST_DRIVER=redis
+Environment=CACHE_DRIVER=redis
+Environment=SESSION_DRIVER=redis
+
+# Service management
+ExecStartPre=/usr/bin/php /var/www/sentinentx/artisan config:cache
+ExecStartPre=/usr/bin/php /var/www/sentinentx/artisan route:cache
+ExecStartPre=/usr/bin/php /var/www/sentinentx/artisan view:cache
+ExecStart=/var/www/sentinentx/deploy/ubuntu24/scripts/start-main.sh
+ExecStop=/var/www/sentinentx/deploy/ubuntu24/scripts/stop-main.sh
+ExecReload=/usr/bin/kill -HUP $MAINPID
+
+# Process management
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStartSec=120
+TimeoutStopSec=60
+
+# Resource limits (Ubuntu 24.04 LTS optimized)
+LimitNOFILE=65536
+LimitNPROC=32768
+MemoryMax=2G
+CPUQuota=200%
+
+# Security hardening for Ubuntu 24.04 LTS
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/sentinentx/storage /var/log/sentinentx /tmp
+PrivateTmp=true
+PrivateDevices=true
+ProtectHostname=true
+ProtectClock=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RemoveIPC=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sentinentx-main
+
+# Health monitoring
+WatchdogSec=300
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
+Alias=sentinentx.service

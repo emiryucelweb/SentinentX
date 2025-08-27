@@ -93,12 +93,12 @@ final class FakeBybitClient implements ExchangeClientInterface
                 'leverageFilter' => [
                     'minLeverage' => '1',
                     'maxLeverage' => '100.00',
-                    'leverageStep' => '0.01'
+                    'leverageStep' => '0.01',
                 ],
                 'priceFilter' => [
                     'minPrice' => '0.10',
                     'maxPrice' => '199999.80',
-                    'tickSize' => '0.10'
+                    'tickSize' => '0.10',
                 ],
                 'lotSizeFilter' => [
                     'maxOrderQty' => '100.000',
@@ -106,9 +106,9 @@ final class FakeBybitClient implements ExchangeClientInterface
                     'minOrderQty' => '0.001',
                     'qtyStep' => '0.001',
                     'postOnlyMaxOrderQty' => '1000.000',
-                    'minNotionalValue' => '5'
-                ]
-            ]
+                    'minNotionalValue' => '5',
+                ],
+            ],
         ];
     }
 
@@ -118,7 +118,7 @@ final class FakeBybitClient implements ExchangeClientInterface
             'retCode' => 0,
             'retMsg' => 'OK',
             'result' => [
-                'orderId' => 'close-' . uniqid(),
+                'orderId' => 'close-'.uniqid(),
                 'orderLinkId' => $orderLinkId,
                 'symbol' => $symbol,
                 'side' => $side,
@@ -129,11 +129,11 @@ final class FakeBybitClient implements ExchangeClientInterface
                 'orderStatus' => 'Filled',
                 'avgPrice' => '43250.00',
                 'cumExecQty' => $qty,
-                'cumExecValue' => (float)$qty * 43250.00,
+                'cumExecValue' => (float) $qty * 43250.00,
                 'cumExecFee' => '0.00432',
                 'createdTime' => now()->timestamp * 1000,
-                'updatedTime' => now()->timestamp * 1000
-            ]
+                'updatedTime' => now()->timestamp * 1000,
+            ],
         ];
     }
 }

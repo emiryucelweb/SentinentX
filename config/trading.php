@@ -8,7 +8,7 @@ return [
         'margin' => 'CROSS',
         'max_leverage' => 75,
     ],
-    
+
     // Risk Profiles - User selectable risk levels
     'risk_profiles' => [
         'conservative' => [
@@ -93,7 +93,7 @@ return [
         'retry_attempts' => 1,
     ],
     'symbols' => ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT'],
-    
+
     // 4 Ana Coin Özel Ayarları
     'symbol_configs' => [
         'BTCUSDT' => [
@@ -107,7 +107,7 @@ return [
             'funding_check_enabled' => true,   // Funding kontrolü aktif
         ],
         'ETHUSDT' => [
-            'display_name' => 'Ethereum', 
+            'display_name' => 'Ethereum',
             'symbol' => 'ETH',
             'priority' => 2,
             'min_notional' => 5.0,
@@ -118,7 +118,7 @@ return [
         ],
         'SOLUSDT' => [
             'display_name' => 'Solana',
-            'symbol' => 'SOL', 
+            'symbol' => 'SOL',
             'priority' => 3,
             'min_notional' => 5.0,
             'tick_size' => 0.001,              // $0.001 fiyat adımı

@@ -50,13 +50,13 @@ return new class extends Migration
             $table->string('symbol', 20)->index();
             $table->enum('action', ['OPEN', 'CLOSE', 'UPDATE'])->index();
             $table->enum('side', ['LONG', 'SHORT'])->nullable();
-            
+
             // Fiyat bilgileri
             $table->decimal('entry_price', 16, 8)->nullable();
             $table->decimal('exit_price', 16, 8)->nullable();
             $table->decimal('qty', 20, 8)->nullable();
             $table->decimal('leverage', 8, 2)->nullable();
-            
+
             // SL/TP bilgileri
             $table->decimal('stop_loss', 16, 8)->nullable();
             $table->decimal('take_profit', 16, 8)->nullable();
@@ -64,11 +64,11 @@ return new class extends Migration
             $table->decimal('new_stop_loss', 16, 8)->nullable();
             $table->decimal('old_take_profit', 16, 8)->nullable();
             $table->decimal('new_take_profit', 16, 8)->nullable();
-            
+
             // PnL bilgileri
             $table->decimal('pnl', 16, 8)->nullable();
             $table->decimal('pnl_percentage', 10, 4)->nullable();
-            
+
             // AI ve execution bilgileri
             $table->tinyInteger('ai_confidence')->nullable();
             $table->text('ai_reason')->nullable();
@@ -76,20 +76,20 @@ return new class extends Migration
             $table->decimal('execution_fee', 16, 8)->default(0);
             $table->decimal('total_fees', 16, 8)->default(0);
             $table->decimal('slippage', 8, 4)->nullable(); // %
-            
+
             // Kapanış/güncelleme bilgileri
             $table->string('close_reason', 100)->nullable();
             $table->string('update_reason', 100)->nullable();
             $table->integer('duration_minutes')->nullable();
-            
+
             // External referanslar
             $table->string('bybit_order_id', 100)->nullable();
             $table->string('risk_profile', 20)->default('moderate');
-            
+
             // Market koşulları
             $table->json('market_conditions')->nullable();
             $table->decimal('market_price', 16, 8)->nullable();
-            
+
             $table->timestamps();
 
             // İndeksler
@@ -99,7 +99,7 @@ return new class extends Migration
             $table->index(['tenant_id', 'created_at']);
             $table->index(['side', 'created_at']);
             $table->index(['close_reason', 'created_at']);
-            
+
             // PnL analizleri için
             $table->index(['user_id', 'action', 'pnl']);
             $table->index(['symbol', 'action', 'pnl']);
@@ -113,7 +113,7 @@ return new class extends Migration
             $table->enum('period_type', ['daily', 'weekly', 'monthly'])->index();
             $table->date('period_date'); // Gün/hafta/ay başlangıcı
             $table->string('risk_profile', 20)->default('moderate');
-            
+
             // Trading istatistikleri
             $table->integer('total_trades')->default(0);
             $table->integer('winning_trades')->default(0);
@@ -125,17 +125,17 @@ return new class extends Migration
             $table->decimal('profit_factor', 8, 4)->default(0);
             $table->decimal('max_drawdown', 5, 2)->default(0); // %
             $table->decimal('avg_trade_duration', 8, 2)->default(0); // dakika
-            
+
             // AI istatistikleri
             $table->integer('ai_decisions')->default(0);
             $table->decimal('avg_ai_confidence', 5, 2)->default(0);
             $table->integer('high_confidence_decisions')->default(0); // >70
             $table->integer('low_confidence_decisions')->default(0); // <=70
-            
+
             // Sembol dağılımı
             $table->json('symbol_stats')->nullable();
             $table->json('ai_provider_stats')->nullable();
-            
+
             $table->timestamps();
 
             // İndeksler
@@ -154,30 +154,30 @@ return new class extends Migration
             $table->string('run_id', 50)->index(); // Her backtest çalışması için unique ID
             $table->string('symbol', 20);
             $table->timestamp('trade_time');
-            
+
             // Market verileri
             $table->decimal('open_price', 16, 8);
             $table->decimal('high_price', 16, 8);
             $table->decimal('low_price', 16, 8);
             $table->decimal('close_price', 16, 8);
             $table->decimal('volume', 20, 8);
-            
+
             // AI kararları
             $table->json('ai_decisions');
             $table->string('final_decision', 20); // LONG, SHORT, NONE
             $table->tinyInteger('consensus_confidence');
-            
+
             // Simülasyon sonuçları
             $table->enum('position_side', ['LONG', 'SHORT'])->nullable();
             $table->decimal('entry_price', 16, 8)->nullable();
             $table->decimal('exit_price', 16, 8)->nullable();
             $table->decimal('pnl', 16, 8)->nullable();
             $table->boolean('is_winner')->nullable();
-            
+
             // CoinGecko verileri
             $table->decimal('coingecko_reliability', 5, 2)->nullable();
             $table->decimal('coingecko_sentiment', 5, 2)->nullable();
-            
+
             $table->timestamps();
 
             // İndeksler

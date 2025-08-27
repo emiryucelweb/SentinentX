@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Services\Analytics\BusinessMetricsService;
 use App\Services\Billing\SubscriptionService;
 use App\Services\Security\VaultService;
-use App\Services\Analytics\BusinessMetricsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;

@@ -34,19 +34,19 @@ class BybitMarketDataTest extends TestCase
                 'list' => [
                     [1703980800000, '43000.0', '43100.0', '42900.0', '43050.0', '100.5', '4305000.0'],
                     [1703980860000, '43050.0', '43200.0', '43000.0', '43150.0', '95.3', '4110000.0'],
-                ]
-            ]
+                ],
+            ],
         ];
 
         $this->mockClient->shouldReceive('publicRequest')
-                        ->once()
-                        ->with('GET', 'v5/market/kline', Mockery::subset([
-                            'category' => 'linear',
-                            'symbol' => 'BTCUSDT',
-                            'interval' => '1',
-                            'limit' => 200,
-                        ]))
-                        ->andReturn($mockResponse);
+            ->once()
+            ->with('GET', 'v5/market/kline', Mockery::subset([
+                'category' => 'linear',
+                'symbol' => 'BTCUSDT',
+                'interval' => '1',
+                'limit' => 200,
+            ]))
+            ->andReturn($mockResponse);
 
         $result = $this->marketData->getKlines('BTCUSDT');
 
@@ -72,19 +72,19 @@ class BybitMarketDataTest extends TestCase
         $endTime = 1703984400;
 
         $this->mockClient->shouldReceive('publicRequest')
-                        ->once()
-                        ->with('GET', 'v5/market/kline', Mockery::subset([
-                            'category' => 'linear',
-                            'symbol' => 'ETHUSDT',
-                            'interval' => '5',
-                            'limit' => 100,
-                            'start' => $startTime * 1000,
-                            'end' => $endTime * 1000,
-                        ]))
-                        ->andReturn([
-                            'success' => true,
-                            'result' => ['list' => []]
-                        ]);
+            ->once()
+            ->with('GET', 'v5/market/kline', Mockery::subset([
+                'category' => 'linear',
+                'symbol' => 'ETHUSDT',
+                'interval' => '5',
+                'limit' => 100,
+                'start' => $startTime * 1000,
+                'end' => $endTime * 1000,
+            ]))
+            ->andReturn([
+                'success' => true,
+                'result' => ['list' => []],
+            ]);
 
         $result = $this->marketData->getKlines('ETHUSDT', '5', 100, $startTime, $endTime);
 
@@ -94,11 +94,11 @@ class BybitMarketDataTest extends TestCase
     public function test_get_klines_api_failure(): void
     {
         $this->mockClient->shouldReceive('publicRequest')
-                        ->once()
-                        ->andReturn([
-                            'success' => false,
-                            'error' => 'API Error'
-                        ]);
+            ->once()
+            ->andReturn([
+                'success' => false,
+                'error' => 'API Error',
+            ]);
 
         $result = $this->marketData->getKlines('BTCUSDT');
 
@@ -110,8 +110,8 @@ class BybitMarketDataTest extends TestCase
     public function test_get_klines_exception_handling(): void
     {
         $this->mockClient->shouldReceive('publicRequest')
-                        ->once()
-                        ->andThrow(new \Exception('Network error'));
+            ->once()
+            ->andThrow(new \Exception('Network error'));
 
         $result = $this->marketData->getKlines('BTCUSDT');
 
@@ -136,18 +136,18 @@ class BybitMarketDataTest extends TestCase
                         'price24hPcnt' => '0.025',
                         'highPrice24h' => '44000.0',
                         'lowPrice24h' => '42000.0',
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ];
 
         $this->mockClient->shouldReceive('publicRequest')
-                        ->once()
-                        ->with('GET', 'v5/market/tickers', [
-                            'category' => 'linear',
-                            'symbol' => 'BTCUSDT'
-                        ])
-                        ->andReturn($mockResponse);
+            ->once()
+            ->with('GET', 'v5/market/tickers', [
+                'category' => 'linear',
+                'symbol' => 'BTCUSDT',
+            ])
+            ->andReturn($mockResponse);
 
         $result = $this->marketData->getTicker('BTCUSDT');
 
@@ -170,11 +170,11 @@ class BybitMarketDataTest extends TestCase
     public function test_get_ticker_failure(): void
     {
         $this->mockClient->shouldReceive('publicRequest')
-                        ->once()
-                        ->andReturn([
-                            'success' => false,
-                            'error' => 'Symbol not found'
-                        ]);
+            ->once()
+            ->andReturn([
+                'success' => false,
+                'error' => 'Symbol not found',
+            ]);
 
         $result = $this->marketData->getTicker('INVALID');
 
@@ -199,17 +199,17 @@ class BybitMarketDataTest extends TestCase
                     ['43001.0', '1.2'],
                     ['43002.0', '1.8'],
                 ],
-            ]
+            ],
         ];
 
         $this->mockClient->shouldReceive('publicRequest')
-                        ->once()
-                        ->with('GET', 'v5/market/orderbook', [
-                            'category' => 'linear',
-                            'symbol' => 'BTCUSDT',
-                            'limit' => 25
-                        ])
-                        ->andReturn($mockResponse);
+            ->once()
+            ->with('GET', 'v5/market/orderbook', [
+                'category' => 'linear',
+                'symbol' => 'BTCUSDT',
+                'limit' => 25,
+            ])
+            ->andReturn($mockResponse);
 
         $result = $this->marketData->getOrderbook('BTCUSDT');
 
@@ -236,7 +236,7 @@ class BybitMarketDataTest extends TestCase
     public function test_get_multiple_tickers_success(): void
     {
         $symbols = ['BTCUSDT', 'ETHUSDT'];
-        
+
         $mockResponse = [
             'success' => true,
             'result' => [
@@ -265,14 +265,14 @@ class BybitMarketDataTest extends TestCase
                         'volume24h' => '100.0',
                         'price24hPcnt' => '0.01',
                     ],
-                ]
-            ]
+                ],
+            ],
         ];
 
         $this->mockClient->shouldReceive('publicRequest')
-                        ->once()
-                        ->with('GET', 'v5/market/tickers', ['category' => 'linear'])
-                        ->andReturn($mockResponse);
+            ->once()
+            ->with('GET', 'v5/market/tickers', ['category' => 'linear'])
+            ->andReturn($mockResponse);
 
         $result = $this->marketData->getMultipleTickers($symbols);
 
@@ -316,18 +316,18 @@ class BybitMarketDataTest extends TestCase
                             'maxLeverage' => '100',
                             'leverageStep' => '0.01',
                         ],
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ];
 
         $this->mockClient->shouldReceive('publicRequest')
-                        ->once()
-                        ->with('GET', 'v5/market/instruments-info', [
-                            'category' => 'linear',
-                            'symbol' => 'BTCUSDT'
-                        ])
-                        ->andReturn($mockResponse);
+            ->once()
+            ->with('GET', 'v5/market/instruments-info', [
+                'category' => 'linear',
+                'symbol' => 'BTCUSDT',
+            ])
+            ->andReturn($mockResponse);
 
         $result = $this->marketData->getInstrumentInfo('BTCUSDT');
 
@@ -355,13 +355,13 @@ class BybitMarketDataTest extends TestCase
     {
         $mockResponse = [
             'success' => true,
-            'result' => ['list' => []]
+            'result' => ['list' => []],
         ];
 
         // First call should hit the API
         $this->mockClient->shouldReceive('publicRequest')
-                        ->once()
-                        ->andReturn($mockResponse);
+            ->once()
+            ->andReturn($mockResponse);
 
         $result1 = $this->marketData->getKlines('BTCUSDT');
         $result2 = $this->marketData->getKlines('BTCUSDT'); // Should use cache
@@ -374,13 +374,13 @@ class BybitMarketDataTest extends TestCase
     {
         $mockResponse = [
             'success' => true,
-            'result' => ['list' => []]
+            'result' => ['list' => []],
         ];
 
         // Different parameters should result in different cache keys and API calls
         $this->mockClient->shouldReceive('publicRequest')
-                        ->twice()
-                        ->andReturn($mockResponse);
+            ->twice()
+            ->andReturn($mockResponse);
 
         $this->marketData->getKlines('BTCUSDT', '1');
         $this->marketData->getKlines('BTCUSDT', '5'); // Different interval

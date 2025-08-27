@@ -1,0 +1,3 @@
+Ağu 27 16:41:01 emir systemd[1]: Started sentinentx-test.service - SentinentX AI Trading Bot - Test Service (Ubuntu 24.04 LTS Smoke Test).
+Ağu 27 16:41:02 emir sentinentx-test[185767]: Laravel Framework 12.24.0
+Ağu 27 16:41:02 emir systemd[1]: sentinentx-test.service: Deactivated successfully.

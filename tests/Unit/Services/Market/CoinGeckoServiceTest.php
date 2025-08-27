@@ -16,7 +16,7 @@ class CoinGeckoServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new CoinGeckoService();
+        $this->service = new CoinGeckoService;
         Cache::flush();
     }
 
@@ -111,25 +111,25 @@ class CoinGeckoServiceTest extends TestCase
         $this->assertArrayHasKey('ETHUSDT', $result);
         $this->assertArrayHasKey('SOLUSDT', $result);
         $this->assertArrayHasKey('XRPUSDT', $result);
-        
+
         $btcData = $result['BTCUSDT'];
         $this->assertEquals('BTCUSDT', $btcData['symbol']);
-        
+
         // Test basic structure and data types (graceful degradation)
         $this->assertArrayHasKey('name', $btcData);
         $this->assertArrayHasKey('current_price', $btcData);
         $this->assertArrayHasKey('reliability_score', $btcData);
         $this->assertArrayHasKey('sentiment', $btcData);
-        
+
         $this->assertIsString($btcData['name']);
         $this->assertIsFloat($btcData['current_price']);
         $this->assertIsFloat($btcData['reliability_score']);
         $this->assertIsFloat($btcData['sentiment']);
-        
+
         // Test that reliability and sentiment scores are calculated
         $this->assertGreaterThanOrEqual(0, $btcData['reliability_score']);
         $this->assertGreaterThanOrEqual(0, $btcData['sentiment']);
-        
+
         $ethData = $result['ETHUSDT'];
         $this->assertEquals('ETHUSDT', $ethData['symbol']);
         $this->assertIsString($ethData['name']);
@@ -218,12 +218,12 @@ class CoinGeckoServiceTest extends TestCase
 
         // First call
         $result1 = $this->service->getMultiCoinData();
-        
+
         // Second call should use cache
         $result2 = $this->service->getMultiCoinData();
 
         $this->assertEquals($result1, $result2);
-        
+
         // Should only make one HTTP request
         Http::assertSentCount(1);
     }

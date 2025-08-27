@@ -211,7 +211,7 @@ class TradingWorkflowIntegrationTest extends TestCase
         ]);
 
         $ai3 = new FakeAiProvider('ai3', [
-            'action' => 'LONG', 
+            'action' => 'LONG',
             'confidence' => 75,
         ]);
 
@@ -224,7 +224,7 @@ class TradingWorkflowIntegrationTest extends TestCase
         $this->assertArrayHasKey('action', $decision);
         $this->assertArrayHasKey('reason', $decision);
         $this->assertArrayHasKey('confidence', $decision);
-        
+
         // Verify system handled the NONE input appropriately
         $validActions = ['LONG', 'SHORT', 'NONE', 'NO_TRADE', 'HOLD'];
         $this->assertContains($decision['action'], $validActions);

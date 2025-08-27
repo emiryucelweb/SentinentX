@@ -4,22 +4,25 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\AI;
 
-use App\Services\AI\MultiCoinAnalysisService;
-use App\Services\Market\CoinGeckoService;
-use App\Services\Market\BybitMarketData;
-use App\Services\AI\ConsensusService;
 use App\Models\User;
+use App\Services\AI\ConsensusService;
+use App\Services\AI\MultiCoinAnalysisService;
+use App\Services\Market\BybitMarketData;
+use App\Services\Market\CoinGeckoService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Mockery;
+use Tests\TestCase;
 
 class MultiCoinAnalysisServiceTest extends TestCase
 {
     use RefreshDatabase;
 
     private MultiCoinAnalysisService $service;
+
     private $coinGeckoService;
+
     private $bybitMarketData;
+
     private $consensusService;
 
     protected function setUp(): void
@@ -40,7 +43,7 @@ class MultiCoinAnalysisServiceTest extends TestCase
     public function test_analyzes_all_four_coins(): void
     {
         $user = User::factory()->create([
-            'meta' => ['risk_profile' => 'moderate']
+            'meta' => ['risk_profile' => 'moderate'],
         ]);
 
         // Mock CoinGecko data
@@ -207,7 +210,7 @@ class MultiCoinAnalysisServiceTest extends TestCase
     public function test_includes_risk_profile_in_context(): void
     {
         $user = User::factory()->create([
-            'meta' => ['risk_profile' => 'aggressive']
+            'meta' => ['risk_profile' => 'aggressive'],
         ]);
 
         $this->coinGeckoService

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\Trading;
 
-use App\Models\User;
 use App\Models\Trade;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class DailyPnLService
@@ -16,8 +15,6 @@ class DailyPnLService
     /**
      * Kullanıcının günlük PnL'ini hesapla (00:00 - 00:00)
      *
-     * @param User $user
-     * @param Carbon|null $date
      * @return array<string, mixed>
      */
     public function calculateDailyPnL(User $user, ?Carbon $date = null): array
@@ -32,17 +29,17 @@ class DailyPnLService
             try {
                 // Gün içinde açılan ve kapanan işlemler
                 $completedTrades = $this->getCompletedTrades($user, $dayStart, $dayEnd);
-                
+
                 // Gün içinde açılan ama hala açık olan işlemler
                 $openTrades = $this->getOpenTrades($user, $dayStart, $dayEnd);
-                
+
                 // Önceki günlerden açık kalan işlemler
                 $carryOverTrades = $this->getCarryOverTrades($user, $dayStart);
 
                 // PnL hesaplamaları
                 $completedPnL = $this->calculateCompletedPnL($completedTrades);
                 $unrealizedPnL = $this->calculateUnrealizedPnL($openTrades, $carryOverTrades);
-                
+
                 $totalDailyPnL = $completedPnL['total'] + $unrealizedPnL['total'];
                 $totalFees = $completedPnL['fees'] + $unrealizedPnL['fees'];
                 $netPnL = $totalDailyPnL - $totalFees;
@@ -110,13 +107,12 @@ class DailyPnLService
     /**
      * AI için günlük PnL context hazırla
      *
-     * @param User $user
      * @return array<string, mixed>
      */
     public function getDailyPnLForAI(User $user): array
     {
         $dailyPnL = $this->calculateDailyPnL($user);
-        
+
         if (isset($dailyPnL['error'])) {
             return [
                 'daily_pnl' => 0.0,
@@ -228,7 +224,7 @@ class DailyPnLService
         foreach ($allOpenTrades as $trade) {
             // Mevcut fiyatı al (cache'den veya API'den)
             $currentPrice = $this->getCurrentPrice($trade['symbol']);
-            
+
             if ($currentPrice) {
                 $unrealizedPnL = $this->calculateUnrealizedPnLForTrade($trade, $currentPrice);
                 $totalUnrealizedPnL += $unrealizedPnL;
@@ -266,7 +262,7 @@ class DailyPnLService
     private function getCurrentPrice(string $symbol): ?float
     {
         $cacheKey = "current_price_{$symbol}";
-        
+
         return Cache::remember($cacheKey, 60, function () use ($symbol) {
             try {
                 // Bu gerçek implementasyonda BybitMarketData'dan gelecek
@@ -284,6 +280,7 @@ class DailyPnLService
                     'symbol' => $symbol,
                     'error' => $e->getMessage(),
                 ]);
+
                 return null;
             }
         });
@@ -344,7 +341,7 @@ class DailyPnLService
 
         return match ($riskStatus) {
             'target_reached' => 'Daily target achieved. Consider taking profit and stopping for today.',
-            'near_target' => "Close to target (" . number_format($targetProgress, 1) . "%). Be selective with new trades.",
+            'near_target' => 'Close to target ('.number_format($targetProgress, 1).'%). Be selective with new trades.',
             'on_track' => 'Good progress. Continue with current strategy.',
             'positive' => 'Positive but below target. Look for quality setups.',
             'slight_loss' => 'Minor loss. Stick to risk management rules.',
@@ -360,7 +357,7 @@ class DailyPnLService
     {
         $profileName = $user->meta['risk_profile'] ?? 'moderate';
         $profiles = config('risk_profiles.profiles', []);
-        
+
         return $profiles[$profileName] ?? $profiles['moderate'] ?? [];
     }
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\AI;
 
-use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 class SmartStopLossService
@@ -12,20 +11,16 @@ class SmartStopLossService
     /**
      * AI confidence'a göre SL/TP stratejisini belirle
      *
-     * @param array $aiDecision
-     * @param array $riskProfile
-     * @param float $entryPrice
-     * @param string $side
      * @return array<string, mixed>
      */
     public function calculateStopLossTakeProfit(
-        array $aiDecision, 
-        array $riskProfile, 
-        float $entryPrice, 
+        array $aiDecision,
+        array $riskProfile,
+        float $entryPrice,
         string $side
     ): array {
         $confidence = (float) ($aiDecision['confidence'] ?? 0);
-        
+
         if ($confidence > 70) {
             // Yüksek confidence: ChatGPT'nin önerdiği fiyatları kullan
             return $this->useAiSuggestedPrices($aiDecision, $entryPrice, $side);
@@ -38,9 +33,6 @@ class SmartStopLossService
     /**
      * AI'ın önerdiği fiyatları kullan (confidence >70)
      *
-     * @param array $aiDecision
-     * @param float $entryPrice
-     * @param string $side
      * @return array<string, mixed>
      */
     private function useAiSuggestedPrices(array $aiDecision, float $entryPrice, string $side): array
@@ -86,9 +78,6 @@ class SmartStopLossService
     /**
      * Risk profili varsayılan oranlarını kullan (confidence <=70)
      *
-     * @param array $riskProfile
-     * @param float $entryPrice
-     * @param string $side
      * @return array<string, mixed>
      */
     private function useRiskProfileDefaults(array $riskProfile, float $entryPrice, string $side): array
@@ -133,8 +122,6 @@ class SmartStopLossService
     /**
      * Varsayılan oranları kullan (fallback)
      *
-     * @param float $entryPrice
-     * @param string $side
      * @return array<string, mixed>
      */
     private function useDefaultRatios(float $entryPrice, string $side): array
@@ -178,12 +165,6 @@ class SmartStopLossService
 
     /**
      * AI'ın önerdiği fiyatları doğrula
-     *
-     * @param float $stopLoss
-     * @param float $takeProfit
-     * @param float $entryPrice
-     * @param string $side
-     * @return bool
      */
     private function validateAiPrices(float $stopLoss, float $takeProfit, float $entryPrice, string $side): bool
     {
@@ -240,12 +221,6 @@ class SmartStopLossService
 
     /**
      * Risk/reward oranını hesapla
-     *
-     * @param float $stopLoss
-     * @param float $takeProfit
-     * @param float $entryPrice
-     * @param string $side
-     * @return float
      */
     private function calculateRiskRewardRatio(float $stopLoss, float $takeProfit, float $entryPrice, string $side): float
     {
@@ -267,16 +242,13 @@ class SmartStopLossService
     /**
      * ChatGPT öncelikli SL/TP belirleme
      *
-     * @param array $aiDecisions 3 AI'ın kararları
-     * @param array $riskProfile
-     * @param float $entryPrice
-     * @param string $side
+     * @param  array  $aiDecisions  3 AI'ın kararları
      * @return array<string, mixed>
      */
     public function determinePriorityBasedStopLoss(
-        array $aiDecisions, 
-        array $riskProfile, 
-        float $entryPrice, 
+        array $aiDecisions,
+        array $riskProfile,
+        float $entryPrice,
         string $side
     ): array {
         // ChatGPT (OpenAI) kararını bul

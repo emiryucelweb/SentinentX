@@ -37,9 +37,7 @@ class DatabaseServiceProvider extends ServiceProvider
                 $this->configurePostgreSQLTimeouts($connection, $config);
             }
 
-            if ($config['driver'] === 'mysql') {
-                $this->configureMySQLTimeouts($connection, $config);
-            }
+            // PostgreSQL-only configuration
         });
 
         // Log slow queries (for debugging and optimization)
@@ -90,33 +88,6 @@ class DatabaseServiceProvider extends ServiceProvider
 
         } catch (\Exception $e) {
             Log::error('Failed to configure PostgreSQL timeouts', [
-                'connection' => $connection->getName(),
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    /**
-     * Configure MySQL specific timeout settings
-     */
-    private function configureMySQLTimeouts($connection, array $config): void
-    {
-        try {
-            // Set wait_timeout and interactive_timeout
-            $timeout = $config['options'][PDO::ATTR_TIMEOUT] ?? 30;
-            $connection->statement("SET SESSION wait_timeout = {$timeout}");
-            $connection->statement("SET SESSION interactive_timeout = {$timeout}");
-
-            // Set innodb_lock_wait_timeout
-            $connection->statement('SET SESSION innodb_lock_wait_timeout = 10');
-
-            Log::debug('MySQL timeouts configured', [
-                'connection' => $connection->getName(),
-                'timeout' => $timeout,
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Failed to configure MySQL timeouts', [
                 'connection' => $connection->getName(),
                 'error' => $e->getMessage(),
             ]);

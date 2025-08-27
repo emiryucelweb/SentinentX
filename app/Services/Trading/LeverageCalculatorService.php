@@ -12,16 +12,12 @@ class LeverageCalculatorService
     /**
      * Risk profiline göre optimal kaldıracı hesapla
      *
-     * @param User $user
-     * @param array $aiDecision
-     * @param string $symbol
-     * @param float $accountBalance
      * @return array<string, mixed>
      */
     public function calculateOptimalLeverage(
-        User $user, 
-        array $aiDecision, 
-        string $symbol, 
+        User $user,
+        array $aiDecision,
+        string $symbol,
         float $accountBalance
     ): array {
         $riskProfile = $this->getUserRiskProfile($user);
@@ -49,9 +45,9 @@ class LeverageCalculatorService
 
         // Risk kontrolü
         $riskAssessment = $this->assessLeverageRisk(
-            $finalLeverage, 
-            $riskProfile, 
-            $accountBalance, 
+            $finalLeverage,
+            $riskProfile,
+            $accountBalance,
             $confidence
         );
 
@@ -81,46 +77,34 @@ class LeverageCalculatorService
 
     /**
      * Maksimum pozisyon büyüklüğünü hesapla
-     *
-     * @param float $leverage
-     * @param float $accountBalance
-     * @param array $riskProfile
-     * @return float
      */
     private function calculateMaxPositionSize(float $leverage, float $accountBalance, array $riskProfile): float
     {
         $equityUsagePct = (float) ($riskProfile['position_sizing']['equity_usage_pct'] ?? 30.0);
         $maxEquityUsage = $accountBalance * ($equityUsagePct / 100);
-        
+
         return $maxEquityUsage * $leverage;
     }
 
     /**
      * Final kaldıracı belirle
-     *
-     * @param float $aiSuggested
-     * @param float $confidence
-     * @param float $minLeverage
-     * @param float $maxLeverage
-     * @param float $defaultLeverage
-     * @return float
      */
     private function determineFinalLeverage(
-        float $aiSuggested, 
-        float $confidence, 
-        float $minLeverage, 
-        float $maxLeverage, 
+        float $aiSuggested,
+        float $confidence,
+        float $minLeverage,
+        float $maxLeverage,
         float $defaultLeverage
     ): float {
         // AI güveni yüksekse AI önerisini kullan (limitler dahilinde)
         if ($confidence > 70 && $aiSuggested > 0) {
             $clampedLeverage = max($minLeverage, min($maxLeverage, $aiSuggested));
-            
+
             // AI önerisi limitler dahilindeyse kullan
             if ($clampedLeverage === $aiSuggested) {
                 return $aiSuggested;
             }
-            
+
             // AI önerisi sınırların dışındaysa sınıra yakın değer kullan
             return $clampedLeverage;
         }
@@ -131,17 +115,11 @@ class LeverageCalculatorService
 
     /**
      * Confidence bazlı kaldıraç hesaplama
-     *
-     * @param float $confidence
-     * @param float $minLeverage
-     * @param float $maxLeverage
-     * @param float $defaultLeverage
-     * @return float
      */
     private function calculateConfidenceBasedLeverage(
-        float $confidence, 
-        float $minLeverage, 
-        float $maxLeverage, 
+        float $confidence,
+        float $minLeverage,
+        float $maxLeverage,
         float $defaultLeverage
     ): float {
         if ($confidence >= 90) {
@@ -164,30 +142,23 @@ class LeverageCalculatorService
 
     /**
      * Sembol bazlı maksimum kaldıraç al
-     *
-     * @param string $symbol
-     * @return float
      */
     private function getSymbolMaxLeverage(string $symbol): float
     {
         $symbolConfigs = config('trading.symbol_configs', []);
-        
+
         return (float) ($symbolConfigs[$symbol]['max_leverage'] ?? 50.0);
     }
 
     /**
      * Kaldıraç riskini değerlendir
      *
-     * @param float $leverage
-     * @param array $riskProfile
-     * @param float $accountBalance
-     * @param float $confidence
      * @return array<string, mixed>
      */
     private function assessLeverageRisk(
-        float $leverage, 
-        array $riskProfile, 
-        float $accountBalance, 
+        float $leverage,
+        array $riskProfile,
+        float $accountBalance,
         float $confidence
     ): array {
         $riskLevel = 'low';
@@ -253,23 +224,17 @@ class LeverageCalculatorService
 
     /**
      * Liquidation fiyat tahmini
-     *
-     * @param float $leverage
-     * @return string
      */
     private function estimateLiquidationPrice(float $leverage): string
     {
         // Basit tahmin: Kaldıraç arttıkça liquidation risk artar
         $riskPercentage = (1 / $leverage) * 100;
-        
-        return "~" . number_format($riskPercentage, 1) . "% price movement against position";
+
+        return '~'.number_format($riskPercentage, 1).'% price movement against position';
     }
 
     /**
      * Önerilen aksiyon
-     *
-     * @param string $riskLevel
-     * @return string
      */
     private function getRecommendedAction(string $riskLevel): string
     {
@@ -285,12 +250,6 @@ class LeverageCalculatorService
 
     /**
      * Hesaplama yöntemini al
-     *
-     * @param float $aiSuggested
-     * @param float $confidence
-     * @param float $min
-     * @param float $max
-     * @return string
      */
     private function getCalculationMethod(float $aiSuggested, float $confidence, float $min, float $max): string
     {
@@ -306,22 +265,19 @@ class LeverageCalculatorService
     /**
      * Kullanıcı risk profilini al
      *
-     * @param User $user
      * @return array<string, mixed>
      */
     private function getUserRiskProfile(User $user): array
     {
         $profileName = $user->meta['risk_profile'] ?? 'moderate';
         $profiles = config('risk_profiles.profiles', []);
-        
+
         return $profiles[$profileName] ?? $profiles['moderate'] ?? [];
     }
 
     /**
      * Kaldıraç önerisi al (AI için)
      *
-     * @param User $user
-     * @param string $symbol
      * @return array<string, mixed>
      */
     public function getLeverageRecommendation(User $user, string $symbol): array
@@ -329,14 +285,14 @@ class LeverageCalculatorService
         $riskProfile = $this->getUserRiskProfile($user);
         $leverageConfig = $riskProfile['leverage'] ?? ['min' => 3, 'max' => 15, 'default' => 5];
         $symbolMaxLeverage = $this->getSymbolMaxLeverage($symbol);
-        
+
         $effectiveMax = min((float) $leverageConfig['max'], $symbolMaxLeverage);
-        
+
         return [
             'min_leverage' => (float) $leverageConfig['min'],
             'max_leverage' => $effectiveMax,
             'default_leverage' => (float) $leverageConfig['default'],
-            'recommended_range' => $leverageConfig['min'] . '-' . $effectiveMax . 'x',
+            'recommended_range' => $leverageConfig['min'].'-'.$effectiveMax.'x',
             'risk_profile' => $riskProfile['name'] ?? 'moderate',
             'symbol_max' => $symbolMaxLeverage,
         ];

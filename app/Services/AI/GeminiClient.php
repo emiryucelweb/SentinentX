@@ -87,20 +87,20 @@ final class GeminiClient implements AiProvider
         }
 
         $txt = (string) Arr::get($resp->json(), 'candidates.0.content.parts.0.text', '');
-        
+
         // Clean the response text - remove markdown and extra characters
         $txt = trim($txt);
         $txt = preg_replace('/^```json\s*/', '', $txt);
         $txt = preg_replace('/\s*```$/', '', $txt);
         $txt = preg_replace('/^```\s*/', '', $txt);
-        
+
         $data = json_decode($txt, true);
         if (! is_array($data)) {
             // Try to extract JSON from the response if it's embedded in text
             if (preg_match('/\{.*\}/s', $txt, $matches)) {
                 $data = json_decode($matches[0], true);
             }
-            
+
             if (! is_array($data)) {
                 // Return a default decision if JSON parsing fails
                 return new AiDecision(
@@ -121,7 +121,7 @@ final class GeminiClient implements AiProvider
             'stop_loss' => $data['stop_loss'] ?? 0.0,
             'take_profit' => $data['take_profit'] ?? 0.0,
             'reason' => $data['reason'] ?? 'No reason provided',
-            'raw' => $data // Keep raw response for leverage extraction
+            'raw' => $data, // Keep raw response for leverage extraction
         ]);
     }
 }

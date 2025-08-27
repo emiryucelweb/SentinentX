@@ -1,0 +1,81 @@
+[Unit]
+Description=SentinentX AI Trading Bot - Queue Worker
+Documentation=https://github.com/sentinentx/sentinentx
+After=network-online.target postgresql.service redis-server.service sentinentx.service
+Wants=network-online.target
+Requires=postgresql.service redis-server.service
+PartOf=sentinentx.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/sentinentx
+
+# Environment configuration
+Environment=APP_ENV=production
+Environment=APP_DEBUG=false
+Environment=LOG_CHANNEL=structured
+Environment=QUEUE_CONNECTION=redis
+Environment=BROADCAST_DRIVER=redis
+Environment=CACHE_DRIVER=redis
+Environment=SESSION_DRIVER=redis
+
+# Queue worker with optimized settings
+ExecStart=/usr/bin/php /var/www/sentinentx/artisan queue:work redis --sleep=3 --tries=3 --max-time=3600 --max-jobs=1000 --queue=high,default,low --memory=512
+
+# Graceful restart when code changes
+ExecReload=/usr/bin/kill -USR2 $MAINPID
+
+# Process management
+Restart=always
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=5
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStartSec=60
+TimeoutStopSec=120
+
+# Resource limits optimized for queue processing
+LimitNOFILE=32768
+LimitNPROC=16384
+MemoryMax=1G
+CPUQuota=150%
+
+# Security hardening for Ubuntu 24.04 LTS
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/sentinentx/storage /var/log/sentinentx /tmp
+PrivateTmp=true
+PrivateDevices=true
+ProtectHostname=true
+ProtectClock=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RemoveIPC=true
+
+# Queue worker specific settings
+OOMScoreAdjust=100
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sentinentx-queue
+
+# Health monitoring
+WatchdogSec=240
+NotifyAccess=none
+
+[Install]
+WantedBy=multi-user.target
+RequiredBy=sentinentx.service

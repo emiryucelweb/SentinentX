@@ -1,0 +1,147 @@
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_position_sizing_basic_functionality(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_stop_calculator_basic_functionality(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_bcmath_precision(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_zero_division_protection(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_overflow_protection(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_negative_value_protection(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_risk_calculation_consistency(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\ComprehensiveMathTest::test_leverage_constraints(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\E2E\MultiTenantDataIsolationTest::tenant_a_cannot_access_tenant_b_trades(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\E2E\MultiTenantDataIsolationTest::rls_policies_are_enforced_at_database_level(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\E2E\MultiTenantDataIsolationTest::cross_tenant_update_attempts_fail(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+PHPUnit 11.5.33 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.6 with Xdebug 3.4.5
+Configuration: /home/emir/Desktop/sentinentx/phpunit.xml
+Random Seed:   1756300922
+
+
+   PASS  Tests\Unit\RiskGuardExtendedTest
+  ✓ usdt depeg edge case exactly 995                                     0.42s  
+  ✓ usdt depeg edge case exactly 1005                                    0.10s  
+  ✓ usdt depeg low parity blocks                                         0.09s  
+  ✓ ok to open insufficient buffer                                       0.10s  
+  ✓ ok to open valid position                                            0.09s  
+  ✓ usdt depeg high parity blocks                                        0.09s  
+  ✓ usdt depeg extreme values                                            0.10s  
+  ✓ usdt depeg with different bounds                                     0.10s  
+  ✓ usdt depeg normal parity                                             0.09s  
+
+   PASS  Tests\Unit\MarketDataServiceTest
+  ✓ liquidity scores reflect market depth                                0.18s  
+  ✓ mock data is deterministic                                           0.10s  
+  ✓ spread calculation is accurate                                       0.09s  
+  ✓ price relationships are logical                                      0.09s  
+  ✓ volatility reflects crypto market characteristics                    0.09s  
+  ✓ order book different depths work                                     0.09s  
+  ✓ order book depth provides realistic levels                           0.10s  
+  ✓ all crypto symbols have consistent data                              0.10s  
+  ✓ get best price returns realistic crypto prices                       0.10s  
+  ✓ market data supports trading decisions                               0.10s  
+  ✓ current price includes realistic spread                              0.10s  
+
+   WARN  Tests\Unit\DataExportServiceTest
+  - export handles empty user data gracefully → GDPR service schema compatibility needs production alignment
+  - export filename contains user and timestamp → GDPR service schema compatibility needs production alignment
+  - export includes sensitive financial data correctly → GDPR service schema compatibility needs production alignment
+  - export includes metadata for compliance → GDPR service schema compatibility needs production alignment
+  - export size is reasonable for active trader → GDPR service schema compatibility needs production alignment
+  - export includes ai decision reasoning → GDPR service schema compatibility needs production alignment
+  - export includes all crypto trading data → GDPR service schema compatibility needs production alignment
+  - export json structure is valid → GDPR service schema compatibility needs production alignment
+  - export user data creates comprehensive json export → GDPR service schema compatibility needs production alignment
+  - export respects user isolation → GDPR service schema compatibility needs production alignment
+
+   PASS  Tests\Unit\Services\Trading\TradeManagerTest
+  ✓ trade manager instantiation                                          0.18s  
+  ✓ open with fallback handles failure                                   0.10s  
+  ✓ open with fallback post only success                                 0.09s  
+
+   FAIL  Tests\Unit\ConsensusServiceExtendedTest
+  ✓ two round consensus stage1 stage2                                    0.17s  
+  - consensus metadata structure → ConsensusService metadata structure…  0.10s  
+  - consensus with invalid actions → ConsensusService invalid actions l… 0.10s  
+  - mixed actions consensus → ConsensusService mixed actions logic need… 0.10s  
+  ⨯ weighted median calculation                                          0.12s  
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\ConsensusServiceExtendedTest > weighted median calcula…   
+  Failed asserting that 70 is equal to 80 or is greater than 80.
+
+  at tests/Unit/ConsensusServiceExtendedTest.php:110
+    106▕         $decision = $consensus->decide(['symbol' => 'BTCUSDT']);
+    107▕ 
+    108▕         // Middle confidence (80) should dominate
+    109▕         $this->assertEquals('LONG', $decision['action']);
+  ➜ 110▕         $this->assertGreaterThanOrEqual(80, $decision['confidence']);
+    111▕     }
+    112▕ 
+    113▕     public function test_deviation_veto_leverage()
+    114▕     {
+
+  1   tests/Unit/ConsensusServiceExtendedTest.php:110
+
+
+  Tests:    1 failed, 13 skipped, 24 passed, [2m1301 pending[22m (130 assertions)
+  Duration: 7.59s
+  Random Order Seed: 1756300922
+
+Time: 00:06.862, Memory: 72.50 MB
+
+Consensus Service Extended (Tests\Unit\ConsensusServiceExtended)
+ ✔ Two round consensus stage1 stage2
+ ✘ Weighted median calculation
+   │
+   │ Failed asserting that 70 is equal to 80 or is greater than 80.
+   │
+   │ /home/emir/Desktop/sentinentx/tests/Unit/ConsensusServiceExtendedTest.php:110
+   │
+ ↩ Mixed actions consensus
+ ↩ Consensus metadata structure
+ ↩ Consensus with invalid actions
+
+Market Data Service (Tests\Unit\MarketDataService)
+ ✔ Get best price returns realistic crypto prices
+ ✔ Current price includes realistic spread
+ ✔ Volatility reflects crypto market characteristics
+ ✔ Liquidity scores reflect market depth
+ ✔ Spread calculation is accurate
+ ✔ Order book depth provides realistic levels
+ ✔ Order book different depths work
+ ✔ All crypto symbols have consistent data
+ ✔ Price relationships are logical
+ ✔ Market data supports trading decisions
+ ✔ Mock data is deterministic
+
+Risk Guard Extended (Tests\Unit\RiskGuardExtended)
+ ✔ Usdt depeg normal parity
+ ✔ Usdt depeg low parity blocks
+ ✔ Usdt depeg high parity blocks
+ ✔ Usdt depeg edge case exactly 995
+ ✔ Usdt depeg edge case exactly 1005
+ ✔ Usdt depeg with different bounds
+ ✔ Usdt depeg extreme values
+ ✔ Ok to open valid position
+ ✔ Ok to open insufficient buffer
+
+Trade Manager (Tests\Unit\Services\Trading\TradeManager)
+ ✔ Trade manager instantiation
+ ✔ Open with fallback post only success
+ ✔ Open with fallback handles failure
+
+FAILURES!
+Tests: 38, Assertions: 130, Failures: 1, PHPUnit Deprecations: 11, Skipped: 13.
+
+Generating code coverage report in Clover XML format ... done [00:00.322]
+
+Generating code coverage report in HTML format ... done [00:01.873]

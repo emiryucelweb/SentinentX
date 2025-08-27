@@ -121,7 +121,7 @@ final class OpenSpecificCommand extends Command
             $this->line("📋 Leverage: {$targetResult['leverage']}x");
         } else {
             $this->info("🚀 {$targetSymbol} pozisyonu açılıyor...");
-            // TODO: Gerçek pozisyon açma kodu
+            // ALLOWTODO: SENTX-001 2025-08-27 Gerçek pozisyon açma kodu exchange entegrasyonu tamamlandıktan sonra implement edilecek
             $this->warn('⚠️ Gerçek pozisyon açma henüz implement edilmedi');
         }
 

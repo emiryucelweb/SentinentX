@@ -35,7 +35,7 @@ return new class extends Migration
             // Bu kısım devre dışı - 2025_08_21_064148_fix_postgresql_ai_logs_enum.php kullanılıyor
             /*
             Schema::table('ai_logs', function (Blueprint $table) {
-                $table->enum('stage', ['STAGE1', 'STAGE2', 'FINAL'])->change();
+                $table->string('stage', 50)->change(); // PostgreSQL compatible
             });
             */
         }
@@ -65,7 +65,7 @@ return new class extends Migration
             });
         } else {
             Schema::table('ai_logs', function (Blueprint $table) {
-                $table->enum('stage', ['R1', 'R2', 'FINAL'])->change();
+                $table->string('stage', 50)->change(); // PostgreSQL compatible
             });
         }
     }

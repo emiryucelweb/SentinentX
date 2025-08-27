@@ -11,12 +11,13 @@ use Illuminate\Support\Facades\Log;
 class CoinGeckoService
 {
     private const BASE_URL = 'https://api.coingecko.com/api/v3';
+
     private const CACHE_TTL = 300; // 5 dakika cache
 
     // CoinGecko ID mapping
     private const COIN_MAPPING = [
         'BTCUSDT' => 'bitcoin',
-        'ETHUSDT' => 'ethereum', 
+        'ETHUSDT' => 'ethereum',
         'SOLUSDT' => 'solana',
         'XRPUSDT' => 'ripple',
     ];
@@ -33,7 +34,7 @@ class CoinGeckoService
         return Cache::remember($cacheKey, self::CACHE_TTL, function () {
             try {
                 $coinIds = implode(',', array_values(self::COIN_MAPPING));
-                
+
                 $headers = [];
                 $apiKey = env('COINGECKO_API_KEY');
                 if ($apiKey) {
@@ -43,7 +44,7 @@ class CoinGeckoService
                 $response = Http::withHeaders($headers)
                     ->timeout(10)
                     ->retry(2, 1000)
-                    ->get(self::BASE_URL . '/coins/markets', [
+                    ->get(self::BASE_URL.'/coins/markets', [
                         'vs_currency' => 'usd',
                         'ids' => $coinIds,
                         'order' => 'market_cap_desc',
@@ -51,14 +52,15 @@ class CoinGeckoService
                         'page' => 1,
                         'sparkline' => true,
                         'price_change_percentage' => '1h,24h,7d,30d',
-                        'locale' => 'en'
+                        'locale' => 'en',
                     ]);
 
-                if (!$response->successful()) {
+                if (! $response->successful()) {
                     Log::error('CoinGecko API error', [
                         'status' => $response->status(),
-                        'body' => $response->body()
+                        'body' => $response->body(),
                     ]);
+
                     return $this->getFallbackData();
                 }
 
@@ -67,7 +69,7 @@ class CoinGeckoService
 
                 foreach (self::COIN_MAPPING as $symbol => $coinId) {
                     $coinData = collect($data)->firstWhere('id', $coinId);
-                    
+
                     if ($coinData) {
                         $result[$symbol] = $this->formatCoinData($symbol, $coinData);
                     } else {
@@ -77,7 +79,7 @@ class CoinGeckoService
 
                 Log::info('CoinGecko data fetched successfully', [
                     'coins_count' => count($result),
-                    'timestamp' => now()->toISOString()
+                    'timestamp' => now()->toISOString(),
                 ]);
 
                 return $result;
@@ -85,7 +87,7 @@ class CoinGeckoService
             } catch (\Throwable $e) {
                 Log::error('CoinGecko service error', [
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
 
                 return $this->getFallbackData();
@@ -96,15 +98,15 @@ class CoinGeckoService
     /**
      * Tek coin için detaylı veri al
      *
-     * @param string $symbol
      * @return array<string, mixed>
      */
     public function getCoinData(string $symbol): array
     {
         $symbol = strtoupper($symbol);
-        
-        if (!isset(self::COIN_MAPPING[$symbol])) {
+
+        if (! isset(self::COIN_MAPPING[$symbol])) {
             Log::warning('Unsupported coin symbol', ['symbol' => $symbol]);
+
             return $this->getEmptyData($symbol);
         }
 
@@ -113,33 +115,35 @@ class CoinGeckoService
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($symbol) {
             try {
                 $coinId = self::COIN_MAPPING[$symbol];
-                
+
                 $response = Http::timeout(10)
                     ->retry(2, 1000)
-                    ->get(self::BASE_URL . "/coins/{$coinId}", [
+                    ->get(self::BASE_URL."/coins/{$coinId}", [
                         'localization' => false,
                         'tickers' => false,
                         'market_data' => true,
                         'community_data' => false,
                         'developer_data' => false,
-                        'sparkline' => true
+                        'sparkline' => true,
                     ]);
 
-                if (!$response->successful()) {
+                if (! $response->successful()) {
                     Log::error('CoinGecko single coin API error', [
                         'symbol' => $symbol,
-                        'status' => $response->status()
+                        'status' => $response->status(),
                     ]);
+
                     return $this->getEmptyData($symbol);
                 }
 
                 $data = $response->json();
+
                 return $this->formatDetailedCoinData($symbol, $data);
 
             } catch (\Throwable $e) {
                 Log::error('CoinGecko single coin error', [
                     'symbol' => $symbol,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
 
                 return $this->getEmptyData($symbol);
@@ -150,8 +154,6 @@ class CoinGeckoService
     /**
      * Market verilerini AI için formatla
      *
-     * @param string $symbol
-     * @param array $coinData
      * @return array<string, mixed>
      */
     private function formatCoinData(string $symbol, array $coinData): array
@@ -184,14 +186,12 @@ class CoinGeckoService
     /**
      * Detaylı coin verilerini formatla
      *
-     * @param string $symbol
-     * @param array $data
      * @return array<string, mixed>
      */
     private function formatDetailedCoinData(string $symbol, array $data): array
     {
         $marketData = $data['market_data'] ?? [];
-        
+
         return [
             'symbol' => $symbol,
             'name' => $data['name'] ?? '',
@@ -217,76 +217,95 @@ class CoinGeckoService
 
     /**
      * Sentiment skorunu hesapla
-     *
-     * @param array $coinData
-     * @return float
      */
     private function calculateSentiment(array $coinData): float
     {
         $score = 50.0; // Nötr başlangıç
-        
+
         // 24 saatlik değişim
         $change24h = (float) ($coinData['price_change_percentage_24h'] ?? 0.0);
         $score += $change24h * 2; // %1 değişim = 2 puan
-        
+
         // 7 günlük trend
         $change7d = (float) ($coinData['price_change_percentage_7d_in_currency'] ?? 0.0);
         $score += $change7d * 0.5; // Haftalık trend daha az ağırlık
-        
+
         // Volume momentum
         $volume = (float) ($coinData['total_volume'] ?? 0.0);
         $marketCap = (float) ($coinData['market_cap'] ?? 1.0);
         $volumeRatio = $marketCap > 0 ? ($volume / $marketCap) * 100 : 0;
-        
-        if ($volumeRatio > 10) $score += 10; // Yüksek volume pozitif
-        elseif ($volumeRatio < 2) $score -= 5; // Düşük volume negatif
-        
+
+        if ($volumeRatio > 10) {
+            $score += 10;
+        } // Yüksek volume pozitif
+        elseif ($volumeRatio < 2) {
+            $score -= 5;
+        } // Düşük volume negatif
+
         return max(0.0, min(100.0, $score));
     }
 
     /**
      * Güvenilirlik skorunu hesapla
-     *
-     * @param array $coinData
-     * @return float
      */
     private function calculateReliabilityScore(array $coinData): float
     {
         $score = 0.0;
-        
+
         // Market cap rank (düşük rank = yüksek güvenilirlik)
         $rank = (int) ($coinData['market_cap_rank'] ?? 999);
-        if ($rank <= 10) $score += 40;
-        elseif ($rank <= 50) $score += 30;
-        elseif ($rank <= 100) $score += 20;
-        else $score += 10;
-        
+        if ($rank <= 10) {
+            $score += 40;
+        } elseif ($rank <= 50) {
+            $score += 30;
+        } elseif ($rank <= 100) {
+            $score += 20;
+        } else {
+            $score += 10;
+        }
+
         // Volume/Market cap oranı
         $volume = (float) ($coinData['total_volume'] ?? 0.0);
         $marketCap = (float) ($coinData['market_cap'] ?? 1.0);
         $volumeRatio = $marketCap > 0 ? ($volume / $marketCap) * 100 : 0;
-        
-        if ($volumeRatio >= 5 && $volumeRatio <= 20) $score += 20; // İdeal range
-        elseif ($volumeRatio >= 2 && $volumeRatio <= 30) $score += 15;
-        else $score += 5;
-        
+
+        if ($volumeRatio >= 5 && $volumeRatio <= 20) {
+            $score += 20;
+        } // İdeal range
+        elseif ($volumeRatio >= 2 && $volumeRatio <= 30) {
+            $score += 15;
+        } else {
+            $score += 5;
+        }
+
         // Volatilite (24h değişim)
         $volatility = abs((float) ($coinData['price_change_percentage_24h'] ?? 0.0));
-        if ($volatility <= 5) $score += 20; // Düşük volatilite güvenilir
-        elseif ($volatility <= 10) $score += 15;
-        elseif ($volatility <= 20) $score += 10;
-        else $score += 5;
-        
+        if ($volatility <= 5) {
+            $score += 20;
+        } // Düşük volatilite güvenilir
+        elseif ($volatility <= 10) {
+            $score += 15;
+        } elseif ($volatility <= 20) {
+            $score += 10;
+        } else {
+            $score += 5;
+        }
+
         // ATH'den uzaklık (çok uzaksa risk)
         $currentPrice = (float) ($coinData['current_price'] ?? 0.0);
         $ath = (float) ($coinData['ath'] ?? 0.0);
         if ($ath > 0) {
             $athDistance = (($ath - $currentPrice) / $ath) * 100;
-            if ($athDistance <= 20) $score += 20; // ATH'ye yakın
-            elseif ($athDistance <= 50) $score += 15;
-            else $score += 10;
+            if ($athDistance <= 20) {
+                $score += 20;
+            } // ATH'ye yakın
+            elseif ($athDistance <= 50) {
+                $score += 15;
+            } else {
+                $score += 10;
+            }
         }
-        
+
         return max(0.0, min(100.0, $score));
     }
 
@@ -296,19 +315,19 @@ class CoinGeckoService
     private function calculateDetailedSentiment(array $data, array $marketData): float
     {
         $score = 50.0;
-        
+
         // Community score etkisi
         $communityScore = (float) ($data['community_score'] ?? 0.0);
         $score += $communityScore * 0.3;
-        
-        // Developer score etkisi  
+
+        // Developer score etkisi
         $developerScore = (float) ($data['developer_score'] ?? 0.0);
         $score += $developerScore * 0.2;
-        
+
         // Market değişimler
         $change24h = (float) ($marketData['price_change_percentage_24h'] ?? 0.0);
         $score += $change24h * 2;
-        
+
         return max(0.0, min(100.0, $score));
     }
 
@@ -318,25 +337,31 @@ class CoinGeckoService
     private function calculateDetailedReliabilityScore(array $data, array $marketData): float
     {
         $score = 0.0;
-        
+
         // Likidite skoru
         $liquidityScore = (float) ($data['liquidity_score'] ?? 0.0);
         $score += $liquidityScore * 0.3;
-        
+
         // Developer activity
         $developerScore = (float) ($data['developer_score'] ?? 0.0);
         $score += $developerScore * 0.2;
-        
+
         // Community güçü
         $communityScore = (float) ($data['community_score'] ?? 0.0);
         $score += $communityScore * 0.2;
-        
+
         // Market metrics
         $marketCap = (float) ($marketData['market_cap']['usd'] ?? 0.0);
-        if ($marketCap > 10_000_000_000) $score += 30; // $10B+
-        elseif ($marketCap > 1_000_000_000) $score += 20; // $1B+
-        else $score += 10;
-        
+        if ($marketCap > 10_000_000_000) {
+            $score += 30;
+        } // $10B+
+        elseif ($marketCap > 1_000_000_000) {
+            $score += 20;
+        } // $1B+
+        else {
+            $score += 10;
+        }
+
         return max(0.0, min(100.0, $score));
     }
 
@@ -351,13 +376,13 @@ class CoinGeckoService
         foreach (array_keys(self::COIN_MAPPING) as $symbol) {
             $result[$symbol] = $this->getEmptyData($symbol);
         }
+
         return $result;
     }
 
     /**
      * Boş veri yapısı
      *
-     * @param string $symbol
      * @return array<string, mixed>
      */
     private function getEmptyData(string $symbol): array

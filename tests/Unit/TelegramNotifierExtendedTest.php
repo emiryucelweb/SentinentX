@@ -172,17 +172,17 @@ class TelegramNotifierExtendedTest extends TestCase
         // Use real Telegram API for testnet - no mocking
         $telegramToken = env('TELEGRAM_BOT_TOKEN');
         $telegramChatId = env('TELEGRAM_CHAT_ID');
-        
+
         if (empty($telegramToken) || empty($telegramChatId)) {
             $this->markTestSkipped('Telegram credentials not configured');
         }
 
         $notifier = new TelegramNotifier($telegramToken, $telegramChatId);
         $message = '🧪 TEST: BTC/USDT position closed! 🚀 Profit: +$100.50 (5.2%)';
-        
+
         // This will send actual message to Telegram
         $result = $notifier->notify($message);
-        
+
         // Should not throw exception and should complete
         $this->assertTrue(true);
     }

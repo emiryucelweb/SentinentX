@@ -1,0 +1,39 @@
+[Unit]
+Description=SentinentX AI Trading Bot - Test Service (Ubuntu 24.04 LTS Smoke Test)
+Documentation=https://github.com/sentinentx/sentinentx
+After=network-online.target postgresql.service redis-server.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=emir
+Group=emir
+WorkingDirectory=/home/emir/Desktop/sentinentx
+
+# Environment configuration
+Environment=APP_ENV=production
+Environment=APP_DEBUG=false
+Environment=LOG_CHANNEL=structured
+
+# Simple test command
+ExecStart=/usr/bin/php /home/emir/Desktop/sentinentx/artisan --version
+Restart=no
+
+# Resource limits (Ubuntu 24.04 LTS optimized)
+LimitNOFILE=65536
+MemoryMax=512M
+
+# Security hardening for Ubuntu 24.04 LTS  
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=false
+ReadWritePaths=/home/emir/Desktop/sentinentx/storage /tmp
+PrivateTmp=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sentinentx-test
+
+[Install]
+WantedBy=multi-user.target

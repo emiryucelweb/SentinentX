@@ -1,0 +1,10 @@
+TODO/FIXME/HACK Violations Report
+Generated: todo_sweeper.py
+Total violations: 5
+==================================================
+
+scripts/todo-sweeper.php:5:TODO - * SentinentX TODO/FIXME/HACK Sweeper
+scripts/todo-sweeper.php:205:TODO - * Process found TODO line
+scripts/todo-sweeper.php:256:TODO - // Non-compliant TODO
+scripts/todo-sweeper.php:330:TODO - * Generate TODO register markdown report
+scripts/todo-sweeper.php:336:TODO - $content = "# TODO/FIXME/HACK Register\n\n";

@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services\Logging;
 
-use App\Models\User;
 use App\Models\Trade;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class TradingLogService
 {
     /**
      * AI kararını logla
-     *
-     * @param array $aiDecision
-     * @param array $context
-     * @param User $user
      */
     public function logAiDecision(array $aiDecision, array $context, User $user): void
     {
@@ -62,10 +58,6 @@ class TradingLogService
 
     /**
      * Pozisyon açılışını logla
-     *
-     * @param Trade $trade
-     * @param array $aiDecision
-     * @param array $executionData
      */
     public function logPositionOpen(Trade $trade, array $aiDecision, array $executionData): void
     {
@@ -104,7 +96,7 @@ class TradingLogService
                     'execution_data' => $executionData,
                     'ai_decision' => $aiDecision,
                     'logged_at' => now()->toISOString(),
-                ])
+                ]),
             ]);
 
             Log::info('Position open logged', [
@@ -125,10 +117,6 @@ class TradingLogService
 
     /**
      * Pozisyon kapanışını logla
-     *
-     * @param Trade $trade
-     * @param array $closeData
-     * @param string $closeReason
      */
     public function logPositionClose(Trade $trade, array $closeData, string $closeReason): void
     {
@@ -169,7 +157,7 @@ class TradingLogService
                     'close_reason' => $closeReason,
                     'final_pnl' => $pnl,
                     'duration_minutes' => $this->calculateDuration($trade->created_at, now()),
-                ])
+                ]),
             ]);
 
             Log::info('Position close logged', [
@@ -190,10 +178,6 @@ class TradingLogService
 
     /**
      * Pozisyon güncelleme logla (SL/TP değişiklikleri)
-     *
-     * @param Trade $trade
-     * @param array $updateData
-     * @param string $updateReason
      */
     public function logPositionUpdate(Trade $trade, array $updateData, string $updateReason): void
     {
@@ -227,7 +211,7 @@ class TradingLogService
                 $updateFields['take_profit'] = $updateData['new_take_profit'];
             }
 
-            if (!empty($updateFields)) {
+            if (! empty($updateFields)) {
                 $updateFields['meta'] = array_merge($trade->meta ?? [], [
                     'last_update' => $updateData,
                     'last_update_reason' => $updateReason,
@@ -255,9 +239,6 @@ class TradingLogService
     /**
      * Performans raporunu oluştur
      *
-     * @param User $user
-     * @param Carbon $startDate
-     * @param Carbon $endDate
      * @return array<string, mixed>
      */
     public function generatePerformanceReport(User $user, Carbon $startDate, Carbon $endDate): array
@@ -412,7 +393,7 @@ class TradingLogService
 
         foreach ($trades->sortBy('created_at') as $trade) {
             $equity += $trade->pnl;
-            
+
             if ($equity > $peak) {
                 $peak = $equity;
             }

@@ -24,6 +24,7 @@ class AlertServiceTest extends TestCase
             public function send(string $level, string $code, string $message, array $context = [], ?string $dedupKey = null): array
             {
                 $this->sent[] = compact('level', 'code', 'message', 'context', 'dedupKey');
+
                 return ['success' => true, 'id' => uniqid()];
             }
 
@@ -50,12 +51,12 @@ class AlertServiceTest extends TestCase
         // Test actual dispatch with real Telegram
         $telegramToken = env('TELEGRAM_BOT_TOKEN');
         $telegramChatId = env('TELEGRAM_CHAT_ID');
-        
-        if (!empty($telegramToken) && !empty($telegramChatId)) {
+
+        if (! empty($telegramToken) && ! empty($telegramChatId)) {
             $realDispatcher = app(\App\Contracts\Notifier\AlertDispatcher::class);
             $realDispatcher->dispatch($alert);
         }
-        
+
         $this->assertTrue(true); // Test passes if alert is created without exception
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Tenant;
 use App\Models\Trade;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,6 +22,7 @@ class TradeFactory extends Factory
         $pnl = $this->faker->randomFloat(2, -2000, 3000);
 
         return [
+            'tenant_id' => Tenant::factory(),
             'symbol' => $this->faker->randomElement($symbols),
             'side' => $side,
             'status' => $this->faker->randomElement($statuses),

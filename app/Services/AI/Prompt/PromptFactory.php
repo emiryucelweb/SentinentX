@@ -20,7 +20,7 @@ final class PromptFactory
         $riskProfile = $ctx['risk_profile'] ?? [];
         $leverageRange = $this->getLeverageRange($riskProfile);
         $profitTarget = $this->getProfitTarget($riskProfile);
-        
+
         $prompt = <<<TXT
 SENİN ROLÜN
 - Bybit vadeli işlemlerde 4 coin (BTCUSDT, ETHUSDT, SOLUSDT, XRPUSDT) için yeni POZİSYON açmaya karar veren 
@@ -275,7 +275,8 @@ TXT;
     private function getLeverageRange(array $riskProfile): string
     {
         $leverage = $riskProfile['leverage'] ?? ['min' => 3, 'max' => 15];
-        return $leverage['min'] . '-' . $leverage['max'] . 'x';
+
+        return $leverage['min'].'-'.$leverage['max'].'x';
     }
 
     /**

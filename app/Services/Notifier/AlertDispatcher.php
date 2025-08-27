@@ -138,7 +138,7 @@ class AlertDispatcher implements AlertDispatcherInterface
                 Log::error("Failed to dispatch alert to {$channel}", [
                     'error' => $e->getMessage(),
                     'level' => $level,
-                    'service' => $code,
+                    'service' => $service,
                 ]);
 
                 $dispatched[$channel] = [
@@ -257,7 +257,7 @@ class AlertDispatcher implements AlertDispatcherInterface
     {
         $payload = [
             'level' => $level,
-            'service' => $code,
+            'service' => $service,
             'message' => $message,
             'context' => $context,
             'timestamp' => now()->toISOString(),

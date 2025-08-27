@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Position Model for SentinentX Trading Bot
- * 
+ *
  * @property int $id
  * @property string $symbol
  * @property string $side
@@ -30,9 +31,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Position extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenantScope;
 
     protected $fillable = [
+        'user_id',
+        'trade_id',
         'symbol',
         'side',
         'status',
@@ -42,6 +45,8 @@ class Position extends Model
         'pnl',
         'fees',
         'leverage',
+        'take_profit',
+        'stop_loss',
         'bybit_position_id',
         'meta',
         'opened_at',
@@ -55,6 +60,8 @@ class Position extends Model
         'pnl' => 'decimal:8',
         'fees' => 'decimal:8',
         'leverage' => 'integer',
+        'take_profit' => 'decimal:8',
+        'stop_loss' => 'decimal:8',
         'meta' => 'array',
         'opened_at' => 'datetime',
         'closed_at' => 'datetime',
@@ -64,15 +71,30 @@ class Position extends Model
      * Position statuses
      */
     public const STATUS_OPEN = 'OPEN';
+
     public const STATUS_CLOSED = 'CLOSED';
+
     public const STATUS_LIQUIDATED = 'LIQUIDATED';
+
     public const STATUS_CANCELLED = 'CANCELLED';
 
     /**
      * Position sides
      */
     public const SIDE_LONG = 'Long';
+
     public const SIDE_SHORT = 'Short';
+
+    // Relationships
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function trade(): BelongsTo
+    {
+        return $this->belongsTo(Trade::class);
+    }
 
     /**
      * Scope to get open positions
@@ -123,7 +145,7 @@ class Position extends Model
         if ($this->entry_price <= 0) {
             return 0;
         }
-        
+
         return abs($this->pnl / ($this->qty * $this->entry_price)) * 100;
     }
 
@@ -134,7 +156,7 @@ class Position extends Model
     {
         $endTime = $this->closed_at ?? now();
         $startTime = $this->opened_at ?? $this->created_at;
-        
+
         return $startTime->diffInMinutes($endTime);
     }
 
