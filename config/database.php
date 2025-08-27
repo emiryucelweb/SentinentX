@@ -31,14 +31,6 @@ return [
 
     'connections' => [
 
-        'sqlite' => [
-            'driver' => 'sqlite',
-            'url' => env('DB_URL'),
-            'database' => env('DB_DATABASE', database_path('database.sqlite')),
-            'prefix' => '',
-            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-        ],
-
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),
@@ -65,33 +57,6 @@ return [
             'max_connections' => env('DB_MAX_CONNECTIONS', 100),
             'shared_preload_libraries' => 'pg_stat_statements',
         ],
-
-        // Multi-tenant PostgreSQL connection with dynamic schema switching
-        'pgsql_saas' => [
-            'driver' => 'pgsql',
-            'url' => env('DB_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '5432'),
-            'database' => env('DB_DATABASE', 'sentinentx'),
-            'username' => env('DB_USERNAME', 'sentinentx'),
-            'password' => env('DB_PASSWORD', ''),
-            'charset' => env('DB_CHARSET', 'utf8'),
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'search_path' => 'tenant_default,public',
-            'sslmode' => env('DB_SSL_MODE', 'prefer'),
-            'options' => [
-                PDO::ATTR_TIMEOUT => env('DB_TIMEOUT', 30),
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_PERSISTENT => true, // Enable connection pooling for SaaS
-            ],
-            'statement_timeout' => env('DB_STATEMENT_TIMEOUT', '30s'),
-            'lock_timeout' => env('DB_LOCK_TIMEOUT', '10s'),
-            'idle_in_transaction_session_timeout' => env('DB_IDLE_TIMEOUT', '60s'),
-        ],
-
-
 
     ],
 

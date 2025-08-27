@@ -14,7 +14,7 @@ return new class extends Migration
             $t->string('symbol')->index();
             $t->json('round1')->nullable();
             $t->json('round2')->nullable();
-            $t->enum('final_action', ['LONG', 'SHORT', 'HOLD', 'CLOSE']);
+            $t->enum('final_action', ['LONG', 'SHORT', 'HOLD', 'CLOSE', 'NO_TRADE']);
             $t->unsignedTinyInteger('final_confidence');
             $t->json('meta')->nullable();
             $t->boolean('majority_lock')->default(true);

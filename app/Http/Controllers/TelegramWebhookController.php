@@ -99,9 +99,10 @@ class TelegramWebhookController extends Controller
                    "🔹 <code>/risk3 {$symbol}</code> - Yüksek Risk (45-125x, %15 pozisyon)";
         }
 
-        if (preg_match('/^\/risk([123])\s+([A-Z0-9]+)$/i', $text, $matches)) {
+        // Support both /risk3 and /risk3 BTC formats
+        if (preg_match('/^\/risk([123])(?:\s+([A-Z0-9]+))?$/i', $text, $matches)) {
             $riskLevel = (int) $matches[1];
-            $symbol = strtoupper($matches[2]);
+            $symbol = isset($matches[2]) ? strtoupper($matches[2]) : 'BTC'; // Default to BTC if no symbol
             if (! str_ends_with($symbol, 'USDT')) {
                 $symbol .= 'USDT';
             }
@@ -117,7 +118,7 @@ class TelegramWebhookController extends Controller
             return "⚡ <b>{$profile['name']} seçildi!</b>\n".
                    "📊 Kaldıraç: {$profile['range']}\n".
                    "💰 Pozisyon boyutu: %{$profile['pct']}\n\n".
-                   "💭 <b>Neden bu pozisyonu açmak istiyorsun?</b>\n".
+                   "💭 <b>Neden {$symbol} pozisyonu açmak istiyorsun?</b>\n".
                    "Analiz gerekçeni yaz (haber, teknik analiz vs.)\n\n".
                    "Format: <code>/confirm {$symbol} {$riskLevel} gerekçen buraya</code>";
         }

@@ -1,845 +1,151 @@
-🚀🚀🚀 SENTINENTX ULTIMATE VDS DEPLOYMENT 🚀🚀🚀
-==========================================================
-[INFO] Starting zero-error deployment for 15-day testnet...
-[INFO] Timestamp: Tue Aug 26 16:41:31 UTC 2025
-[INFO] Log file: /tmp/sentinentx_ultimate_deploy.log
+ TELEGRAM BOT DETAILED DIAGNOSTICS
+===================================
+1️⃣ Telegram Bot Process Status:
+root       34394  0.0  0.0  17296  7020 pts/2    S    09:30   0:00 sudo -u www-data php artisan telegram:polling
+root       34396  0.0  0.0  17296  2412 pts/3    Ss+  09:30   0:00 sudo -u www-data php artisan telegram:polling
+www-data   34397  0.8  0.4 204848 65656 pts/3    S    09:30   0:02 php artisan telegram:polling
+www-data   34921  1.1  0.3 204868 64256 ?        Ss   09:34   0:00 /usr/bin/php /var/www/sentinentx/artisan sentx:open-now --symbols=BTC,ETH,SOL,XRP --snapshot=/var/www/sentinentx/market_snapshot.json
 
-🔑 API KEY VALIDATION
-[SUCCESS] All API keys configured
-🔍 SYSTEM VALIDATION
-[INFO] Detected Ubuntu 24.04
-[INFO] Using PHP 8.3 for Ubuntu 24.04
-[SUCCESS] System validation completed
-🔄 VDS RESET - COMPLETE SYSTEM CLEANUP
-🔧 Stopping all SentinentX services...
-🔧 Removing SentinentX project directory...
-🔧 Removing systemd service files...
-🔧 Removing nginx configuration...
-🔧 Cleaning up logs...
-🔧 Resetting PostgreSQL database...
-🔧 Flushing Redis cache...
-🔧 Cleaning up temp files...
-[SUCCESS] ✅ VDS completely reset and ready for fresh installation!
-🗑️ SYSTEM RESET
-🔧 Stopping conflicting services...
-🔧 Removing conflicting packages...
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-Note, selecting 'apache2-ssl-dev' for glob 'apache2*'
-Note, selecting 'apache2-suexec-pristine' for glob 'apache2*'
-Note, selecting 'apache2.2-common' for glob 'apache2*'
-Note, selecting 'apache2-api-20120211' for glob 'apache2*'
-Note, selecting 'apache2-suexec-custom' for glob 'apache2*'
-Note, selecting 'apache2-data' for glob 'apache2*'
-Note, selecting 'apache2-bin' for glob 'apache2*'
-Note, selecting 'apache2-dev' for glob 'apache2*'
-Note, selecting 'apache2-doc' for glob 'apache2*'
-Note, selecting 'apache2-utils' for glob 'apache2*'
-Note, selecting 'apache2' for glob 'apache2*'
-Note, selecting 'apache2-suexec' for glob 'apache2*'
-Note, selecting 'apache2-api-20120211-openssl1.1' for glob 'apache2*'
-Note, selecting 'apache2-bin' instead of 'apache2-api-20120211'
-Note, selecting 'apache2-bin' instead of 'apache2-api-20120211-openssl1.1'
-Package 'apache2.2-common' is not installed, so not removed
-Note, selecting 'mysql-testsuite' for glob 'mysql*'
-Note, selecting 'mysql-server-5.5' for glob 'mysql*'
-Note, selecting 'mysql-server-5.6' for glob 'mysql*'
-Note, selecting 'mysql-server-5.7' for glob 'mysql*'
-Note, selecting 'mysql-server-8.0' for glob 'mysql*'
-Note, selecting 'mysql-client-5.5' for glob 'mysql*'
-Note, selecting 'mysql-client-5.6' for glob 'mysql*'
-Note, selecting 'mysql-client-5.7' for glob 'mysql*'
-Note, selecting 'mysql-client-8.0' for glob 'mysql*'
-Note, selecting 'mysql-common' for glob 'mysql*'
-Note, selecting 'mysqltcl' for glob 'mysql*'
-Note, selecting 'mysql-testsuite-5.5' for glob 'mysql*'
-Note, selecting 'mysql-testsuite-5.6' for glob 'mysql*'
-Note, selecting 'mysql-testsuite-5.7' for glob 'mysql*'
-Note, selecting 'mysql-testsuite-8.0' for glob 'mysql*'
-Note, selecting 'mysql-client' for glob 'mysql*'
-Note, selecting 'mysql-router' for glob 'mysql*'
-Note, selecting 'mysql-sandbox' for glob 'mysql*'
-Note, selecting 'mysqltuner' for glob 'mysql*'
-Note, selecting 'mysql-common-5.6' for glob 'mysql*'
-Note, selecting 'mysql-server' for glob 'mysql*'
-Note, selecting 'mysql-server-core-5.5' for glob 'mysql*'
-Note, selecting 'mysql-server-core-5.6' for glob 'mysql*'
-Note, selecting 'mysql-server-core-5.7' for glob 'mysql*'
-Note, selecting 'mysql-server-core-8.0' for glob 'mysql*'
-Note, selecting 'mysql-client-core-5.5' for glob 'mysql*'
-Note, selecting 'mysql-client-core-5.6' for glob 'mysql*'
-Note, selecting 'mysql-client-core-5.7' for glob 'mysql*'
-Note, selecting 'mysql-client-core-8.0' for glob 'mysql*'
-Note, selecting 'mysql-cluster-community-client-plugins' for glob 'mysql*'
-Note, selecting 'mysql-shell' for glob 'mysql*'
-Note, selecting 'mysql-source-8.0' for glob 'mysql*'
-Package 'mysql-client-5.7' is not installed, so not removed
-Package 'mysql-client-core-5.7' is not installed, so not removed
-Note, selecting 'mysql-common' instead of 'mysql-common-5.6'
-Package 'mysql-server-5.5' is not installed, so not removed
-Package 'mysql-server-5.7' is not installed, so not removed
-Package 'mysql-server-core-5.7' is not installed, so not removed
-Package 'mysql-client-core-5.5' is not installed, so not removed
-Package 'mysql-client-core-5.6' is not installed, so not removed
-Package 'mysql-client-5.5' is not installed, so not removed
-Package 'mysql-client-5.6' is not installed, so not removed
-Package 'mysql-cluster-community-client-plugins' is not installed, so not removed
-Package 'mysql-server-core-5.5' is not installed, so not removed
-Package 'mysql-server-core-5.6' is not installed, so not removed
-Package 'mysql-server-5.6' is not installed, so not removed
-Package 'mysql-testsuite-5.5' is not installed, so not removed
-Package 'mysql-testsuite-5.6' is not installed, so not removed
-Package 'mysql-testsuite-5.7' is not installed, so not removed
-Note, selecting 'nginx-abi-1.24.0-1' for glob 'nginx-*'
-Note, selecting 'nginx-common' for glob 'nginx-*'
-Note, selecting 'nginx-dev' for glob 'nginx-*'
-Note, selecting 'nginx-doc' for glob 'nginx-*'
-Note, selecting 'nginx-light' for glob 'nginx-*'
-Note, selecting 'nginx-core' for glob 'nginx-*'
-Note, selecting 'nginx-confgen' for glob 'nginx-*'
-Note, selecting 'nginx-extras' for glob 'nginx-*'
-Note, selecting 'nginx-extra' for glob 'nginx-*'
-Note, selecting 'nginx-full' for glob 'nginx-*'
-Note, selecting 'nginx' instead of 'nginx-abi-1.24.0-1'
-Package 'nginx-extra' is not installed, so not removed
-Package 'apache2-bin' is not installed, so not removed
-Package 'apache2' is not installed, so not removed
-Package 'apache2-data' is not installed, so not removed
-Package 'apache2-utils' is not installed, so not removed
-Package 'apache2-doc' is not installed, so not removed
-Package 'apache2-suexec-pristine' is not installed, so not removed
-Package 'apache2-suexec-custom' is not installed, so not removed
-Package 'apache2-dev' is not installed, so not removed
-Package 'apache2-ssl-dev' is not installed, so not removed
-Package 'mysql-common' is not installed, so not removed
-Package 'mysql-client' is not installed, so not removed
-Package 'mysql-client-8.0' is not installed, so not removed
-Package 'mysql-client-core-8.0' is not installed, so not removed
-Package 'mysql-server' is not installed, so not removed
-Package 'mysql-server-8.0' is not installed, so not removed
-Package 'mysql-server-core-8.0' is not installed, so not removed
-Package 'mysql-testsuite' is not installed, so not removed
-Package 'mysql-testsuite-8.0' is not installed, so not removed
-Package 'mysql-router' is not installed, so not removed
-Package 'mysql-sandbox' is not installed, so not removed
-Package 'mysql-shell' is not installed, so not removed
-Package 'mysql-source-8.0' is not installed, so not removed
-Package 'mysqltcl' is not installed, so not removed
-Package 'mysqltuner' is not installed, so not removed
-Package 'nginx-core' is not installed, so not removed
-Package 'nginx-extras' is not installed, so not removed
-Package 'nginx-light' is not installed, so not removed
-Package 'nginx-doc' is not installed, so not removed
-Package 'nginx-full' is not installed, so not removed
-Package 'nginx-confgen' is not installed, so not removed
-Package 'nginx-dev' is not installed, so not removed
-The following packages will be REMOVED:
-  nginx* nginx-common*
-0 upgraded, 0 newly installed, 2 to remove and 0 not upgraded.
-After this operation, 1596 kB disk space will be freed.
-(Reading database ... 86831 files and directories currently installed.)
-Removing nginx (1.24.0-2ubuntu7.5) ...
-Removing nginx-common (1.24.0-2ubuntu7.5) ...
-Processing triggers for man-db (2.12.0-4build2) ...
-(Reading database ... 86805 files and directories currently installed.)
-Purging configuration files for nginx-common (1.24.0-2ubuntu7.5) ...
-Processing triggers for ufw (0.36.2-6) ...
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Hit:1 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble InRelease
-Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                     
-Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                                   
-Hit:4 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                          
-Hit:5 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                                                                  
-Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                                                    
-Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease         
-Reading package lists... Done                              
-🔧 Cleaning old installations...
-Backing up 'user.rules' to '/etc/ufw/user.rules.20250826_164139'
-Backing up 'before.rules' to '/etc/ufw/before.rules.20250826_164139'
-Backing up 'after.rules' to '/etc/ufw/after.rules.20250826_164139'
-Backing up 'user6.rules' to '/etc/ufw/user6.rules.20250826_164139'
-Backing up 'before6.rules' to '/etc/ufw/before6.rules.20250826_164139'
-Backing up 'after6.rules' to '/etc/ufw/after6.rules.20250826_164139'
+2️⃣ Recent Telegram Bot Logs:
+==============================
+Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5
+📡 Telegram updates kontrol ediliyor...
+Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5
+📡 Telegram updates kontrol ediliyor...
+Telegram polling error: cURL error 28: Operation timed out after 5000 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5
+📡 Telegram updates kontrol ediliyor...
+Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5
+📡 Telegram updates kontrol ediliyor...
+Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5
+📡 Telegram updates kontrol ediliyor...
+Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5
+📡 Telegram updates kontrol ediliyor...
+Telegram polling error: cURL error 28: Operation timed out after 5000 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5
+📡 Telegram updates kontrol ediliyor...
+Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5
+📡 Telegram updates kontrol ediliyor...
+Telegram polling error: cURL error 28: Operation timed out after 5000 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5
+📡 Telegram updates kontrol ediliyor...
+Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5
+📡 Telegram updates kontrol ediliyor...
+Telegram polling error: cURL error 28: Operation timed out after 5000 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5
+📡 Telegram updates kontrol ediliyor...
+Response status: 200
+Updates alındı: 1
+Update işleniyor: {"update_id":261815415,"channel_post":{"message_id":237,"sender_chat":{"id":-1002886130782,"title":"SentinentX","username":"SentinentX","type":"channel"},"chat":{"id":-1002886130782,"title":"SentinentX","username":"SentinentX","type":"channel"},"date":1756287280,"text":"\/status","entities":[{"offset":0,"length":7,"type":"bot_command"}]}}
+📨 Mesaj işleniyor: /status
+📤 Cevap: 🤖 <b>Durum raporu!</b>
 
-[SUCCESS] System reset completed
-📦 PACKAGE INSTALLATION
-🔧 Updating package lists...
-Hit:1 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble InRelease
-Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                     
-Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                                   
-Hit:4 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                                                                   
-Hit:5 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                          
-Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                                                                       
-Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease         
-Reading package lists... Done
-🔧 Installing essential packages...
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-curl is already the newest version (8.5.0-2ubuntu10.6).
-wget is already the newest version (1.21.4-1ubuntu4.1).
-git is already the newest version (1:2.43.0-1ubuntu7.3).
-unzip is already the newest version (6.0-28ubuntu4.1).
-software-properties-common is already the newest version (0.99.49.3).
-apt-transport-https is already the newest version (2.8.3).
-ca-certificates is already the newest version (20240203).
-gnupg is already the newest version (2.4.4-2ubuntu17.3).
-lsb-release is already the newest version (12.0-2).
-ufw is already the newest version (0.36.2-6).
-fail2ban is already the newest version (1.0.2-3ubuntu0.1).
-htop is already the newest version (3.3.0-4build1).
-vim is already the newest version (2:9.1.0016-1ubuntu7.8).
-nano is already the newest version (7.2-2ubuntu0.1).
-tree is already the newest version (2.1.1-2ubuntu3).
-jq is already the newest version (1.7.1-3ubuntu0.24.04.1).
-build-essential is already the newest version (12.10ubuntu1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-🔧 Adding PHP repository...
-PPA publishes dbgsym, you may need to include 'main/debug' component
-Repository: 'Types: deb
-URIs: https://ppa.launchpadcontent.net/ondrej/php/ubuntu/
-Suites: noble
-Components: main
-'
-Description:
-Co-installable PHP versions: PHP 5.6, PHP 7.x, PHP 8.x and most requested extensions are included. Packages are provided for *Current* Ubuntu *LTS* releases (https://wiki.ubuntu.com/Releases).  Expanded Security Maintenance releases ARE NOT supported.
+🏛️ <b>Bybit bağla...
+✅ Cevap gönderildi!
+📡 Telegram updates kontrol ediliyor...
+Response status: 200
+Updates alındı: 1
+Update işleniyor: {"update_id":261815416,"channel_post":{"message_id":239,"sender_chat":{"id":-1002886130782,"title":"SentinentX","username":"SentinentX","type":"channel"},"chat":{"id":-1002886130782,"title":"SentinentX","username":"SentinentX","type":"channel"},"date":1756287286,"text":"\/open btc","entities":[{"offset":0,"length":5,"type":"bot_command"}]}}
+📨 Mesaj işleniyor: /open btc
+📤 Cevap: 🎯 <b>BTCUSDT pozisyonu açmak istiyorsun.</b>
 
-Debian stable, oldstable and Debian LTS packages are provided from a separate repository: https://deb.sury.org/#debian-dpa
+...
+✅ Cevap gönderildi!
+📡 Telegram updates kontrol ediliyor...
+Response status: 200
+Updates alındı: 1
+Update işleniyor: {"update_id":261815417,"channel_post":{"message_id":241,"sender_chat":{"id":-1002886130782,"title":"SentinentX","username":"SentinentX","type":"channel"},"chat":{"id":-1002886130782,"title":"SentinentX","username":"SentinentX","type":"channel"},"date":1756287291,"text":"\/risk3","entities":[{"offset":0,"length":6,"type":"bot_command"}]}}
+📨 Mesaj işleniyor: /risk3
+📤 Cevap: null
+📡 Telegram updates kontrol ediliyor...
+Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815418&limit=10&timeout=5
+📡 Telegram updates kontrol ediliyor...
+Telegram polling error: cURL error 28: Operation timed out after 5000 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815418&limit=10&timeout=5
+📡 Telegram updates kontrol ediliyor...
 
-You can get more information about the packages at https://deb.sury.org
+3️⃣ Laravel Application Logs:
+============================
+DETAIL:  Failing row contains (8, 0f7b446f-7d97-4cf6-8cdf-b7c457e9418d, XRP, null, null, NO_TRADE, 0, {"leverage":3,"tp":0.7,"sl":0.5,"veto_reason":"OUT_OF_RANGE","ve..., t, 2025-08-27 12:32:49, 2025-08-27 12:32:49). (Connection: pgsql, SQL: insert into "consensus_decisions" ("symbol", "cycle_uuid", "final_action", "final_confidence", "meta", "created_at", "updated_at") values (XRP, 0f7b446f-7d97-4cf6-8cdf-b7c457e9418d, NO_TRADE, 0, {"leverage":3,"tp":0.7,"sl":0.5,"veto_reason":"OUT_OF_RANGE","veto_details":[{"index":0,"error":"Leverage out of range","details":{"leverage":1,"min":3,"max":75}},{"index":0,"error":"Take profit must be positive","details":{"take_profit":0}},{"index":0,"error":"Stop loss must be positive","details":{"stop_loss":0}},{"index":1,"error":"Leverage out of range","details":{"leverage":1,"min":3,"max":75}},{"index":2,"error":"Leverage out of range","details":{"leverage":1,"min":3,"max":75}}],"deviation_threshold":0.15,"rate_limit_info":{"current_veto_count":1,"max_veto_per_minute":10,"circuit_breaker_active":false,"remaining_vetoes":9}}, 2025-08-27 12:32:49, 2025-08-27 12:32:49))  
+[2025-08-27 12:32:55] production.ERROR: Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5  
+[2025-08-27 12:33:05] production.ERROR: Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5  
+[2025-08-27 12:33:15] production.ERROR: Telegram polling error: cURL error 28: Operation timed out after 5000 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5  
+[2025-08-27 12:33:25] production.ERROR: Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5  
+[2025-08-27 12:33:35] production.ERROR: Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5  
+[2025-08-27 12:33:45] production.ERROR: Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5  
+[2025-08-27 12:33:55] production.ERROR: Telegram polling error: cURL error 28: Operation timed out after 5000 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5  
+[2025-08-27 12:34:05] production.ERROR: Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5  
+[2025-08-27 12:34:15] production.ERROR: Telegram polling error: cURL error 28: Operation timed out after 5000 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5  
+[2025-08-27 12:34:25] production.ERROR: Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5  
+[2025-08-27 12:34:35] production.ERROR: Telegram polling error: cURL error 28: Operation timed out after 5000 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815415&limit=10&timeout=5  
+[2025-08-27 12:34:41] production.INFO: Telegram polling received {"message":{"message_id":237,"sender_chat":{"id":-1002886130782,"title":"SentinentX","username":"SentinentX","type":"channel"},"chat":{"id":-1002886130782,"title":"SentinentX","username":"SentinentX","type":"channel"},"date":1756287280,"text":"/status","entities":[{"offset":0,"length":7,"type":"bot_command"}]}} 
+[2025-08-27 12:34:45] production.CRITICAL: Consensus veto MAJOR alert: {"event_type":"consensus_veto","symbol":"BTC","cycle_uuid":"7a6c6736-e95e-43a4-bec2-62612b45c01f","timeframe":"1m","provider_id":"openai,gemini,grok","latency_ms":34451.39,"veto_reason_code":"OUT_OF_RANGE","veto_reason":"Range validation failed","veto_details":[{"index":0,"error":"Leverage out of range","details":{"leverage":1,"min":3,"max":75}},{"index":0,"error":"Take profit must be positive","details":{"take_profit":0}},{"index":0,"error":"Stop loss must be positive","details":{"stop_loss":0}},{"index":2,"error":"Leverage out of range","details":{"leverage":1,"min":3,"max":75}},{"index":2,"error":"Take profit must be positive","details":{"take_profit":0}},{"index":2,"error":"Stop loss must be positive","details":{"stop_loss":0}}],"timestamp":"2025-08-27T09:34:45.049822Z","environment":"production","rate_limit_info":{"current_veto_count":1,"max_veto_per_minute":10,"circuit_breaker_active":false,"remaining_vetoes":9},"alert_level":"MAJOR"}  
+[2025-08-27 12:34:45] production.ERROR: ConsensusService veto DB error: SQLSTATE[23514]: Check violation: 7 ERROR:  new row for relation "consensus_decisions" violates check constraint "consensus_decisions_final_action_check"
+DETAIL:  Failing row contains (9, 7a6c6736-e95e-43a4-bec2-62612b45c01f, BTC, null, null, NO_TRADE, 0, {"leverage":3,"tp":0,"sl":0,"veto_reason":"OUT_OF_RANGE","veto_d..., t, 2025-08-27 12:34:45, 2025-08-27 12:34:45). (Connection: pgsql, SQL: insert into "consensus_decisions" ("symbol", "cycle_uuid", "final_action", "final_confidence", "meta", "created_at", "updated_at") values (BTC, 7a6c6736-e95e-43a4-bec2-62612b45c01f, NO_TRADE, 0, {"leverage":3,"tp":0,"sl":0,"veto_reason":"OUT_OF_RANGE","veto_details":[{"index":0,"error":"Leverage out of range","details":{"leverage":1,"min":3,"max":75}},{"index":0,"error":"Take profit must be positive","details":{"take_profit":0}},{"index":0,"error":"Stop loss must be positive","details":{"stop_loss":0}},{"index":2,"error":"Leverage out of range","details":{"leverage":1,"min":3,"max":75}},{"index":2,"error":"Take profit must be positive","details":{"take_profit":0}},{"index":2,"error":"Stop loss must be positive","details":{"stop_loss":0}}],"deviation_threshold":0.15,"rate_limit_info":{"current_veto_count":1,"max_veto_per_minute":10,"circuit_breaker_active":false,"remaining_vetoes":9}}, 2025-08-27 12:34:45, 2025-08-27 12:34:45))  
+[2025-08-27 12:34:46] production.INFO: Telegram polling received {"message":{"message_id":239,"sender_chat":{"id":-1002886130782,"title":"SentinentX","username":"SentinentX","type":"channel"},"chat":{"id":-1002886130782,"title":"SentinentX","username":"SentinentX","type":"channel"},"date":1756287286,"text":"/open btc","entities":[{"offset":0,"length":5,"type":"bot_command"}]}} 
+[2025-08-27 12:34:51] production.INFO: Telegram polling received {"message":{"message_id":241,"sender_chat":{"id":-1002886130782,"title":"SentinentX","username":"SentinentX","type":"channel"},"chat":{"id":-1002886130782,"title":"SentinentX","username":"SentinentX","type":"channel"},"date":1756287291,"text":"/risk3","entities":[{"offset":0,"length":6,"type":"bot_command"}]}} 
+[2025-08-27 12:34:58] production.ERROR: Telegram polling error: cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815418&limit=10&timeout=5  
+[2025-08-27 12:35:08] production.ERROR: Telegram polling error: cURL error 28: Operation timed out after 5000 milliseconds with 0 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api.telegram.org/bot8247509211:AAELm416j19N29RJslUtFFoOvOF-_2T6xPo/getUpdates?offset=261815418&limit=10&timeout=5  
 
-BUGS&FEATURES: This PPA has a issue tracker:
-https://deb.sury.org/#bug-reporting
+4️⃣ SentinentX Trading Bot Logs:
+===============================
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:                     }
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:                 ],
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:                 "rate_limit_info": {
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:                     "current_veto_count": 1,
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:                     "max_veto_per_minute": 10,
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:                     "circuit_breaker_active": false,
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:                     "remaining_vetoes": 9
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:                 }
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:             }
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:         }
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:     },
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:     "summary": {
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:         "total_symbols": 4,
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:         "successful_decisions": 0,
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:         "vetoed_decisions": 4
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]:     }
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal sentinentx[34378]: }
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal systemd[1]: sentinentx.service: Deactivated successfully.
+Aug 27 09:32:49 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal systemd[1]: sentinentx.service: Consumed 1.359s CPU time.
+Aug 27 09:34:10 trade.asia-southeast1-b.c.symbolic-bit-465920-b9.internal systemd[1]: Started sentinentx.service - SentinentX AI Trading Bot - 15 Day Testnet.
 
-Issues reported in a private email don't scale and most likely will be ignored.  I simply don't have capacity to answer questions privately.
+5️⃣ Testing Bybit API Connection:
+===============================
+Bybit API: WORKING ✅
+BTC Price: N/A
 
-CAVEATS:
-1. If you are using apache2, you are advised to add ppa:ondrej/apache2
-2. If you are using nginx, you are advised to add ppa:ondrej/nginx
-
-DONATION: If you like my work and you want to show appreciation, please consider donating regularly: https://donate.sury.org/
-
-COMMERCIAL SUPPORT: Support for PHP packages for older Debian and Ubuntu release can be bought from https://www.freexian.com/lts/php/
-More info: https://launchpad.net/~ondrej/+archive/ubuntu/php
-Adding repository.
-Found existing deb entry in /etc/apt/sources.list.d/ondrej-ubuntu-php-noble.sources
-Hit:1 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble InRelease
-Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                     
-Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                                   
-Hit:4 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                                                                   
-Hit:5 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                          
-Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                                                                       
-Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease         
-Reading package lists... Done
-Hit:1 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble InRelease
-Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                     
-Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                                   
-Hit:4 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                                                                   
-Hit:5 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                          
-Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                                                                     
-Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease
-Reading package lists... Done
-🔧 Installing PHP 8.3 and extensions...
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-php8.3 is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-php8.3-cli is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-php8.3-fpm is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-php8.3-pgsql is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-php8.3-redis is already the newest version (6.2.0-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-php8.3-curl is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-php8.3-mbstring is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-php8.3-xml is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-php8.3-zip is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-php8.3-bcmath is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-php8.3-intl is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-php8.3-gd is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-Note, selecting 'php8.3-xml' instead of 'php8.3-dom'
-php8.3-xml is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-Note, selecting 'php8.3-common' instead of 'php8.3-fileinfo'
-php8.3-common is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-Note, selecting 'php8.3-common' instead of 'php8.3-pdo'
-php8.3-common is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-Note, selecting 'php8.3-common' instead of 'php8.3-tokenizer'
-php8.3-common is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-Note, selecting 'php8.3-common' instead of 'php8.3-ctype'
-php8.3-common is already the newest version (8.3.24-1+ubuntu24.04.1+deb.sury.org+1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-🔧 Installing PostgreSQL...
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-postgresql is already the newest version (16+257build1.1).
-postgresql-contrib is already the newest version (16+257build1.1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-🔧 Installing Redis...
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-redis-server is already the newest version (5:7.0.15-1ubuntu0.24.04.1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-🔧 Installing Nginx...
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-The following additional packages will be installed:
-  nginx-common
-Suggested packages:
-  fcgiwrap nginx-doc
-The following NEW packages will be installed:
-  nginx nginx-common
-0 upgraded, 2 newly installed, 0 to remove and 0 not upgraded.
-Need to get 564 kB of archives.
-After this operation, 1596 kB of additional disk space will be used.
-Get:1 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates/main amd64 nginx-common all 1.24.0-2ubuntu7.5 [43.4 kB]
-Get:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates/main amd64 nginx amd64 1.24.0-2ubuntu7.5 [520 kB]
-Fetched 564 kB in 0s (12.6 MB/s)
-Preconfiguring packages ...
-Selecting previously unselected package nginx-common.
-(Reading database ... 86785 files and directories currently installed.)
-Preparing to unpack .../nginx-common_1.24.0-2ubuntu7.5_all.deb ...
-Unpacking nginx-common (1.24.0-2ubuntu7.5) ...
-Selecting previously unselected package nginx.
-Preparing to unpack .../nginx_1.24.0-2ubuntu7.5_amd64.deb ...
-Unpacking nginx (1.24.0-2ubuntu7.5) ...
-Setting up nginx-common (1.24.0-2ubuntu7.5) ...
-Created symlink /etc/systemd/system/multi-user.target.wants/nginx.service → /usr/lib/systemd/system/nginx.service.
-Setting up nginx (1.24.0-2ubuntu7.5) ...
- * Upgrading binary nginx                                                                                                                                        [ OK ] 
-Processing triggers for man-db (2.12.0-4build2) ...
-Processing triggers for ufw (0.36.2-6) ...
-Scanning processes...                                                                                                                                                   
-Scanning linux images...                                                                                                                                                
-
-Running kernel seems to be up-to-date.
-
-No services need to be restarted.
-
-No containers need to be restarted.
-
-No user sessions are running outdated binaries.
-
-No VM guests are running outdated hypervisor (qemu) binaries on this host.
-🔧 Installing Composer...
-All settings correct for using Composer
-Downloading...
-
-Composer (version 2.8.11) successfully installed to: /usr/local/bin/composer
-Use it: php /usr/local/bin/composer
-
-[SUCCESS] Composer installed successfully
-🔧 Installing Node.js...
-2025-08-26 16:42:13 - Installing pre-requisites
-Hit:1 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble InRelease
-Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                     
-Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                                   
-Hit:4 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                                                                   
-Hit:5 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                          
-Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                                                                     
-Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease
-Reading package lists... Done
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-apt-transport-https is already the newest version (2.8.3).
-ca-certificates is already the newest version (20240203).
-curl is already the newest version (8.5.0-2ubuntu10.6).
-gnupg is already the newest version (2.4.4-2ubuntu17.3).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Hit:1 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble InRelease
-Hit:2 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-updates InRelease                                                                                
-Hit:3 http://asia-southeast1.gce.archive.ubuntu.com/ubuntu noble-backports InRelease                                                                              
-Hit:4 https://deb.nodesource.com/node_20.x nodistro InRelease                                                                                                     
-Hit:5 https://packages.cloud.google.com/apt google-cloud-ops-agent-noble-2 InRelease                                                                              
-Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                  
-Hit:7 https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease         
-Reading package lists... Done                              
-2025-08-26 16:42:18 - Repository configured successfully.
-2025-08-26 16:42:18 - To install Node.js, run: apt-get install nodejs -y
-2025-08-26 16:42:18 - You can use N|solid Runtime as a node.js alternative
-2025-08-26 16:42:18 - To install N|solid Runtime, run: apt-get install nsolid -y 
-
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-nodejs is already the newest version (20.19.4-1nodesource1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-[SUCCESS] Node.js installed successfully
-[SUCCESS] Package installation completed
-🗄️ POSTGRESQL CONFIGURATION
-Synchronizing state of postgresql.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
-Executing: /usr/lib/systemd/systemd-sysv-install enable postgresql
-[SUCCESS] PostgreSQL service started
-🔧 Creating database and user...
-DROP DATABASE
-DROP ROLE
-CREATE DATABASE
-CREATE ROLE
-GRANT
-ALTER ROLE
-GRANT
-ALTER DEFAULT PRIVILEGES
-ALTER DEFAULT PRIVILEGES
-[SUCCESS] PostgreSQL configured successfully
-🔴 REDIS CONFIGURATION
-🔧 Configuring Redis...
-Synchronizing state of redis-server.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
-Executing: /usr/lib/systemd/systemd-sysv-install enable redis-server
-[SUCCESS] Redis service started
-[SUCCESS] Redis configured successfully
-🐘 PHP CONFIGURATION
-🔧 Configuring PHP-FPM...
-Synchronizing state of php8.3-fpm.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
-Executing: /usr/lib/systemd/systemd-sysv-install enable php8.3-fpm
-[SUCCESS] PHP-FPM service started
-[SUCCESS] PHP configured successfully
-🌐 NGINX CONFIGURATION
-nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
-nginx: configuration file /etc/nginx/nginx.conf test is successful
-Synchronizing state of nginx.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
-Executing: /usr/lib/systemd/systemd-sysv-install enable nginx
-[SUCCESS] Nginx configured successfully
-🚀 APPLICATION DEPLOYMENT
-🔧 Creating project directory...
-🔧 Cloning SentinentX repository...
-[SUCCESS] Repository cloned successfully
-🔧 Installing Composer dependencies...
-Installing dependencies from lock file
-Verifying lock file contents can be installed on current platform.
-Package operations: 107 installs, 0 updates, 0 removals
-Cannot create cache directory /var/www/.cache/composer/files/, or directory is not writable. Proceeding without cache. See also cache-read-only config if your filesystem is read-only.
-  - Downloading php-http/discovery (1.20.0)
-  - Downloading revolt/event-loop (v1.0.7)
-  - Downloading amphp/serialization (v1.0.0)
-  - Downloading amphp/amp (v3.1.0)
-  - Downloading amphp/pipeline (v1.2.3)
-  - Downloading amphp/sync (v2.3.0)
-  - Downloading amphp/cache (v2.0.1)
-  - Downloading amphp/parser (v1.1.1)
-  - Downloading amphp/byte-stream (v2.1.2)
-  - Downloading amphp/process (v2.0.3)
-  - Downloading psr/http-message (2.0)
-  - Downloading psr/http-factory (1.1.0)
-  - Downloading league/uri-interfaces (7.5.0)
-  - Downloading league/uri (7.5.1)
-  - Downloading kelunik/certificate (v1.1.3)
-  - Downloading symfony/polyfill-ctype (v1.32.0)
-  - Downloading daverandom/libdns (v2.1.0)
-  - Downloading amphp/dns (v2.4.0)
-  - Downloading amphp/socket (v2.3.1)
-  - Downloading doctrine/inflector (2.1.0)
-  - Downloading doctrine/lexer (3.0.1)
-  - Downloading webmozart/assert (1.11.0)
-  - Downloading dragonmantank/cron-expression (v3.4.0)
-  - Downloading symfony/polyfill-php83 (v1.32.0)
-  - Downloading symfony/polyfill-mbstring (v1.32.0)
-  - Downloading symfony/deprecation-contracts (v3.6.0)
-  - Downloading symfony/http-foundation (v7.3.2)
-  - Downloading fruitcake/php-cors (v1.3.0)
-  - Downloading guzzlehttp/promises (2.2.0)
-  - Downloading symfony/polyfill-php80 (v1.32.0)
-  - Downloading guzzlehttp/uri-template (v1.0.4)
-  - Downloading symfony/polyfill-intl-normalizer (v1.32.0)
-  - Downloading symfony/polyfill-intl-grapheme (v1.32.0)
-  - Downloading symfony/string (v7.3.2)
-  - Downloading psr/container (2.0.2)
-  - Downloading symfony/service-contracts (v3.6.0)
-  - Downloading symfony/console (v7.3.2)
-  - Downloading laravel/prompts (v0.3.6)
-  - Downloading laravel/serializable-closure (v2.0.4)
-  - Downloading voku/portable-ascii (2.0.3)
-  - Downloading phpoption/phpoption (1.9.3)
-  - Downloading graham-campbell/result-type (v1.1.3)
-  - Downloading vlucas/phpdotenv (v5.6.2)
-  - Downloading symfony/css-selector (v7.3.0)
-  - Downloading tijsverkoyen/css-to-inline-styles (v2.3.0)
-  - Downloading symfony/var-dumper (v7.3.2)
-  - Downloading symfony/polyfill-uuid (v1.32.0)
-  - Downloading symfony/uid (v7.3.1)
-  - Downloading symfony/routing (v7.3.2)
-  - Downloading symfony/process (v7.3.0)
-  - Downloading symfony/polyfill-php85 (v1.32.0)
-  - Downloading symfony/polyfill-php84 (v1.32.0)
-  - Downloading symfony/polyfill-intl-idn (v1.32.0)
-  - Downloading symfony/mime (v7.3.2)
-  - Downloading psr/event-dispatcher (1.0.0)
-  - Downloading symfony/event-dispatcher-contracts (v3.6.0)
-  - Downloading symfony/event-dispatcher (v7.3.0)
-  - Downloading psr/log (3.0.2)
-  - Downloading egulias/email-validator (4.0.4)
-  - Downloading symfony/mailer (v7.3.2)
-  - Downloading symfony/error-handler (v7.3.2)
-  - Downloading symfony/http-kernel (v7.3.2)
-  - Downloading symfony/finder (v7.3.2)
-  - Downloading ramsey/collection (2.1.1)
-  - Downloading brick/math (0.13.1)
-  - Downloading ramsey/uuid (4.9.0)
-  - Downloading psr/simple-cache (3.0.0)
-  - Downloading nunomaduro/termwind (v2.3.1)
-  - Downloading symfony/translation-contracts (v3.6.0)
-  - Downloading symfony/translation (v7.3.2)
-  - Downloading psr/clock (1.0.0)
-  - Downloading symfony/clock (v7.3.0)
-  - Downloading carbonphp/carbon-doctrine-types (3.2.0)
-  - Downloading nesbot/carbon (3.10.2)
-  - Downloading monolog/monolog (3.9.0)
-  - Downloading league/mime-type-detection (1.16.0)
-  - Downloading league/flysystem-local (3.30.0)
-  - Downloading league/flysystem (3.30.0)
-  - Downloading nette/utils (v4.0.8)
-  - Downloading nette/schema (v1.3.2)
-  - Downloading dflydev/dot-access-data (v3.0.3)
-  - Downloading league/config (v1.2.0)
-  - Downloading league/commonmark (2.7.1)
-  - Downloading psr/http-client (1.0.3)
-  - Downloading ralouphie/getallheaders (3.0.3)
-  - Downloading guzzlehttp/psr7 (2.7.1)
-  - Downloading guzzlehttp/guzzle (7.9.3)
-  - Downloading laravel/framework (v12.24.0)
-  - Downloading laravel/slack-notification-channel (v3.6.0)
-  - Downloading nikic/php-parser (v5.6.1)
-  - Downloading psy/psysh (v0.12.10)
-  - Downloading laravel/tinker (v2.10.1)
-  - Downloading php-http/multipart-stream-builder (1.4.2)
-  - Downloading openai-php/client (v0.15.0)
-  - Downloading openai-php/laravel (v0.15.0)
-  - Downloading phpstan/phpdoc-parser (2.2.0)
-  - Downloading phpdocumentor/reflection-common (2.2.0)
-  - Downloading doctrine/deprecations (1.1.5)
-  - Downloading phpdocumentor/type-resolver (1.10.0)
-  - Downloading phpdocumentor/reflection-docblock (5.6.3)
-  - Downloading predis/predis (v3.2.0)
-  - Downloading spatie/laravel-package-tools (1.92.7)
-  - Downloading amphp/parallel (v2.3.1)
-  - Downloading spatie/php-structure-discoverer (2.3.1)
-  - Downloading phpdocumentor/reflection (6.3.0)
-  - Downloading spatie/laravel-data (4.17.0)
-  - Downloading spatie/laravel-schemaless-attributes (2.5.1)
-  - Installing php-http/discovery (1.20.0): Extracting archive
-  - Installing revolt/event-loop (v1.0.7): Extracting archive
-  - Installing amphp/serialization (v1.0.0): Extracting archive
-  - Installing amphp/amp (v3.1.0): Extracting archive
-  - Installing amphp/pipeline (v1.2.3): Extracting archive
-  - Installing amphp/sync (v2.3.0): Extracting archive
-  - Installing amphp/cache (v2.0.1): Extracting archive
-  - Installing amphp/parser (v1.1.1): Extracting archive
-  - Installing amphp/byte-stream (v2.1.2): Extracting archive
-  - Installing amphp/process (v2.0.3): Extracting archive
-  - Installing psr/http-message (2.0): Extracting archive
-  - Installing psr/http-factory (1.1.0): Extracting archive
-  - Installing league/uri-interfaces (7.5.0): Extracting archive
-  - Installing league/uri (7.5.1): Extracting archive
-  - Installing kelunik/certificate (v1.1.3): Extracting archive
-  - Installing symfony/polyfill-ctype (v1.32.0): Extracting archive
-  - Installing daverandom/libdns (v2.1.0): Extracting archive
-  - Installing amphp/dns (v2.4.0): Extracting archive
-  - Installing amphp/socket (v2.3.1): Extracting archive
-  - Installing doctrine/inflector (2.1.0): Extracting archive
-  - Installing doctrine/lexer (3.0.1): Extracting archive
-  - Installing webmozart/assert (1.11.0): Extracting archive
-  - Installing dragonmantank/cron-expression (v3.4.0): Extracting archive
-  - Installing symfony/polyfill-php83 (v1.32.0): Extracting archive
-  - Installing symfony/polyfill-mbstring (v1.32.0): Extracting archive
-  - Installing symfony/deprecation-contracts (v3.6.0): Extracting archive
-  - Installing symfony/http-foundation (v7.3.2): Extracting archive
-  - Installing fruitcake/php-cors (v1.3.0): Extracting archive
-  - Installing guzzlehttp/promises (2.2.0): Extracting archive
-  - Installing symfony/polyfill-php80 (v1.32.0): Extracting archive
-  - Installing guzzlehttp/uri-template (v1.0.4): Extracting archive
-  - Installing symfony/polyfill-intl-normalizer (v1.32.0): Extracting archive
-  - Installing symfony/polyfill-intl-grapheme (v1.32.0): Extracting archive
-  - Installing symfony/string (v7.3.2): Extracting archive
-  - Installing psr/container (2.0.2): Extracting archive
-  - Installing symfony/service-contracts (v3.6.0): Extracting archive
-  - Installing symfony/console (v7.3.2): Extracting archive
-  - Installing laravel/prompts (v0.3.6): Extracting archive
-  - Installing laravel/serializable-closure (v2.0.4): Extracting archive
-  - Installing voku/portable-ascii (2.0.3): Extracting archive
-  - Installing phpoption/phpoption (1.9.3): Extracting archive
-  - Installing graham-campbell/result-type (v1.1.3): Extracting archive
-  - Installing vlucas/phpdotenv (v5.6.2): Extracting archive
-  - Installing symfony/css-selector (v7.3.0): Extracting archive
-  - Installing tijsverkoyen/css-to-inline-styles (v2.3.0): Extracting archive
-  - Installing symfony/var-dumper (v7.3.2): Extracting archive
-  - Installing symfony/polyfill-uuid (v1.32.0): Extracting archive
-  - Installing symfony/uid (v7.3.1): Extracting archive
-  - Installing symfony/routing (v7.3.2): Extracting archive
-  - Installing symfony/process (v7.3.0): Extracting archive
-  - Installing symfony/polyfill-php85 (v1.32.0): Extracting archive
-  - Installing symfony/polyfill-php84 (v1.32.0): Extracting archive
-  - Installing symfony/polyfill-intl-idn (v1.32.0): Extracting archive
-  - Installing symfony/mime (v7.3.2): Extracting archive
-  - Installing psr/event-dispatcher (1.0.0): Extracting archive
-  - Installing symfony/event-dispatcher-contracts (v3.6.0): Extracting archive
-  - Installing symfony/event-dispatcher (v7.3.0): Extracting archive
-  - Installing psr/log (3.0.2): Extracting archive
-  - Installing egulias/email-validator (4.0.4): Extracting archive
-  - Installing symfony/mailer (v7.3.2): Extracting archive
-  - Installing symfony/error-handler (v7.3.2): Extracting archive
-  - Installing symfony/http-kernel (v7.3.2): Extracting archive
-  - Installing symfony/finder (v7.3.2): Extracting archive
-  - Installing ramsey/collection (2.1.1): Extracting archive
-  - Installing brick/math (0.13.1): Extracting archive
-  - Installing ramsey/uuid (4.9.0): Extracting archive
-  - Installing psr/simple-cache (3.0.0): Extracting archive
-  - Installing nunomaduro/termwind (v2.3.1): Extracting archive
-  - Installing symfony/translation-contracts (v3.6.0): Extracting archive
-  - Installing symfony/translation (v7.3.2): Extracting archive
-  - Installing psr/clock (1.0.0): Extracting archive
-  - Installing symfony/clock (v7.3.0): Extracting archive
-  - Installing carbonphp/carbon-doctrine-types (3.2.0): Extracting archive
-  - Installing nesbot/carbon (3.10.2): Extracting archive
-  - Installing monolog/monolog (3.9.0): Extracting archive
-  - Installing league/mime-type-detection (1.16.0): Extracting archive
-  - Installing league/flysystem-local (3.30.0): Extracting archive
-  - Installing league/flysystem (3.30.0): Extracting archive
-  - Installing nette/utils (v4.0.8): Extracting archive
-  - Installing nette/schema (v1.3.2): Extracting archive
-  - Installing dflydev/dot-access-data (v3.0.3): Extracting archive
-  - Installing league/config (v1.2.0): Extracting archive
-  - Installing league/commonmark (2.7.1): Extracting archive
-  - Installing psr/http-client (1.0.3): Extracting archive
-  - Installing ralouphie/getallheaders (3.0.3): Extracting archive
-  - Installing guzzlehttp/psr7 (2.7.1): Extracting archive
-  - Installing guzzlehttp/guzzle (7.9.3): Extracting archive
-  - Installing laravel/framework (v12.24.0): Extracting archive
-  - Installing laravel/slack-notification-channel (v3.6.0): Extracting archive
-  - Installing nikic/php-parser (v5.6.1): Extracting archive
-  - Installing psy/psysh (v0.12.10): Extracting archive
-  - Installing laravel/tinker (v2.10.1): Extracting archive
-  - Installing php-http/multipart-stream-builder (1.4.2): Extracting archive
-  - Installing openai-php/client (v0.15.0): Extracting archive
-  - Installing openai-php/laravel (v0.15.0): Extracting archive
-  - Installing phpstan/phpdoc-parser (2.2.0): Extracting archive
-  - Installing phpdocumentor/reflection-common (2.2.0): Extracting archive
-  - Installing doctrine/deprecations (1.1.5): Extracting archive
-  - Installing phpdocumentor/type-resolver (1.10.0): Extracting archive
-  - Installing phpdocumentor/reflection-docblock (5.6.3): Extracting archive
-  - Installing predis/predis (v3.2.0): Extracting archive
-  - Installing spatie/laravel-package-tools (1.92.7): Extracting archive
-  - Installing amphp/parallel (v2.3.1): Extracting archive
-  - Installing spatie/php-structure-discoverer (2.3.1): Extracting archive
-  - Installing phpdocumentor/reflection (6.3.0): Extracting archive
-  - Installing spatie/laravel-data (4.17.0): Extracting archive
-  - Installing spatie/laravel-schemaless-attributes (2.5.1): Extracting archive
-Generating optimized autoload files
-> Illuminate\Foundation\ComposerScripts::postAutoloadDump
-> @php artisan package:discover --ansi
-
-   INFO  Discovering packages.  
-
-  laravel/slack-notification-channel .................................... DONE
-  laravel/tinker ........................................................ DONE
-  nesbot/carbon ......................................................... DONE
-  nunomaduro/termwind ................................................... DONE
-  openai-php/laravel .................................................... DONE
-  spatie/laravel-data ................................................... DONE
-  spatie/laravel-schemaless-attributes .................................. DONE
-  spatie/php-structure-discoverer ....................................... DONE
-
-70 packages you are using are looking for funding.
-Use the `composer fund` command to find out more!
-[SUCCESS] Composer dependencies installed successfully
-🔧 Installing NPM dependencies...
-🔧 Fixing NPM cache permissions...
-
-up to date, audited 1 package in 7s
-
-found 0 vulnerabilities
-[SUCCESS] NPM dependencies installed successfully
-🔧 Creating storage directories...
-🔧 Setting file permissions...
-[SUCCESS] File permissions set correctly
-[SUCCESS] Application deployed successfully
-⚡ LARAVEL CONFIGURATION
-🔧 Creating .env configuration...
-🔧 Generating application key...
-
-   INFO  Application key set successfully.  
-
-🔧 Optimizing Laravel with file-based cache...
-
-   INFO  Configuration cache cleared successfully.  
+   INFO  Goodbye.
 
 
-   INFO  Route cache cleared successfully.  
+6️⃣ Database Position Check:
+==========================
+
+   Error  Class "App\Models\Position" not found.
 
 
-   INFO  Compiled views cleared successfully.  
+7️⃣ Manual Telegram Bot Test:
+==========================
+Testing /status command manually...
+Response: 🤖 <b>Durum raporu!</b>
+
+🏛️ <b>Bybit bağlantısı:</b> 🟢 Aktif
+📊 <b>Aktif pozisyonların:</b> 0 açık pozisyon
+🔴 <b>Redis durumu:</b> 🟢 Aktif
+
+🧠 <b>AI ekibim:</b>
+• OpenAI: 🟢
+• Gemini: 🟢
+• Grok: 🟢
+
+⚙️ <b>Çalışma ortamı:</b> Production ⚡
+⏰ <b>Son kontrol:</b> 12:35:18
+
+   INFO  Goodbye.
 
 
-In Connection.php line 824:
-                                                                               
-  SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "cache" does not exist  
-  LINE 1: delete from "cache"                                                  
-                      ^ (Connection: pgsql, SQL: delete from "cache")          
-                                                                               
+8️⃣ Telegram Configuration:
+=========================
+Bot Token: 8247509211...
+Chat ID: -1002886130782
 
-In Connection.php line 595:
-                                                                               
-  SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "cache" does not exist  
-  LINE 1: delete from "cache"                                                  
-                      ^                                                        
-                                                                               
-
-[SUCCESS] Laravel optimized with file-based cache (zero DB dependency)
-🔧 Running database migrations...
-
-   INFO  Preparing database.  
-
-  Creating migration table ............................................................................................................ 30.67ms DONE
-
-   INFO  Running migrations.  
-
-  0001_01_01_000000_create_users_table ................................................................................................ 31.04ms DONE
-  0001_01_01_000001_create_cache_table ................................................................................................ 15.79ms DONE
-  0001_01_01_000002_create_jobs_table ................................................................................................. 29.46ms DONE
-  2025_01_20_120000_optimize_database_for_saas ......................................................................................... 0.48ms DONE
-  2025_01_20_150000_create_trading_logs_tables ....................................................................................... 130.26ms DONE
-  2025_08_08_190800_alter_ai_logs_fix_schema ........................................................................................... 1.32ms DONE
-  2025_08_09_000004_create_market_data_table .......................................................................................... 14.82ms DONE
-  2025_08_09_000005_create_settings_table ............................................................................................. 12.82ms DONE
-  2025_08_10_000012_alter_ai_logs_add_round_cycle_latency .............................................................................. 1.51ms DONE
-  2025_08_11_000001_create_trades_table ............................................................................................... 16.90ms DONE
-  2025_08_11_000002_create_ai_logs_table .............................................................................................. 18.72ms DONE
-  2025_08_11_000003_create_consensus_decisions_table .................................................................................. 14.54ms DONE
-  2025_08_11_000004_create_alerts_table ............................................................................................... 23.27ms DONE
-  2025_08_11_000005_create_ai_providers_table ......................................................................................... 13.49ms DONE
-  2025_08_11_120000_add_testing_columns_to_trades ..................................................................................... 14.36ms DONE
-  2025_08_13_031132_add_performance_indexes_to_tables ................................................................................. 20.69ms DONE
-  2025_08_13_031852_update_ai_logs_stage_enum_values ................................................................................... 0.67ms DONE
-  2025_08_13_100000_create_lab_trades_table ........................................................................................... 17.79ms DONE
-  2025_08_13_100100_create_lab_metrics_table .......................................................................................... 14.65ms DONE
-  2025_08_14_010655_create_lab_runs_table ............................................................................................. 16.24ms DONE
-  2025_08_14_010719_create_usage_counters_table ....................................................................................... 27.19ms DONE
-  2025_08_14_010747_create_plans_table ................................................................................................ 16.45ms DONE
-  2025_08_14_010748_create_subscriptions_table ........................................................................................ 18.42ms DONE
-  2025_08_14_010850_create_tenants_table .............................................................................................. 14.57ms DONE
-  2025_08_14_010953_add_tenant_fields_to_users_table .................................................................................. 12.02ms DONE
-  2025_08_14_130000_add_plan_to_tenants ................................................................................................ 7.32ms DONE
-  2025_08_20_000001_create_audit_logs_table ........................................................................................... 38.22ms DONE
-  2025_08_21_064148_fix_postgresql_ai_logs_enum ........................................................................................ 4.09ms DONE
-  2025_08_21_082537_add_tenant_id_to_trades_table ...................................................................................... 8.69ms DONE
-  2025_08_25_083150_update_lab_metrics_table_add_missing_columns ....................................................................... 3.09ms DONE
-  2025_08_25_083301_fix_lab_metrics_unique_constraint .................................................................................. 5.34ms DONE
-
-[SUCCESS] Database migrations completed successfully
-🔧 Clearing cache with database tables available...
-
-   INFO  Application cache cleared successfully.  
+   INFO  Goodbye.
 
 
-   INFO  Configuration cache cleared successfully.  
-
-🔧 Caching configurations...
-
-   INFO  Configuration cached successfully.  
-
-
-   INFO  Routes cached successfully.  
-
-
-
-   INFO  Blade templates cached successfully.  
-
-[SUCCESS] Laravel configured successfully
-🔧 SYSTEMD SERVICE CREATION
-[SUCCESS] Systemd service created successfully
-🔥 FIREWALL CONFIGURATION
-Backing up 'user.rules' to '/etc/ufw/user.rules.20250826_164246'
-Backing up 'before.rules' to '/etc/ufw/before.rules.20250826_164246'
-Backing up 'after.rules' to '/etc/ufw/after.rules.20250826_164246'
-Backing up 'user6.rules' to '/etc/ufw/user6.rules.20250826_164246'
-Backing up 'before6.rules' to '/etc/ufw/before6.rules.20250826_164246'
-Backing up 'after6.rules' to '/etc/ufw/after6.rules.20250826_164246'
-
-Default incoming policy changed to 'deny'
-(be sure to update your rules accordingly)
-Default outgoing policy changed to 'allow'
-(be sure to update your rules accordingly)
-Rules updated
-Rules updated (v6)
-Rules updated
-Rules updated (v6)
-Rules updated
-Rules updated (v6)
-Firewall is active and enabled on system startup
-[SUCCESS] Firewall configured successfully
-🧪 FINAL SYSTEM TESTING
-🔧 Testing database connection...
-
-In ConfigPaths.php line 331:
-                                                               
-  Writing to directory /var/www/.config/psysh is not allowed.  
-                                                               
-
-[ERROR] Database connection failed
+🎯 DIAGNOSTIC COMPLETE!
+Check the outputs above for issues.
